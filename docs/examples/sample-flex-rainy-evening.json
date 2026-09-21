@@ -1,0 +1,443 @@
+{
+  "type": "flex",
+  "altText": "พยากรณ์อากาศบ้านลำพาย 26° ท้องฟ้ามีเมฆมาก",
+  "contents": {
+    "type": "bubble",
+    "size": "giga",
+    "header": {
+      "type": "box",
+      "layout": "vertical",
+      "paddingAll": "0px",
+      "contents": [
+        {
+          "type": "box",
+          "layout": "vertical",
+          "paddingAll": "lg",
+          "backgroundColor": "#1A237E",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "vertical",
+              "paddingAll": "lg",
+              "backgroundColor": "#1A237E",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "บ้านลำพาย",
+                      "weight": "bold",
+                      "size": "xl",
+                      "color": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "text": "ต.โคกชะงาย • พัทลุง",
+                      "size": "sm",
+                      "color": "#E0E0E0",
+                      "margin": "xs"
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "margin": "lg",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "26°",
+                      "size": "3xl",
+                      "weight": "bold",
+                      "color": "#FFFFFF"
+                    },
+                    {
+                      "type": "box",
+                      "layout": "baseline",
+                      "margin": "sm",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "☁️ ท้องฟ้ามีเมฆมาก",
+                          "size": "sm",
+                          "color": "#F5F5F5"
+                        },
+                        {
+                          "type": "text",
+                          "text": "  รู้สึกเหมือน 30°",
+                          "size": "sm",
+                          "color": "#D0D0D0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "body": {
+      "type": "box",
+      "layout": "vertical",
+      "paddingAll": "lg",
+      "contents": [
+        {
+          "type": "box",
+          "layout": "horizontal",
+          "backgroundColor": "#F5F7FA",
+          "cornerRadius": "md",
+          "paddingAll": "md",
+          "margin": "lg",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ความชื้น",
+                  "size": "xs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "89%",
+                  "size": "md",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ลม",
+                  "size": "xs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "7.2 กม./ชม.",
+                  "size": "md",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ฝนตอนนี้",
+                  "size": "xs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "0 มม.",
+                  "size": "md",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "พยากรณ์รายชั่วโมง",
+          "weight": "bold",
+          "size": "sm",
+          "color": "#212121",
+          "margin": "lg"
+        },
+        {
+          "type": "box",
+          "layout": "horizontal",
+          "margin": "lg",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "vertical",
+              "alignItems": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "06:00",
+                  "size": "xxs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "☁️",
+                  "size": "md",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "26°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "42%",
+                  "size": "xxs",
+                  "color": "#1E88E5",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "alignItems": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "09:00",
+                  "size": "xxs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "🌤️",
+                  "size": "md",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "28°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "12%",
+                  "size": "xxs",
+                  "color": "#1E88E5",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "alignItems": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "12:00",
+                  "size": "xxs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "☁️",
+                  "size": "md",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "31°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "25%",
+                  "size": "xxs",
+                  "color": "#1E88E5",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "alignItems": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "15:00",
+                  "size": "xxs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "☁️",
+                  "size": "md",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "32°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "35%",
+                  "size": "xxs",
+                  "color": "#1E88E5",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "alignItems": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "18:00",
+                  "size": "xxs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "⛈️",
+                  "size": "md",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "27°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "98%",
+                  "size": "xxs",
+                  "color": "#1E88E5",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "alignItems": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "21:00",
+                  "size": "xxs",
+                  "color": "#8A8A8A"
+                },
+                {
+                  "type": "text",
+                  "text": "🌧️",
+                  "size": "md",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "26°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#212121",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "60%",
+                  "size": "xxs",
+                  "color": "#1E88E5",
+                  "margin": "xs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "horizontal",
+          "margin": "lg",
+          "contents": [
+            {
+              "type": "text",
+              "text": "ต่ำสุด 25°",
+              "size": "sm",
+              "color": "#546E7A"
+            },
+            {
+              "type": "text",
+              "text": "สูงสุด 32°",
+              "size": "sm",
+              "color": "#546E7A",
+              "align": "end"
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "vertical",
+          "backgroundColor": "#FFF8E1",
+          "cornerRadius": "md",
+          "paddingAll": "md",
+          "margin": "lg",
+          "contents": [
+            {
+              "type": "text",
+              "text": "คำแนะนำวันนี้",
+              "weight": "bold",
+              "size": "sm",
+              "color": "#795548"
+            },
+            {
+              "type": "text",
+              "text": "ช่วงเย็นมีโอกาสฝนสูง ควรเตรียมร่มไว้ก่อนออกจากบ้าน",
+              "size": "sm",
+              "color": "#5D4037",
+              "wrap": true,
+              "margin": "xs"
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "vertical",
+          "margin": "lg",
+          "contents": [
+            {
+              "type": "separator"
+            },
+            {
+              "type": "text",
+              "text": "ข้อมูลจาก Open-Meteo • อัปเดตล่าสุดโดยน้องจุ่นจ้าน",
+              "size": "xxs",
+              "color": "#B0B0B0",
+              "margin": "md",
+              "wrap": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

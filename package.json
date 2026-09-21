@@ -1,0 +1,15 @@
+{
+  "name": "skyaudio-alert",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Daily weather Flex + audio announcement for the บ้านลำพาย LINE group.",
+  "main": "src/index.js",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test tests/pipeline-core.test.js",
+    "dryrun": "DRY_RUN=true RUN_MODE=test node src/index.js"
+  },
+  "dependencies": {},
+  "license": "UNLICENSED"
+}

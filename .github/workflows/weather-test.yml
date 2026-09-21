@@ -1,0 +1,35 @@
+name: Manual weather test
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (build only, do not push to LINE or commit audio)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  send-test-forecast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run test forecast
+        env:
+          RUN_MODE: test
+          DRY_RUN: ${{ inputs.dry_run }}
+          LINE_CHANNEL_ACCESS_TOKEN_TEST: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_TEST }}
+          LINE_GROUP_ID_TEST: ${{ secrets.LINE_GROUP_ID_TEST }}
+          GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO_NAME: ${{ github.event.repository.name }}
+        run: node src/index.js
