@@ -5,6 +5,7 @@
 const { describeWeatherCode } = require('../weather/weatherCodes');
 const { buildAdvice } = require('./advice');
 const { buildThaiScript } = require('./thaiScript');
+const { buildThaiDateInfo } = require('./thaiDate');
 
 const SLOT_HOURS = [6, 8, 10, 12, 14, 16, 18, 20];
 
@@ -40,10 +41,12 @@ function pickSlots(hourlyToday) {
 
 function buildForecastData(analysis, location) {
   const adviceSentences = buildAdvice(analysis.adviceSignals);
-  const thaiScript = buildThaiScript(analysis, adviceSentences, location);
+  const dateInfo = buildThaiDateInfo(analysis.current.time);
+  const thaiScript = buildThaiScript(analysis, adviceSentences, location, dateInfo);
 
   return {
     location,
+    dateInfo,
     current: {
       temperature: analysis.current.temperature !== null ? Math.round(analysis.current.temperature) : null,
       apparentTemperature:
