@@ -1,7 +1,7 @@
 {
   "runId": "2026-09-22-lampai-test",
   "mode": "test",
-  "dryRun": true,
+  "dryRun": false,
   "stages": {
     "weather.fetch": "success",
     "weather.normalize": "success",
@@ -10,14 +10,14 @@
     "audio.synthesize": "success",
     "audio.validate": "success",
     "audio.store": "success",
-    "line.send": "skipped"
+    "line.send": "success"
   },
   "lastError": null,
   "audio": {
-    "url": null,
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@7603678ab8a91c83be02ef6de691e3c8bf8850a9/public/audio/2026-09-22.mp3",
     "durationMs": 37152,
     "bytes": 222912,
     "mimeType": "audio/mpeg"
   },
-  "generatedAt": "2026-09-22T06:00:08.144Z"
+  "generatedAt": "2026-09-22T06:07:57.479Z"
 }
