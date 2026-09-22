@@ -14,6 +14,7 @@ const { buildFlex } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
 const { buildAudioMessage } = require('../src/line/messagingApi');
+const { shouldSkipDuplicateProductionRun } = require('../src/core/statusReport');
 
 const THRESHOLDS = {
   hotApparent: 35,
@@ -97,4 +98,21 @@ test('LINE audio payload uses HTTPS and milliseconds', () => {
 
 test('MP3 parser rejects non-audio bytes', () => {
   assert.equal(parseMp3(Buffer.from('not an mp3')), null);
+});
+
+
+test('production duplicate guard skips only after successful same-day delivery', () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-status-'));
+  fs.mkdirSync(path.join(root, 'public', 'status'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'public', 'status', 'last-run.json'), JSON.stringify({
+    mode: 'production',
+    generatedAt: new Date().toISOString(),
+    stages: { 'line.send': 'success' },
+  }));
+  assert.equal(shouldSkipDuplicateProductionRun({ mode: 'production', dryRun: false }, { repoRoot: root }), true);
+  assert.equal(shouldSkipDuplicateProductionRun({ mode: 'test', dryRun: false }, { repoRoot: root }), false);
+  fs.rmSync(root, { recursive: true, force: true });
 });
