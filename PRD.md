@@ -931,6 +931,7 @@ Potential later features:
 - Automatic health check.
 - Notification when the 06:00 job fails.
 - Optional LLM rewriting layer with deterministic fallback.
+- Village announcement board fed by a companion PWA (+ possibly a database). UI slot is already reserved in the Flex header — see DECISIONS.md Decision 009.
 
 None of these is required for V1.
 

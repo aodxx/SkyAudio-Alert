@@ -8,8 +8,25 @@ function headerBlock(location) {
   ] };
 }
 
-function heroTempBlock(current) {
-  return { type: 'box', layout: 'vertical', margin: 'lg', contents: [
+// RESERVED SLOT — do not repurpose or remove. See DECISIONS.md, Decision 009.
+// This is a placeholder for a future village-announcement feature (posted via a
+// companion PWA, planned for this same repo). It has no data source yet, so
+// `announcement` is normally undefined and the board renders empty on purpose —
+// that is expected, not a bug. It must always render (constant height/layout,
+// no conditional hide) and must stay inside this existing header — never a
+// second Flex message or extra card — so the bubble doesn't grow.
+function announcementBoard(announcement) {
+  return { type: 'box', layout: 'vertical', flex: 5, backgroundColor: '#6B4A2F', cornerRadius: 'sm', paddingAll: '3px', contents: [
+    { type: 'box', layout: 'vertical', flex: 1, backgroundColor: '#16382A', cornerRadius: 'xs', paddingAll: 'xl', justifyContent: 'center', spacing: 'xs', contents: [
+      { type: 'text', text: '📌', size: 'xs', align: 'center' },
+      ...(announcement ? [{ type: 'text', text: announcement, size: 'xs', weight: 'bold', color: '#F5F0DC', align: 'center', wrap: true }] : []),
+      { type: 'box', layout: 'vertical', height: '4px', backgroundColor: '#8A6A44', cornerRadius: 'sm', margin: 'sm', contents: [] },
+    ] },
+  ] };
+}
+
+function heroTempBlock(current, announcement) {
+  const tempColumn = { type: 'box', layout: 'vertical', flex: 4, justifyContent: 'center', contents: [
     { type: 'box', layout: 'baseline', contents: [
       { type: 'text', text: current.temperature !== null ? `${current.temperature}°` : '--°', size: '4xl', weight: 'bold', color: '#FFFFFF', flex: 0 },
       { type: 'text', text: current.icon, size: '3xl', margin: 'md', flex: 0 },
@@ -17,6 +34,7 @@ function heroTempBlock(current) {
     { type: 'text', text: current.conditionLabel, size: 'lg', weight: 'bold', color: '#FFFFFF', margin: 'xs' },
     { type: 'text', text: `รู้สึกเหมือน ${current.apparentTemperature ?? '--'}°`, size: 'md', color: '#E3F2FD', margin: 'xs' },
   ] };
+  return { type: 'box', layout: 'horizontal', margin: 'lg', spacing: 'md', contents: [tempColumn, announcementBoard(announcement)] };
 }
 
 function quickIndicatorsBox(current, accentColor) {

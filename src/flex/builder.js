@@ -6,7 +6,7 @@ const { headerBlock, heroTempBlock, quickIndicatorsBox, hourlySection, rainProba
 
 function buildFlex(forecastData) {
   const colors = resolveThemeColors(forecastData.theme, forecastData.current.isDay);
-  const hero = { type: 'box', layout: 'vertical', paddingAll: 'xl', backgroundColor: colors.from, contents: [headerBlock(forecastData.location), heroTempBlock(forecastData.current)] };
+  const hero = { type: 'box', layout: 'vertical', paddingAll: 'xl', backgroundColor: colors.from, contents: [headerBlock(forecastData.location), heroTempBlock(forecastData.current, forecastData.announcement)] };
   const bodyContents = [
     quickIndicatorsBox(forecastData.current, colors.to),
     { type: 'text', text: 'พยากรณ์วันนี้', weight: 'bold', size: 'md', color: '#263238', margin: 'lg' },

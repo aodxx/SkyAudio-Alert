@@ -71,3 +71,17 @@ Any credential pasted into chat should be treated as exposed and replaced before
 **Decision:** V1 is configured for บ้านลำพาย at 7.619729, 100.005932.
 
 **Reason:** The first goal is a stable community service. Multi-location support will be designed as an extension rather than complicating the first release.
+
+## Decision 009 — Reserved announcement board is a placeholder, not decorative
+
+**Date:** 2026-09-22
+
+**Decision:** The chalkboard-style panel next to the temperature in the Flex header (`announcementBoard()` in `src/flex/components.js`, wired through `heroTempBlock(current, announcement)`) is a **reserved slot for a future village-announcement feature**, not a design element free to repurpose.
+
+**Reason:** อ๊อด plans a companion PWA in this same repo (possibly adding a database) that lets residents/village admins post announcements — event notices, PR messages, and similar — to be displayed here. Until that data source exists, `forecastData.announcement` is always empty/undefined, so the board renders every day with just its frame and chalk tray, no text. That empty appearance is intentional, not a bug to "fix" by hiding or removing the board.
+
+**Constraints for anyone (human or AI) editing this area:**
+- Don't remove the board or repurpose its space for other content (e.g. the market-price card, extra weather stats) without first updating this decision.
+- Don't make it conditionally disappear when there is no announcement — it must render at a constant size every day so the card's layout/height doesn't jump.
+- Don't turn it into a second Flex message or otherwise grow the bubble to accommodate it — it must stay inside the existing header, by design, so the group doesn't feel the bot is taking over more chat space.
+- When the PWA/data source ships, wire it by populating `forecastData.announcement` (a plain string) upstream in the pipeline/formatter — `components.js`/`builder.js` should not need further changes for the basic case.
