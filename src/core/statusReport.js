@@ -13,6 +13,31 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
+function readLastRunReport({ repoRoot = process.cwd() } = {}) {
+  const absPath = path.join(repoRoot, 'public', 'status', 'last-run.json');
+  try {
+    return JSON.parse(fs.readFileSync(absPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function shouldSkipDuplicateProductionRun(config, { repoRoot = process.cwd() } = {}) {
+  if (config.dryRun || config.mode !== 'production') return false;
+  const report = readLastRunReport({ repoRoot });
+  const bangkokDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+  return Boolean(
+    report &&
+    report.mode === 'production' &&
+    report.generatedAt &&
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(report.generatedAt)) === bangkokDate &&
+    report.stages &&
+    report.stages['line.send'] === 'success'
+  );
+}
+
 function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { encoding: 'utf8', ...opts }).trim();
 }
@@ -53,4 +78,4 @@ function writeStatusReport(result, config, { repoRoot = process.cwd() } = {}) {
   }
 }
 
-module.exports = { writeStatusReport };
+module.exports = { writeStatusReport, readLastRunReport, shouldSkipDuplicateProductionRun };
