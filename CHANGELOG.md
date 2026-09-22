@@ -7,6 +7,7 @@
 - Dry runs no longer expose `file://` as an audio URL and log that LINE delivery was skipped.
 - Production audio URLs are checked for public HTTPS, HTTP 200, and `audio/mpeg` before LINE delivery.
 - Added regression tests for Edge TTS rate formatting, MP3 rejection, and LINE audio duration payload.
+- Verified non-dry-run GitHub Actions run `35675538268`: Edge TTS, MP3 validation, audio commit, public jsDelivr URL, and LINE push of two messages all succeeded. Direct LINE receipt/playback still requires human observation in the Test Group.
 
 ## 0.2.0 — Phase 2–6 implementation
 - Implemented deterministic weather engine (`src/weather`): Open-Meteo adapter, normalization, WMO code mapping, rule-based analyzer (temperature categories, rain windows, advice signals, theme resolution).

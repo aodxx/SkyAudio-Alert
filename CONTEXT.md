@@ -10,8 +10,9 @@ The implementation now attaches negative rate values to the CLI option, validate
 
 - `npm test`: passing, including regression tests for the Edge rate, MP3 rejection, and LINE milliseconds payload.
 - A real Thai Edge TTS command was run in the sandbox and produced a 26,640-byte MP3 that passed MP3 validation.
-- Full production LINE integration is not yet verified in this session because no LINE test-group delivery was executed from here. The next required proof is a GitHub Actions run with `dry_run=false`, followed by inspection of the workflow log and confirmation that the LINE test group received both messages.
+- GitHub Actions run `35675538268` with `dry_run=false` completed successfully on 2026-09-22. Secrets were accepted by the workflow, audio was committed at `8e55b5d`, the public URL returned HTTP 200 with `audio/mpeg`, and LINE push returned success with two messages (Flex + Audio).
+- The public MP3 was downloaded and verified as MPEG ADTS Layer III, 221,184 bytes, and 36.864 seconds by `ffprobe`.
 
 ## Remaining acceptance proof
 
-The repository still needs a real non-dry-run run with valid GitHub Secrets, successful audio commit/public URL verification, LINE Flex delivery, and LINE Audio playback confirmation. Do not report Definition of Done until those external observations exist.
+The remaining acceptance proof is direct observation in the LINE Test Group: confirm that both the Flex and Audio messages arrived and that the Audio message plays with Thai speech. The LINE push API success and public MP3 verification are proven; message receipt/playback cannot be read back through the current LINE API adapter.
