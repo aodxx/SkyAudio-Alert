@@ -14,6 +14,7 @@ const { storeAudio } = require('../audio/storage');
 const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
 const { withRetry } = require('./retry');
 const { log } = require('./logger');
+const { writeStatusReport } = require('./statusReport');
 
 async function runPipeline(config) {
   const { runId } = config;
@@ -71,6 +72,7 @@ async function runPipeline(config) {
     // Policy (PRD 13.3): audio failure does not block the visual Flex
     // announcement — residents still get the morning report.
     mark(err.stage || 'audio.synthesize', 'failure', { message: err.message, detail: err.detail });
+    result.lastError = { stage: err.stage, message: err.message, detail: err.detail };
   }
 
   // 4. LINE
@@ -85,7 +87,9 @@ async function runPipeline(config) {
   });
   mark('line.send', 'success', { messageCount: messages.length });
 
-  return { ...result, messages, audioInfo };
+  const finalResult = { ...result, messages, audioInfo };
+  writeStatusReport(finalResult, config);
+  return finalResult;
 }
 
 module.exports = { runPipeline };

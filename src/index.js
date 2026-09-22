@@ -9,6 +9,7 @@
 const { buildConfig } = require('./config');
 const { runPipeline } = require('./core/pipeline');
 const { log } = require('./core/logger');
+const { writeStatusReport } = require('./core/statusReport');
 
 async function main() {
   let config;
@@ -27,6 +28,10 @@ async function main() {
     process.exit(0);
   } catch (err) {
     log(config.runId, err.stage || 'run', 'failure', { message: err.message, detail: err.detail });
+    writeStatusReport(
+      { runId: config.runId, stages: {}, lastError: { stage: err.stage, message: err.message, detail: err.detail } },
+      config
+    );
     process.exit(1);
   }
 }
