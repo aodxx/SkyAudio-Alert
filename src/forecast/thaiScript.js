@@ -7,7 +7,7 @@ function round(n) {
   return n === null || n === undefined ? null : Math.round(n);
 }
 
-function buildThaiScript(analysis, adviceSentences, location, dateInfo) {
+function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBrief = []) {
   const { current, daily } = analysis;
   const temp = round(current.temperature);
   const apparent = round(current.apparentTemperature);
@@ -27,6 +27,15 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo) {
 
   if (tMin !== null && tMax !== null) {
     lines.push(`วันนี้... อุณหภูมิอยู่ประมาณ ${tMin} ถึง ${tMax} องศา`);
+  }
+
+  const usableMarket = marketBrief.filter((x) => x && x.status === 'ok' && Number.isFinite(x.price));
+  if (usableMarket.length) {
+    lines.push('');
+    for (const item of usableMarket.slice(0, 2)) {
+      const label = item.kind === 'palm' ? 'ปาล์มน้ำมัน' : 'ยางพารา';
+      lines.push(`${label} ล่าสุด ${item.price.toFixed(2)} บาทต่อกิโลกรัม` + (item.date ? ` ข้อมูลวันที่ ${item.date}` : ''));
+    }
   }
 
   for (const s of adviceSentences.slice(0, 2)) {
