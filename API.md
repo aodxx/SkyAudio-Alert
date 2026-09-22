@@ -93,8 +93,9 @@ Output:
 ### synthesizeSpeech(script)
 
 Output:
-- audio file/asset URL.
-- duration in milliseconds.
+- MP3 buffer.
+
+The pipeline then validates the real MP3 duration, stores the file, creates a public HTTPS URL, and builds the LINE Audio payload.
 
 ### sendLine(messages)
 
@@ -107,16 +108,22 @@ Output:
 
 ## 3. Environment contract
 
-Required:
+Required at runtime (names are split by test/production mode):
 
 ```
-LINE_CHANNEL_ACCESS_TOKEN
-LINE_GROUP_ID
+LINE_CHANNEL_ACCESS_TOKEN_TEST
+LINE_GROUP_ID_TEST
+
+LINE_CHANNEL_ACCESS_TOKEN_PROD
+LINE_GROUP_ID_PROD
+
 WEATHER_LAT
 WEATHER_LON
 WEATHER_TIMEZONE
 LOCATION_NAME
 ```
+
+In `DRY_RUN=true`, LINE credentials are optional because the LINE API is not called.
 
 TTS-specific secrets are provider-dependent.
 
