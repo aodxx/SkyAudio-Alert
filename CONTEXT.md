@@ -20,3 +20,13 @@ The end-to-end acceptance proof is now complete: the production-style non-dry-ru
 ## Current hardening decision
 
 Production runs now have a same-day duplicate guard based on `public/status/last-run.json`: a production run is skipped only when the previous successful production report is from the same Asia/Bangkok calendar day. Failed/incomplete runs remain eligible for retry. Test and dry-run modes are unaffected.
+
+## Future community platform vision (recorded 2026-09-22)
+
+SkyAudio-Alert is intentionally being developed as the first, small entry point to a future community communication platform. The daily LINE weather message is the familiar doorway: residents already receive it in the shared group, so future community information can be introduced without repeatedly creating separate message cards that consume group space.
+
+The future concept includes a green community board and a PWA for village leaders, assistants, and health volunteers. Possible future capabilities include appointment/reminder publishing, community and government announcements, photographing official documents and OCR-ing them into text and Thai speech for LINE, and health-related forms created by health volunteers for residents to complete. The accessibility goal is especially important for older residents or people who have difficulty reading: LINE and audio remain the familiar delivery channel, while the PWA is primarily an operational tool for community workers.
+
+This vision is deliberately **not** a request to build the full PWA now. For the current phase, preserve clean integration points in the Morning Message structure (weather, market, future community content, audio), then return focus to making the existing weather/market announcement reliable and useful in the real 7-day trial. The timing of the larger platform should be decided from actual trial experience rather than prematurely expanding the production scope.
+
+The user may explain this vision in a circular or repetitive way while thinking aloud. Treat the underlying intent as one coherent product direction; do not require the user to restate it or interpret repetition as new requirements unless they explicitly introduce a new requirement.
