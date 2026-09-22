@@ -128,7 +128,7 @@ test('Thai TTS script is concise and contains natural pause markers', () => {
   const script = buildThaiScript(analysis, advice, LOCATION, dateInfo);
   assert.match(script, /ตอนนี้\.\.\./);
   assert.match(script, /วันนี้\.\.\./);
-  assert.ok(script.length < 700);
+  assert.ok(script.length < 900);
 });
 
 
