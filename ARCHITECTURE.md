@@ -18,7 +18,7 @@ core/pipeline.js
         ├─▶ forecast/formatter.js  → hourly slots, advice sentences, Thai script
         ├─▶ flex/builder.js        → LINE Flex JSON (visual message)
         │
-        ├─▶ audio/tts.js           → Google Cloud TTS (REST, free tier)
+        ├─▶ audio/tts.js           → Edge TTS (free default; Google optional)
         ├─▶ audio/validate.js      → duration/size checks
         ├─▶ audio/storage.js       → commit MP3 to this repo, serve via jsDelivr
         │
@@ -32,7 +32,7 @@ core/pipeline.js
 | Weather data | Open-Meteo — free, no API key |
 | Scheduler/runner | GitHub Actions — free minutes on a public repo |
 | Audio hosting | The repo itself + jsDelivr CDN — free, HTTPS, no bucket |
-| Text-to-speech | Google Cloud TTS free tier (watch the monthly character quota) |
+| Text-to-speech | Edge TTS via `edge-tts` (free default); Google TTS remains optional |
 | Messaging | LINE Messaging API — free push messages within LINE's own limits |
 
 No server runs 24/7. The only recurring job is the scheduled GitHub Actions run.
@@ -40,7 +40,7 @@ No server runs 24/7. The only recurring job is the scheduled GitHub Actions run.
 ## Failure policy (PRD 13.3)
 
 - Weather fetch fails → whole run fails, nothing is sent (never fabricate weather).
-- TTS/audio fails → Flex message still sends; audio is skipped for that day.
+- TTS/audio fails → required stage fails the run; no LINE delivery is attempted.
 - LINE push fails → retried once for transient (5xx/429) errors, then the run fails loudly in the Actions log.
 
 ## Provider independence (PRD G7)
