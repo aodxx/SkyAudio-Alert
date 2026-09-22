@@ -11,6 +11,7 @@ const { normalizeWeather } = require('../src/weather/normalize');
 const { analyzeWeather } = require('../src/weather/analyzer');
 const { buildForecastData } = require('../src/forecast/formatter');
 const { buildThaiScript } = require('../src/forecast/thaiScript');
+const { buildThaiDateInfo } = require('../src/forecast/thaiDate');
 const { buildFlex } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
@@ -122,9 +123,19 @@ test('production duplicate guard skips only after successful same-day delivery',
 test('Thai TTS script is concise and contains natural pause markers', () => {
   const weatherData = loadFixture('rainy-evening.json');
   const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูงครับ... เตรียมร่มไว้ก่อนออกจากบ้านนะครับ'];
-  const script = buildThaiScript(analysis, advice, LOCATION);
+  const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูง... เตรียมร่มไว้ก่อนออกจากบ้านนะ'];
+  const dateInfo = buildThaiDateInfo('2026-09-22T06:00:00');
+  const script = buildThaiScript(analysis, advice, LOCATION, dateInfo);
   assert.match(script, /ตอนนี้\.\.\./);
   assert.match(script, /วันนี้\.\.\./);
   assert.ok(script.length < 700);
+});
+
+
+test('Thai date context includes Gregorian date and lunar day', () => {
+  const info = buildThaiDateInfo('2026-09-22T06:00:00');
+  assert.equal(info.solarText, 'วันอังคารที่ 22 กันยายน พ.ศ. 2569');
+  assert.equal(info.lunarText, 'ขึ้น 11 ค่ำ');
+  assert.match(info.spokenText, /22 กันยายน พ\.ศ\. 2569/);
+  assert.match(info.spokenText, /ขึ้น 11 ค่ำ/);
 });
