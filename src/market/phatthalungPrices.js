@@ -10,12 +10,12 @@ const SOURCE_NAME = 'สำนักงานเกษตรและสหก�
 
 function cleanText(html) {
   return String(html || '')
-    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')
-    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
-    .replace(/\\s+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -28,7 +28,7 @@ function decodeHtml(s) {
 }
 
 function extractLatestArticleLink(html, titlePattern) {
-  const re = /<a[^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi;
+  const re = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let match;
   while ((match = re.exec(html))) {
     const text = cleanText(decodeHtml(match[2]));
@@ -41,7 +41,7 @@ function extractLatestArticleLink(html, titlePattern) {
 }
 
 function parseThaiDate(title) {
-  const m = String(title || '').match(/(\\d{1,2})\\s*(ม\\.ค\\.|ก\\.พ\\.|มี\\.ค\\.|เม\\.ย\\.|พ\\.ค\\.|มิ\\.ย\\.|ก\\.ค\\.|ส\\.ค\\.|ก\\.ย\\.|ต\\.ค\\.|พ\\.ย\\.|ธ\\.ค\\.)\\s*(25\\d{2})/);
+  const m = String(title || '').match(/(\\d{1,2})\s*(ม\\.ค\\.|ก\\.พ\\.|มี\\.ค\\.|เม\\.ย\\.|พ\\.ค\\.|มิ\\.ย\\.|ก\\.ค\\.|ส\\.ค\\.|ก\\.ย\\.|ต\\.ค\\.|พ\\.ย\\.|ธ\\.ค\\.)\s*(25\\d{2})/);
   if (!m) return null;
   const months = {'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
   return `${m[3]}-${String(months[m[2]]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
@@ -53,7 +53,7 @@ function parsePriceFromText(text, kind) {
   if (!keyword.test(t)) return null;
 
   // Prefer values explicitly followed by บาท/กก. or บาทต่อกิโลกรัม.
-  const explicit = [...t.matchAll(/(\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?)\\s*บาท\\s*(?:\\/|ต่อ)?\\s*(?:กก\\.|กิโลกรัม)/g)]
+  const explicit = [...t.matchAll(/(\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?)\s*บาท\s*(?:\/|ต่อ)?\s*(?:กก\\.|กิโลกรัม)/g)]
     .map(m => Number(m[1].replace(/,/g,'')))
     .filter(Number.isFinite);
 
