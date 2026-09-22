@@ -14,6 +14,7 @@ const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
 const { withRetry } = require('./retry');
 const { log } = require('./logger');
 const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statusReport');
+const { getMarketBrief } = require('../market');
 
 async function runPipeline(config) {
   const { runId } = config;
@@ -40,8 +41,12 @@ async function runPipeline(config) {
   const analysis = analyzeWeather(weatherData, config.thresholds);
   mark('weather.analyze', 'success', { theme: analysis.theme, adviceSignals: analysis.adviceSignals });
 
+  mark('market.fetch', 'start');
+  const marketBrief = await getMarketBrief();
+  mark('market.fetch', 'success', { items: marketBrief.map((x) => ({ kind: x.kind, status: x.status, date: x.date })) });
+
   mark('forecast.render', 'start');
-  const forecastData = buildForecastData(analysis, config.location);
+  const forecastData = buildForecastData(analysis, config.location, marketBrief);
   const flexMessage = buildFlex(forecastData);
   mark('forecast.render', 'success');
 
