@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — End-to-end hardening
+- Fixed Edge TTS negative-rate invocation by attaching `--rate=-5%` to the option value; the previous invocation failed in the real GitHub Actions log.
+- MP3 validation now checks MPEG frame headers and reads a positive duration instead of accepting any non-empty buffer.
+- Audio synthesis, validation, storage, and public URL failures now fail the job; they are no longer swallowed and reported as a successful Flex-only run.
+- Dry runs no longer expose `file://` as an audio URL and log that LINE delivery was skipped.
+- Production audio URLs are checked for public HTTPS, HTTP 200, and `audio/mpeg` before LINE delivery.
+- Added regression tests for Edge TTS rate formatting, MP3 rejection, and LINE audio duration payload.
+
 ## 0.2.0 — Phase 2–6 implementation
 - Implemented deterministic weather engine (`src/weather`): Open-Meteo adapter, normalization, WMO code mapping, rule-based analyzer (temperature categories, rain windows, advice signals, theme resolution).
 - Implemented forecast layer (`src/forecast`): Thai advice sentences, dynamic Thai TTS script, hourly-slot formatter.

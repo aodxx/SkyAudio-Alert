@@ -17,6 +17,7 @@
 Actions → **Manual weather test** → Run workflow → `dry_run=true`
 
 Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
+หาก TTS, การตรวจ MP3 หรือขั้นตอนที่จำเป็นล้มเหลว job จะล้มเหลว ไม่รายงานว่าสำเร็จแบบ Flex-only
 
 ### ทดสอบส่งเข้า LINE Test
 ตั้ง `dry_run=false` และต้องมี secrets:
@@ -35,6 +36,8 @@ Production ต้องมี:
 
 ค่าเริ่มต้นใช้ `TTS_PROVIDER=edge` และเสียง `th-TH-PremwadeeNeural`
 Google TTS ยังรองรับเป็นตัวเลือกโดยตั้ง `TTS_PROVIDER=google` และใส่ `GOOGLE_TTS_API_KEY`
+
+หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
 
 ## ทดสอบในเครื่อง
 

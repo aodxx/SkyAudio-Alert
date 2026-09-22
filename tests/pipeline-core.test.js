@@ -11,7 +11,9 @@ const { normalizeWeather } = require('../src/weather/normalize');
 const { analyzeWeather } = require('../src/weather/analyzer');
 const { buildForecastData } = require('../src/forecast/formatter');
 const { buildFlex } = require('../src/flex/builder');
-const { estimateDurationMs } = require('../src/audio/validate');
+const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
+const { edgeRate } = require('../src/audio/tts');
+const { buildAudioMessage } = require('../src/line/messagingApi');
 
 const THRESHOLDS = {
   hotApparent: 35,
@@ -80,4 +82,19 @@ test('audio duration estimate stays within LINE-safe bounds', () => {
   const d2 = estimateDurationMs(longScript, 1);
   assert.ok(d1 >= 10_000);
   assert.ok(d2 <= 110_000);
+});
+
+test('Edge TTS formats negative rate as an attached CLI value', () => {
+  assert.equal(edgeRate(0.95), '-5%');
+  assert.equal(edgeRate(1.1), '+10%');
+});
+
+test('LINE audio payload uses HTTPS and milliseconds', () => {
+  assert.deepEqual(buildAudioMessage('https://cdn.example.test/report.mp3', 35000), {
+    type: 'audio', originalContentUrl: 'https://cdn.example.test/report.mp3', duration: 35000,
+  });
+});
+
+test('MP3 parser rejects non-audio bytes', () => {
+  assert.equal(parseMp3(Buffer.from('not an mp3')), null);
 });

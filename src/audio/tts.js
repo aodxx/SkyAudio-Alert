@@ -23,10 +23,21 @@ function edgeRate(rate) {
 function synthesizeWithEdge(script, config) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-'));
   const output = path.join(dir, 'speech.mp3');
-  const args = ['-m', 'edge_tts', '-v', config.voiceName, '--rate', edgeRate(config.speakingRate), '-t', script, '--write-media', output];
+  // A negative rate must be attached to the option. Passing "-5%" as the
+  // next argv token makes argparse treat it as another option.
+  const args = [
+    '-m', 'edge_tts',
+    '--voice', config.voiceName,
+    `--rate=${edgeRate(config.speakingRate)}`,
+    '--text', script,
+    '--write-media', output,
+  ];
   try {
-    try { execFileSync('python3', args, { stdio: 'pipe', timeout: 120000 }); }
-    catch (_) { execFileSync('python', args, { stdio: 'pipe', timeout: 120000 }); }
+    try {
+      execFileSync('python3', args, { stdio: 'pipe', timeout: 120000 });
+    } catch (_) {
+      execFileSync('python', args, { stdio: 'pipe', timeout: 120000 });
+    }
     if (!fs.existsSync(output)) throw makeError('Edge TTS did not create an MP3');
     const buffer = fs.readFileSync(output);
     if (!buffer.length) throw makeError('Edge TTS returned an empty MP3');
