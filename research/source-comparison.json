@@ -1,0 +1,109 @@
+{
+  "researched_at": "2026-09-22",
+  "location_focus": {
+    "province": "พัทลุง",
+    "region": "ภาคใต้",
+    "primary_place": "บ้านลำพาย ต.โคกชะงาย อ.เมือง จ.พัทลุง"
+  },
+  "production_unchanged": true,
+  "candidates": [
+    {
+      "id": "opsmoac-phatthalung",
+      "commodity": ["ปาล์มน้ำมัน", "ยางพารา"],
+      "area": "พัทลุง",
+      "classification": "primary-local",
+      "price_type": "ราคารับซื้อปาล์มแยกโรงงาน/ลานเท; ราคากลางเปิดตลาดยางแยกชนิด",
+      "unit": "บาท/กก.",
+      "update": "รายวันตามรายการประกาศ",
+      "access": "HTML + PNG; no verified API",
+      "latest_verified": "2569-09-22",
+      "limitations": ["ตัวเลขอยู่ในภาพ", "ไม่มี API ที่ยืนยันได้", "ต้องพิจารณาขออนุญาตก่อน automation"],
+      "official_url": "https://www.opsmoac.go.th/phatthalung-warning",
+      "evidence": "https://www.opsmoac.go.th/phatthalung-warning-preview-481691792116"
+    },
+    {
+      "id": "dit-palm",
+      "commodity": ["ปาล์มน้ำมัน"],
+      "area": "แหล่งผลิตภาคใต้และพัทลุงบางรายงาน",
+      "classification": "primary-regional",
+      "price_type": "ราคารับซื้อหน้าโรงงาน ช่วงต่ำ-สูง/ค่าเฉลี่ย คุณภาพน้ำมัน 18%",
+      "unit": "บาท/กก.",
+      "update": "รายวันใน PDF รายเดือน",
+      "access": "HTML -> PDF",
+      "latest_verified": "2569-09-21",
+      "limitations": ["ไม่ใช่ทุกจังหวัด", "ไม่มี API ที่ยืนยันได้", "policy จำกัดสคริปต์นอกช่องทาง"],
+      "official_url": "https://agri.dit.go.th/",
+      "evidence": "https://agri.dit.go.th/index.php/department_doc/3/"
+    },
+    {
+      "id": "oae",
+      "commodity": ["ปาล์มน้ำมัน", "ยางพารา"],
+      "area": "ประเทศไทย TH00",
+      "classification": "primary-machine-readable",
+      "price_type": "ราคาที่เกษตรกรขายได้ ณ ไร่นา เฉลี่ยระดับประเทศ",
+      "unit": "บาท/กก.",
+      "update": "รายสัปดาห์/รายเดือน",
+      "access": "JSON REST API with pagination",
+      "latest_verified": "2569-08",
+      "limitations": ["ไม่ใช่ราคาพัทลุง", "ไม่ใช่ราคาหน้าโรงงาน", "CC BY-NC"],
+      "official_url": "https://catalog.oae.go.th/",
+      "evidence": "https://catalog.oae.go.th/th/dataset/weekly_price_oil-plam"
+    },
+    {
+      "id": "raot-misdata",
+      "commodity": ["ยางพารา"],
+      "area": "ตลาดภาคใต้และตลาดอื่น",
+      "classification": "secondary",
+      "price_type": "ราคาปิด/ราคาซื้อขายผ่านตลาดกลาง แยก Non-EUDR/EUDR",
+      "unit": "ไม่ยืนยันจากตารางที่ตรวจ",
+      "update": "รายวัน/วันทำการ",
+      "access": "HTML GET",
+      "latest_verified": "2569-09-22",
+      "limitations": ["ไม่พบพัทลุงในตาราง", "หน่วยราคาไม่ชัด", "ไม่มี API contract"],
+      "official_url": "https://new.raot.co.th/rubber-market/",
+      "evidence": "https://misdata.rubberthaiecon.com/report/repprices.php"
+    },
+    {
+      "id": "thai-rubber-association",
+      "commodity": ["ยางพารา"],
+      "area": "หาดใหญ่ คลองแงะ ตรัง ภูเก็ต สุราษฎร์ธานี และสงขลา",
+      "classification": "secondary",
+      "price_type": "ราคาท้องถิ่น/ตลาดกลาง/ราคาเสนอขาย FOB",
+      "unit": "บาท/กก. สำหรับราคาหลัก; USD/MT สำหรับน้ำยางข้น FOB",
+      "update": "รายวัน",
+      "access": "HTML GET/AJAX HTML/graph",
+      "latest_verified": "2569-09-22",
+      "limitations": ["ไม่พบพัทลุง", "ข้อมูลเบื้องต้น", "ไม่มี API และ terms reuse ไม่ชัด"],
+      "official_url": "https://www.thainr.com/en/",
+      "evidence": "https://www.thainr.com/en/?detail=pr-local"
+    },
+    {
+      "id": "songkhla-central-rubber-market",
+      "commodity": ["ยางพารา"],
+      "area": "สงขลา/หาดใหญ่ ภาคใต้",
+      "classification": "regional-reference",
+      "price_type": "ราคาตลาดกลาง/ประมูล แยก USS, RSS3, น้ำยางสด, เศษยาง",
+      "unit": "บาท/กก.",
+      "update": "รายวันเมื่อมีข้อมูล",
+      "access": "HTML + AJAX HTML",
+      "latest_verified": "ชุดข้อมูลต่างกันถึง 2569-09-22",
+      "limitations": ["ไม่ใช่พัทลุง", "วันล่าสุดต่างกันตามชุด", "ไม่มี API ที่ยืนยัน"],
+      "official_url": "https://new.raot.co.th/rubber-market/",
+      "evidence": "https://www.thainr.com/th/index.php?detail=rubber_center_main_preview"
+    },
+    {
+      "id": "palm-oil-crushing-mill-association",
+      "commodity": ["ปาล์มน้ำมัน"],
+      "area": "ประเทศไทย; สมาชิกมีภาคใต้",
+      "classification": "reference-only",
+      "price_type": "เอกสารหลักเกณฑ์การรับซื้อ; no current price series verified",
+      "unit": "ไม่สามารถยืนยันได้",
+      "update": "ไม่พบ",
+      "access": "WordPress HTML/RSS/REST",
+      "latest_verified": "ไม่สามารถยืนยันได้",
+      "limitations": ["ไม่มีตัวเลขราคาปัจจุบัน", "ไม่มี series metadata", "ไม่พบ terms"],
+      "official_url": "https://pocathailand.com/",
+      "evidence": "https://pocathailand.com/download/"
+    }
+  ]
+}
