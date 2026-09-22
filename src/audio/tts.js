@@ -23,7 +23,7 @@ function edgeRate(rate) {
 function synthesizeWithEdge(script, config) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-'));
   const output = path.join(dir, 'speech.mp3');
-  const args = ['-m', 'edge_tts', '--voice', config.voiceName, '--rate', edgeRate(config.speakingRate), '--text', script, '--write-media', output];
+  const args = ['-m', 'edge_tts', '-v', config.voiceName, '--rate', edgeRate(config.speakingRate), '-t', script, '--write-media', output];
   try {
     try { execFileSync('python3', args, { stdio: 'pipe', timeout: 120000 }); }
     catch (_) { execFileSync('python', args, { stdio: 'pipe', timeout: 120000 }); }
