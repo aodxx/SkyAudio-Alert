@@ -1,0 +1,20 @@
+{
+  "runId": "2026-09-22-lampai-test",
+  "mode": "test",
+  "dryRun": false,
+  "stages": {
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "forecast.render": "success",
+    "audio.synthesize": "failure",
+    "line.send": "success"
+  },
+  "lastError": {
+    "stage": "audio.synthesize",
+    "message": "Google TTS request failed: 401",
+    "detail": "{\n  \"error\": {\n    \"code\": 401,\n    \"message\": \"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\n    \"status\": \"UNAUTHENTICATED\",\n    \"details\": [\n      {\n        \"@typ"
+  },
+  "audio": null,
+  "generatedAt": "2026-09-22T00:08:50.108Z"
+}
