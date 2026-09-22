@@ -18,14 +18,15 @@ const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statu
 async function runPipeline(config) {
   const { runId } = config;
   const result = { runId, stages: {} };
-  if (shouldSkipDuplicateProductionRun(config)) {
-    mark('run', 'skipped', { reason: 'production announcement already delivered successfully today (Asia/Bangkok)' });
-    return { ...result, skipped: true, skipReason: 'duplicate-production-run' };
-  }
   const mark = (stage, status, extra) => {
     log(runId, stage, status, extra);
     result.stages[stage] = status;
   };
+
+  if (shouldSkipDuplicateProductionRun(config)) {
+    mark('run', 'skipped', { reason: 'production announcement already delivered successfully today (Asia/Bangkok)' });
+    return { ...result, skipped: true, skipReason: 'duplicate-production-run' };
+  }
 
   mark('weather.fetch', 'start');
   const raw = await withRetry(() => fetchOpenMeteo(config.location), {
