@@ -13,11 +13,15 @@ const { storeAudio } = require('../audio/storage');
 const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
 const { withRetry } = require('./retry');
 const { log } = require('./logger');
-const { writeStatusReport } = require('./statusReport');
+const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statusReport');
 
 async function runPipeline(config) {
   const { runId } = config;
   const result = { runId, stages: {} };
+  if (shouldSkipDuplicateProductionRun(config)) {
+    mark('run', 'skipped', { reason: 'production announcement already delivered successfully today (Asia/Bangkok)' });
+    return { ...result, skipped: true, skipReason: 'duplicate-production-run' };
+  }
   const mark = (stage, status, extra) => {
     log(runId, stage, status, extra);
     result.stages[stage] = status;
