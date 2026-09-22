@@ -1,6 +1,7 @@
 // src/forecast/thaiScript.js
-// Builds the spoken Thai script for TTS from live analysis data (not a
-// hard-coded string). Target length: ~30-90 seconds when read aloud.
+// Builds the spoken Thai script for TTS from live analysis data.
+// Speech is intentionally short, conversational, and pause-friendly for
+// older listeners in a village LINE group.
 
 function round(n) {
   return n === null || n === undefined ? null : Math.round(n);
@@ -15,24 +16,24 @@ function buildThaiScript(analysis, adviceSentences, location) {
   const condition = current.description.label;
 
   const lines = [];
-  lines.push(`สวัสดีตอนเช้าครับพี่น้อง${location.name}`);
-  lines.push('น้องจุ่นจ้านรายงานอากาศประจำวันนี้ครับ');
+  lines.push(`สวัสดีตอนเช้าครับพี่น้องชาว${location.name}`);
+  lines.push('น้องจุ่นจ้านมารายงานอากาศประจำวันนี้ครับ');
   lines.push('');
-  lines.push(`ตอนนี้อุณหภูมิประมาณ ${temp} องศา ${condition} และรู้สึกประมาณ ${apparent} องศา`);
+  lines.push(`ตอนนี้... อุณหภูมิประมาณ ${temp} องศา`);
+  lines.push(`${condition} และรู้สึกประมาณ ${apparent} องศาครับ`);
 
   if (tMin !== null && tMax !== null) {
-    lines.push(`วันนี้อุณหภูมิจะอยู่ประมาณ ${tMin} ถึง ${tMax} องศา`);
+    lines.push(`วันนี้... อุณหภูมิอยู่ประมาณ ${tMin} ถึง ${tMax} องศาครับ`);
   }
 
-  if (adviceSentences.length > 0) {
+  for (const s of adviceSentences.slice(0, 2)) {
     lines.push('');
-    for (const s of adviceSentences.slice(0, 3)) {
-      lines.push(s);
-    }
+    lines.push(s);
   }
 
   lines.push('');
-  lines.push('ขอให้ทุกคนเดินทางปลอดภัยและมีวันที่ดีครับ');
+  lines.push('ใครจะออกไปทำงาน... เตรียมตัวให้เหมาะกับอากาศนะครับ');
+  lines.push('ขอให้ทุกคนเดินทางปลอดภัย และมีวันที่ดีครับ');
 
   return lines.join('\n');
 }
