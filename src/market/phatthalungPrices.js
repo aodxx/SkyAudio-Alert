@@ -41,7 +41,7 @@ function extractLatestArticleLink(html, titlePattern) {
 }
 
 function parseThaiDate(title) {
-  const m = String(title || '').match(/(\\d{1,2})\s*(ม\\.ค\\.|ก\\.พ\\.|มี\\.ค\\.|เม\\.ย\\.|พ\\.ค\\.|มิ\\.ย\\.|ก\\.ค\\.|ส\\.ค\\.|ก\\.ย\\.|ต\\.ค\\.|พ\\.ย\\.|ธ\\.ค\\.)\s*(25\\d{2})/);
+  const m = String(title || '').match(/(\d{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)\s*(25\d{2})/);
   if (!m) return null;
   const months = {'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
   return `${m[3]}-${String(months[m[2]]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
@@ -53,7 +53,7 @@ function parsePriceFromText(text, kind) {
   if (!keyword.test(t)) return null;
 
   // Prefer values explicitly followed by บาท/กก. or บาทต่อกิโลกรัม.
-  const explicit = [...t.matchAll(/(\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?)\s*บาท\s*(?:\/|ต่อ)?\s*(?:กก\\.|กิโลกรัม)/g)]
+  const explicit = [...t.matchAll(/(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*บาท\s*(?:\/|ต่อ)?\s*(?:กก\.|กิโลกรัม)/g)]
     .map(m => Number(m[1].replace(/,/g,'')))
     .filter(Number.isFinite);
 
@@ -61,7 +61,7 @@ function parsePriceFromText(text, kind) {
 
   // Conservative fallback for common source tables: only accept a decimal
   // number near the word "ราคา" and a product keyword.
-  const near = t.match(/ราคา[^.]{0,180}(?:ปาล์ม|ยางพารา|ยางแผ่น|น้ำยาง)[^.]{0,180}?([0-9]{1,3}(?:\\.[0-9]{1,2})?)/);
+  const near = t.match(/ราคา[^.]{0,180}(?:ปาล์ม|ยางพารา|ยางแผ่น|น้ำยาง)[^.]{0,180}?([0-9]{1,3}(?:\.[0-9]{1,2})?)/);
   if (near) {
     const n = Number(near[1]);
     if (n >= 1 && n <= 300) return n;
