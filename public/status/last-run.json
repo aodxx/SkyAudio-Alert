@@ -1,20 +1,23 @@
 {
-  "runId": "2026-09-22-lampai-test",
+  "runId": "local-hardening-test",
   "mode": "test",
-  "dryRun": false,
+  "dryRun": true,
   "stages": {
     "weather.fetch": "success",
     "weather.normalize": "success",
     "weather.analyze": "success",
     "forecast.render": "success",
-    "audio.synthesize": "failure",
-    "line.send": "success"
+    "audio.synthesize": "success",
+    "audio.validate": "success",
+    "audio.store": "success",
+    "line.send": "skipped"
   },
-  "lastError": {
-    "stage": "audio.synthesize",
-    "message": "Google TTS request failed: 401",
-    "detail": "{\n  \"error\": {\n    \"code\": 401,\n    \"message\": \"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\n    \"status\": \"UNAUTHENTICATED\",\n    \"details\": [\n      {\n        \"@typ"
+  "lastError": null,
+  "audio": {
+    "url": null,
+    "durationMs": 36864,
+    "bytes": 221184,
+    "mimeType": "audio/mpeg"
   },
-  "audio": null,
-  "generatedAt": "2026-09-22T00:08:50.108Z"
+  "generatedAt": "2026-09-22T01:18:10.137Z"
 }
