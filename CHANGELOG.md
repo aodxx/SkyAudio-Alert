@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — Production hardening
+- Added a same-day production duplicate guard using the persisted run status. A successful production delivery prevents accidental second announcements on the same Asia/Bangkok date; failed/incomplete runs remain retryable.
+- Recorded completion of the human LINE playback acceptance check: the Flex + Thai Audio message was received and the audio played successfully in LINE.
+
 ## Unreleased — End-to-end hardening
 - Fixed Edge TTS negative-rate invocation by attaching `--rate=-5%` to the option value; the previous invocation failed in the real GitHub Actions log.
 - MP3 validation now checks MPEG frame headers and reads a positive duration instead of accepting any non-empty buffer.
