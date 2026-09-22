@@ -6,7 +6,7 @@ const { describeWeatherCode } = require('../weather/weatherCodes');
 const { buildAdvice } = require('./advice');
 const { buildThaiScript } = require('./thaiScript');
 
-const SLOT_HOURS = [6, 9, 12, 15, 18, 21];
+const SLOT_HOURS = [6, 8, 10, 12, 14, 16, 18, 20];
 
 function iconForCode(code) {
   const { key } = describeWeatherCode(code);

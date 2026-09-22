@@ -2,7 +2,7 @@
 // Assembles the complete LINE Flex bubble from forecast data + theme.
 
 const { resolveThemeColors } = require('./themes');
-const { headerBlock, heroTempBlock, quickIndicatorsBox, hourlySection, rainProbabilityBox, dailySummaryBox, adviceBox, footerBlock } = require('./components');
+const { headerBlock, heroTempBlock, quickIndicatorsBox, hourlySection, rainProbabilityBox, footerBlock } = require('./components');
 
 function buildFlex(forecastData) {
   const colors = resolveThemeColors(forecastData.theme, forecastData.current.isDay);
@@ -12,10 +12,7 @@ function buildFlex(forecastData) {
     { type: 'text', text: 'พยากรณ์วันนี้', weight: 'bold', size: 'md', color: '#263238', margin: 'lg' },
     hourlySection(forecastData.hourlySlots, colors.to),
     rainProbabilityBox(forecastData.daily, colors.to),
-    dailySummaryBox(forecastData.daily, colors.to),
   ];
-  const advice = adviceBox(forecastData.adviceSentences);
-  if (advice) bodyContents.push(advice);
   bodyContents.push(footerBlock());
   const bubble = { type: 'bubble', size: 'giga', header: hero, body: { type: 'box', layout: 'vertical', paddingAll: 'lg', contents: bodyContents } };
   const altText = `พยากรณ์อากาศ ${forecastData.location.name} ${forecastData.current.temperature ?? '--'}° ${forecastData.current.conditionLabel}`;
