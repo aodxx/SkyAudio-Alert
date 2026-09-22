@@ -13,6 +13,14 @@ function buildFlex(forecastData) {
     hourlySection(forecastData.hourlySlots, colors.to),
     rainProbabilityBox(forecastData.daily, colors.to),
   ];
+  const market = (forecastData.marketBrief || []).filter((x) => x && x.status === 'ok' && Number.isFinite(x.price));
+  if (market.length) {
+    bodyContents.push({ type: 'box', layout: 'vertical', margin: 'lg', paddingAll: 'md', backgroundColor: '#F5F8FC', cornerRadius: 'lg', contents: [
+      { type: 'text', text: 'ราคาผลผลิตล่าสุด', size: 'md', weight: 'bold', color: '#263238' },
+      ...market.slice(0, 2).map((item) => ({ type: 'text', text: `${item.kind === 'palm' ? '🌴 ปาล์มน้ำมัน' : '🥇 ยางพารา'}  ${item.price.toFixed(2)} บาท/กก.`, size: 'sm', color: '#455A64', margin: 'sm' })),
+      { type: 'text', text: 'แหล่งข้อมูล: สำนักงานเกษตรและสหกรณ์จังหวัดพัทลุง', size: 'xs', color: '#9E9E9E', margin: 'sm', wrap: true },
+    ] });
+  }
   bodyContents.push(footerBlock());
   const bubble = { type: 'bubble', size: 'giga', header: hero, body: { type: 'box', layout: 'vertical', paddingAll: 'lg', contents: bodyContents } };
   const altText = `พยากรณ์อากาศ ${forecastData.location.name} ${forecastData.current.temperature ?? '--'}° ${forecastData.current.conditionLabel}`;
