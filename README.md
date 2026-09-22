@@ -3,49 +3,50 @@
 ระบบพยากรณ์อากาศประจำวันสำหรับกลุ่มไลน์บ้านลำพาย ต.โคกชะงาย อ.เมือง จ.พัทลุง
 
 ทุกเช้า 06:00 น. (เวลาไทย) ระบบจะ:
-1. ดึงข้อมูลอากาศจาก Open-Meteo (ฟรี ไม่ต้องใช้คีย์)
-2. วิเคราะห์และแปลงเป็นคำแนะนำภาษาไทยที่เข้าใจง่าย
-3. สร้างข้อความ LINE Flex (ภาพสรุปอากาศ) ตามตัวอย่างในภาพหน้าจอ
-4. สร้างเสียงพูดภาษาไทยด้วย Google Cloud Text-to-Speech สำหรับผู้สูงอายุที่อ่านหนังสือไม่สะดวก
-5. ส่งทั้งสองข้อความเข้ากลุ่มไลน์อัตโนมัติ — ไม่ต้องมีคนกดส่งเอง
+1. ดึงข้อมูลจาก Open-Meteo
+2. วิเคราะห์อากาศด้วยกฎแบบ deterministic
+3. สร้าง LINE Flex ที่เปลี่ยนธีมตามสภาพอากาศ
+4. สร้างเสียงภาษาไทยด้วย Edge TTS ผ่าน `edge-tts` โดยไม่ต้องใช้ API key
+5. ส่ง Flex แล้วตามด้วย LINE Audio Message
 
-ต้นทุนเป้าหมาย: **0 บาท/เดือน** (ดู `ARCHITECTURE.md`)
+ต้นทุนเป้าหมาย: **0 บาท/เดือน**
 
-## เริ่มต้นใช้งาน
+## GitHub Actions
 
-### 1. ใส่ค่าลับ (Secrets) ใน GitHub
+### ทดสอบแบบ Dry Run
+Actions → **Manual weather test** → Run workflow → `dry_run=true`
 
-ไปที่ repo → Settings → Secrets and variables → Actions แล้วเพิ่ม:
+Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
 
-| ชื่อ | คำอธิบาย |
-|---|---|
-| `LINE_CHANNEL_ACCESS_TOKEN_TEST` | token ของ LINE Official Account (สำหรับทดสอบ) |
-| `LINE_GROUP_ID_TEST` | รหัสกลุ่มไลน์ที่ใช้ทดสอบ |
-| `LINE_CHANNEL_ACCESS_TOKEN_PROD` | token จริงที่ใช้ส่งเข้ากลุ่มบ้านลำพาย |
-| `LINE_GROUP_ID_PROD` | รหัสกลุ่มไลน์บ้านลำพายจริง |
-| `GOOGLE_TTS_API_KEY` | API key จาก Google Cloud (เปิด Text-to-Speech API) |
+### ทดสอบส่งเข้า LINE Test
+ตั้ง `dry_run=false` และต้องมี secrets:
+- `LINE_CHANNEL_ACCESS_TOKEN_TEST`
+- `LINE_GROUP_ID_TEST`
 
-⚠️ ค่าที่เคยพิมพ์ในแชทหรือที่ไหนก็ตามที่ไม่ปลอดภัย ให้ถือว่ารั่วแล้วและสร้างใหม่ก่อนใช้งานจริง
+### Production
+Workflow **Daily weather announcement** รันที่ 23:00 UTC ซึ่งตรงกับ 06:00 Asia/Bangkok
+Production ต้องมี:
+- `LINE_CHANNEL_ACCESS_TOKEN_PROD`
+- `LINE_GROUP_ID_PROD`
 
-### 2. ทดสอบด้วยมือก่อน
+ไม่ต้องมี `GOOGLE_TTS_API_KEY` สำหรับค่าเริ่มต้น
 
-ไปที่แท็บ **Actions** → เลือก workflow **"Manual weather test"** → กด **Run workflow**
-- ตั้ง `dry_run = true` ก่อน เพื่อดูว่าโค้ดรันผ่านโดยยังไม่ส่งเข้าไลน์จริง
-- พอมั่นใจแล้ว ลอง `dry_run = false` เพื่อส่งเข้ากลุ่มทดสอบจริง
+## TTS
 
-### 3. เปิดใช้งานประจำวัน
+ค่าเริ่มต้นใช้ `TTS_PROVIDER=edge` และเสียง `th-TH-PremwadeeNeural`
+Google TTS ยังรองรับเป็นตัวเลือกโดยตั้ง `TTS_PROVIDER=google` และใส่ `GOOGLE_TTS_API_KEY`
 
-Workflow **"Daily weather announcement"** ตั้งเวลาไว้ให้รันทุกวัน 06:00 น. (เวลาไทย) โดยอัตโนมัติอยู่แล้ว ไม่ต้องทำอะไรเพิ่ม
-
-## รันทดสอบในเครื่องตัวเอง (ถ้าต้องการ)
+## ทดสอบในเครื่อง
 
 ```bash
-cp .env.example .env
-# ใส่ค่าใน .env (อย่าก็อบเข้า git)
-npm run dryrun     # รันแบบไม่ส่งเข้าไลน์จริง
-npm test           # รันชุดทดสอบอัตโนมัติ
+python3 -m pip install edge-tts
+npm run dryrun
+npm test
 ```
 
-## โครงสร้างโปรเจกต์
+## ความปลอดภัย
+- ห้าม commit LINE token/API key
+- credential ที่เคยเผยแพร่ในแชทให้ถือว่า exposed และควร revoke/rotate ก่อนใช้งานจริง
+- ใช้ GitHub Actions Secrets สำหรับค่าลับ
 
-ดูรายละเอียดที่ `REPOSITORY_STRUCTURE.md`, การตัดสินใจด้านสถาปัตยกรรมที่ `DECISIONS.md` และ `ARCHITECTURE.md`, ข้อกำหนดผลิตภัณฑ์ทั้งหมดที่ `PRD.md`
+รายละเอียดเพิ่มเติม: `PRD.md`, `ARCHITECTURE.md`, `API.md`, `DECISIONS.md` และ `CHANGELOG.md`
