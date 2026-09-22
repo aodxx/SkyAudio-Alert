@@ -10,6 +10,7 @@ const path = require('node:path');
 const { normalizeWeather } = require('../src/weather/normalize');
 const { analyzeWeather } = require('../src/weather/analyzer');
 const { buildForecastData } = require('../src/forecast/formatter');
+const { buildThaiScript } = require('../src/forecast/thaiScript');
 const { buildFlex } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
@@ -115,4 +116,15 @@ test('production duplicate guard skips only after successful same-day delivery',
   assert.equal(shouldSkipDuplicateProductionRun({ mode: 'production', dryRun: false }, { repoRoot: root }), true);
   assert.equal(shouldSkipDuplicateProductionRun({ mode: 'test', dryRun: false }, { repoRoot: root }), false);
   fs.rmSync(root, { recursive: true, force: true });
+});
+
+
+test('Thai TTS script is concise and contains natural pause markers', () => {
+  const weatherData = loadFixture('rainy-evening.json');
+  const analysis = analyzeWeather(weatherData, THRESHOLDS);
+  const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูงครับ... เตรียมร่มไว้ก่อนออกจากบ้านนะครับ'];
+  const script = buildThaiScript(analysis, advice, LOCATION);
+  assert.match(script, /ตอนนี้\.\.\./);
+  assert.match(script, /วันนี้\.\.\./);
+  assert.ok(script.length < 700);
 });
