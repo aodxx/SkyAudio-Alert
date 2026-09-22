@@ -30,6 +30,8 @@ Production ต้องมี:
 - `LINE_CHANNEL_ACCESS_TOKEN_PROD`
 - `LINE_GROUP_ID_PROD`
 
+ระบบมี duplicate guard สำหรับ Production: หากมีการส่งสำเร็จแล้วในวันเดียวกันตามเวลา Asia/Bangkok การรัน Production ซ้ำจะถูกข้าม เพื่อป้องกันประกาศซ้ำ ส่วน run ที่ล้มเหลวหรือส่งไม่สำเร็จยังสามารถรันซ้ำได้
+
 ไม่ต้องมี `GOOGLE_TTS_API_KEY` สำหรับค่าเริ่มต้น
 
 ## TTS
