@@ -90,7 +90,7 @@ function extractImageText(html) {
   while ((m = re.exec(html))) {
     const tag = m[0];
     for (const attr of ['alt', 'title']) {
-      const x = tag.match(new RegExp(attr + '=["']([^"']*)["']', 'i'));
+      const x = tag.match(new RegExp(attr + "=[\\\"']([^\\\"']*)[\\\"']", "i"));
       if (x) out.push(decodeHtml(x[1]));
     }
   }
