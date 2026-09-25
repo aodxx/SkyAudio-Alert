@@ -1,7 +1,8 @@
-name: Daily weather announcement
+name: Daily weather announcement (TEST target)
 
 on:
   schedule:
+    # Verification phase: keep the daily schedule, but send to the TEST LINE group.
     # 06:00 Asia/Bangkok (UTC+7) = 23:00 UTC previous day.
     - cron: '0 23 * * *'
   workflow_dispatch: {}
@@ -27,11 +28,11 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install edge-tts
-      - name: Run daily forecast (production)
+      - name: Run daily forecast (TEST target)
         env:
-          RUN_MODE: production
-          LINE_CHANNEL_ACCESS_TOKEN_PROD: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_PROD }}
-          LINE_GROUP_ID_PROD: ${{ secrets.LINE_GROUP_ID_PROD }}
+          RUN_MODE: test
+          LINE_CHANNEL_ACCESS_TOKEN_TEST: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_TEST }}
+          LINE_GROUP_ID_TEST: ${{ secrets.LINE_GROUP_ID_TEST }}
           TTS_PROVIDER: edge
           TTS_VOICE_NAME: th-TH-PremwadeeNeural
           TTS_SPEAKING_RATE: '0.95'
