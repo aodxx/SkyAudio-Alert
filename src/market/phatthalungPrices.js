@@ -70,9 +70,85 @@ function parsePriceFromText(text, kind) {
   return null;
 }
 
+function extractImageSources(html) {
+  const out = [];
+  const re = /<img[^>]+(?:src|data-src)=["']([^"']+)["'][^>]*>/gi;
+  let m;
+  while ((m = re.exec(html))) {
+    try {
+      const url = new URL(decodeHtml(m[1]), LIST_URL).toString();
+      if (/\.(?:png|jpe?g|webp)(?:[?#].*)?$/i.test(url)) out.push(url);
+    } catch {}
+  }
+  return [...new Set(out)];
+}
+
+function extractImageText(html) {
+  const out = [];
+  const re = /<img[^>]+>/gi;
+  let m;
+  while ((m = re.exec(html))) {
+    const tag = m[0];
+    for (const attr of ['alt', 'title']) {
+      const x = tag.match(new RegExp(attr + '=["']([^"']*)["']', 'i'));
+      if (x) out.push(decodeHtml(x[1]));
+    }
+  }
+  return out.join(' ');
+}
+
+function parseOcrPrice(text, kind) {
+  const t = String(text || '').replace(/,/g, '');
+  const explicit = [...t.matchAll(/(\d{1,3}\.\d{1,2})\s*(?:baht|บาท)?\s*(?:\/|per)?\s*(?:kg|kilogram|กก|กิโล)/gi)]
+    .map(m => Number(m[1]))
+    .filter(Number.isFinite);
+  const validExplicit = explicit.filter(n => kind === 'palm' ? n >= 1 && n <= 15 : n >= 40 && n <= 150);
+  if (validExplicit.length) return validExplicit[0];
+
+  const candidates = [...t.matchAll(/\b(\d{1,3}\.\d{1,2})\b/g)]
+    .map(m => Number(m[1]))
+    .filter(Number.isFinite)
+    .filter(n => kind === 'palm' ? n >= 1 && n <= 15 : n >= 40 && n <= 150);
+
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+async function ocrImagesForPrice(html, kind) {
+  const { spawnSync } = require('node:child_process');
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const probe = spawnSync('tesseract', ['--version'], { encoding: 'utf8' });
+  if (probe.error || probe.status !== 0) return null;
+
+  const imageUrls = extractImageSources(html);
+  for (let i = 0; i < imageUrls.length; i++) {
+    const file = path.join(os.tmpdir(), 'skyaudio-price-' + Date.now() + '-' + i + '.jpg');
+    try {
+      const res = await fetch(imageUrls[i], { headers: { 'user-agent': 'SkyAudio-Alert/0.4' } });
+      if (!res.ok) continue;
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length > 6 * 1024 * 1024) continue;
+      fs.writeFileSync(file, buf);
+      const out = spawnSync('tesseract', [file, 'stdout', '--psm', '6'], {
+        encoding: 'utf8', timeout: 20000, maxBuffer: 1024 * 1024
+      });
+      if (out.status === 0) {
+        const price = parseOcrPrice(out.stdout, kind);
+        if (price != null) return price;
+      }
+    } catch {
+      // Continue to the next image.
+    } finally {
+      try { fs.unlinkSync(file); } catch {}
+    }
+  }
+  return null;
+}
+
 async function fetchArticle(url) {
   const res = await fetch(url, { headers: { 'user-agent': 'SkyAudio-Alert/0.4' } });
-  if (!res.ok) throw new Error(`price source HTTP ${res.status}`);
+  if (!res.ok) throw new Error('price source HTTP ' + res.status);
   return res.text();
 }
 
@@ -90,14 +166,24 @@ async function fetchLatestPrice(kind) {
   const articleHtml = await fetchArticle(articleUrl);
   const titleMatch = cleanText(articleHtml).match(titlePattern.source + '[^<]{0,80}');
   const date = parseThaiDate(titleMatch ? titleMatch[0] : '');
-  const price = parsePriceFromText(articleHtml, kind);
+  let price = parsePriceFromText(articleHtml, kind);
+  let method = price != null ? 'html' : null;
 
-  // Do not manufacture a value from an image/table we could not parse.
-  if (!price) {
+  if (price == null) {
+    price = parsePriceFromText(extractImageText(articleHtml), kind);
+    if (price != null) method = 'image-metadata';
+  }
+
+  if (price == null) {
+    price = await ocrImagesForPrice(articleHtml, kind);
+    if (price != null) method = 'image-ocr';
+  }
+
+  if (price == null) {
     return { kind, sourceName: SOURCE_NAME, articleUrl, date, price: null, status: 'unparsed' };
   }
 
-  return { kind, sourceName: SOURCE_NAME, articleUrl, date, price, unit: 'บาท/กก.', status: 'ok' };
+  return { kind, sourceName: SOURCE_NAME, articleUrl, date, price, unit: 'บาท/กก.', status: 'ok', method };
 }
 
 async function fetchMarketBrief() {
@@ -107,4 +193,4 @@ async function fetchMarketBrief() {
     : ({ kind: i === 0 ? 'palm' : 'rubber', sourceName: SOURCE_NAME, price: null, status: 'error', error: r.reason?.message }));
 }
 
-module.exports = { LIST_URL, SOURCE_NAME, fetchLatestPrice, fetchMarketBrief, parsePriceFromText, extractLatestArticleLink };
+module.exports = { LIST_URL, SOURCE_NAME, fetchLatestPrice, fetchMarketBrief, parsePriceFromText, parseOcrPrice, extractLatestArticleLink };
