@@ -59,9 +59,10 @@ function parsePriceFromText(text, kind) {
 
   if (explicit.length) return Math.max(...explicit);
 
-  // Conservative fallback for common source tables: only accept a decimal
-  // number near the word "ราคา" and a product keyword.
-  const near = t.match(/ราคา[^.]{0,180}(?:ปาล์ม|ยางพารา|ยางแผ่น|น้ำยาง)[^.]{0,180}?([0-9]{1,3}(?:\.[0-9]{1,2})?)/);
+  // Conservative fallback: only accept a decimal value near the product
+  // keyword. This deliberately avoids bare integers because source articles
+  // also contain dates, acreage, stock counts, and other unrelated numbers.
+  const near = t.match(/(?:ปาล์ม|ยางพารา|ยางแผ่น|น้ำยาง)[^.]{0,180}?([0-9]{1,3}\.[0-9]{1,2})/);
   if (near) {
     const n = Number(near[1]);
     if (n >= 1 && n <= 300) return n;
