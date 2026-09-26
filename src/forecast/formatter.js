@@ -65,7 +65,8 @@ function buildForecastData(analysis, location, marketBrief = [], localNews = [])
     },
     hourlySlots: pickSlots(analysis.hourlyToday),
     adviceSentences,
-    marketBrief,\n    localNews,
+    marketBrief,
+    localNews,
     theme: analysis.theme,
     thaiScript,
   };
