@@ -1,14 +1,56 @@
 // src/flex/components.js
 // Compact, mobile-first LINE Flex components.
-// Phase 2: Flex is the visual "cover" for the audio report.
+// Phase 4: the header uses a real cutout of the village hall to establish local identity.
 // Market prices and local news intentionally stay in audio only.
+
+const VILLAGE_HALL_IMAGE_URL = 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.png';
 
 function headerBlock(location) {
   return {
-    type: 'box', layout: 'vertical', spacing: 'xs',
+    type: 'box',
+    layout: 'vertical',
+    margin: 'none',
+    paddingAll: 'md',
+    cornerRadius: 'xl',
+    background: { type: 'linearGradient', angle: '180deg', startColor: '#8DDEFF', centerColor: '#49B8F4', endColor: '#2578B8', centerPosition: '55%' },
     contents: [
-      { type: 'text', text: location.name, weight: 'bold', size: 'lg', color: '#FFFFFF' },
-      { type: 'text', text: `${location.district} • ${location.province}`, size: 'xs', color: '#AEB9C8' },
+      {
+        type: 'box',
+        layout: 'horizontal',
+        spacing: 'sm',
+        contents: [
+          {
+            type: 'box',
+            layout: 'vertical',
+            flex: 5,
+            justifyContent: 'center',
+            contents: [
+              { type: 'text', text: location.name, weight: 'bold', size: 'xl', color: '#07335C' },
+              { type: 'text', text: `${location.district} • ${location.province}`, size: 'sm', color: '#0A477A', margin: 'xs' },
+              { type: 'box', layout: 'vertical', margin: 'sm', height: '3px', backgroundColor: '#BFEFFF', cornerRadius: 'sm', contents: [] },
+            ],
+          },
+          {
+            type: 'image',
+            url: VILLAGE_HALL_IMAGE_URL,
+            flex: 6,
+            size: 'full',
+            aspectRatio: '1.55:1',
+            aspectMode: 'fit',
+            margin: 'sm',
+          },
+        ],
+      },
+      {
+        type: 'box',
+        layout: 'horizontal',
+        margin: 'sm',
+        paddingTop: 'xs',
+        contents: [
+          { type: 'text', text: 'ศาลาเอนกประสงค์ประจำหมู่บ้าน', size: 'xs', color: '#EAF9FF', flex: 1, wrap: true },
+          { type: 'text', text: 'หมู่ 4 • โคกชะงาย', size: 'xs', color: '#D8F4FF', align: 'end' },
+        ],
+      },
     ],
   };
 }
@@ -33,7 +75,7 @@ function heroTempBlock(current) {
   };
 }
 
-function quickIndicatorsBox(current, accentColor) {
+function quickIndicatorsBox(current) {
   const item = (label, value) => ({
     type: 'box', layout: 'vertical', flex: 1, contents: [
       { type: 'text', text: label, size: 'xs', color: '#8392A6', align: 'center' },
@@ -42,7 +84,7 @@ function quickIndicatorsBox(current, accentColor) {
   });
   return {
     type: 'box', layout: 'horizontal', margin: 'sm', paddingAll: 'sm',
-    backgroundColor: '#172338', cornerRadius: 'md', spacing: 'none',
+    backgroundColor: '#172B43', cornerRadius: 'md', spacing: 'none',
     contents: [
       item('ความชื้น', `${current.humidity ?? '--'}%`),
       item('ลม', `${current.windSpeed ?? '--'}`),
@@ -69,7 +111,7 @@ function hourlySection(slots, accentColor) {
 function rainProbabilityBox(daily, accentColor) {
   const probability = Math.max(0, Math.min(100, Number(daily.precipitationProbabilityMax ?? 0)));
   return {
-    type: 'box', layout: 'vertical', margin: 'md',
+    type: 'box', layout: 'vertical', margin: 'sm',
     contents: [
       { type: 'box', layout: 'horizontal', contents: [
         { type: 'text', text: 'ฝนวันนี้', size: 'xs', color: '#8392A6', flex: 1 },
