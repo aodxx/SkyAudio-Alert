@@ -1,5 +1,6 @@
 // src/forecast/thaiScript.js
 // Builds the full Thai morning loudspeaker-style announcement.
+// Phase 1: weather + market prices + local news are spoken in the audio.
 // Target length: about 2–3 minutes, with natural pauses and useful village-level detail.
 
 function round(n) {
@@ -15,16 +16,16 @@ function slotLabel(hour) {
   return 'ช่วงเย็น';
 }
 
-function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBrief = []) {
+function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBrief = [], localNews = []) {
   const { current, daily } = analysis;
   const temp = round(current.temperature);
   const apparent = round(current.apparentTemperature);
   const tMin = round(daily.tempMin);
   const tMax = round(daily.tempMax);
-
   const lines = [];
+
   lines.push('สวัสดีตอนเช้าครับ พี่น้องชาวบ้านลำพาย');
-  lines.push('น้องจุ่นจ้านมารายงานอากาศประจำวัน และข่าวสารที่เป็นประโยชน์สำหรับเช้านี้ครับ');
+  lines.push('น้องจุ่นจ้านมารายงานอากาศประจำวัน ราคาผลผลิต และข่าวสารที่เป็นประโยชน์สำหรับเช้านี้ครับ');
   if (dateInfo) lines.push(dateInfo.spokenText);
   lines.push('ขอเวลาสักนิดนะครับ ฟังกันสบาย ๆ ก่อนออกไปทำงาน');
   lines.push('');
@@ -78,6 +79,16 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBr
       lines.push(label + ' ล่าสุด ' + item.price.toFixed(2) + ' บาทต่อกิโลกรัม' + datePart);
     }
     lines.push('ราคานี้เป็นข้อมูลล่าสุดที่ระบบหาได้ และวันที่ของข้อมูลอาจไม่ใช่วันเดียวกับวันที่ประกาศนะครับ');
+    lines.push('');
+  }
+
+  const usableNews = localNews.filter((x) => x && x.status === 'ok' && x.title);
+  if (usableNews.length) {
+    lines.push('ปิดท้ายด้วยข่าวสารประชาสัมพันธ์จากจังหวัดพัทลุงครับ');
+    for (const item of usableNews.slice(0, 2)) {
+      lines.push('ข่าวสาร คือ ' + item.title);
+    }
+    lines.push('ข่าวสารชุดนี้มาจากสำนักงานประชาสัมพันธ์จังหวัดพัทลุงครับ');
     lines.push('');
   }
 
