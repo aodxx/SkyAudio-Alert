@@ -39,8 +39,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_TTS_MODEL: gemini-3.8-flash-tts
           TTS_VOICE_NAME: Sulafat
-          TTS_STYLE: 'warm, friendly and natural Thai village morning announcement; clear pronunciation; conversational and reassuring; moderately paced; suitable for older listeners; do not sound like a commercial or a newsreader'
-          TTS_SPEAKING_RATE: '0.95'
+          TTS_STYLE: 'Thai male village loudspeaker announcer; warm, familiar, friendly and human; sounds like a real local community morning announcement, not a studio commercial; clear Thai pronunciation for older listeners; moderately slow and relaxed; natural breathing and short pauses between topics; slightly cheerful but calm; gentle emphasis on temperatures, rain chances, safety advice and local prices; do not sound like a television newsreader; do not rush or read every sentence with the same rhythm; keep the tone conversational and reassuring'
+          TTS_SPEAKING_RATE: '0.92'
           TESSERACT_LANG: tha+eng
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
