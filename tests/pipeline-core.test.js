@@ -84,7 +84,7 @@ test('audio duration estimate stays within LINE-safe bounds', () => {
   const d1 = estimateDurationMs(shortScript, 1);
   const d2 = estimateDurationMs(longScript, 1);
   assert.ok(d1 >= 10_000);
-  assert.ok(d2 <= 110_000);
+  assert.ok(d2 <= 190_000);
 });
 
 test('Edge TTS formats negative rate as an attached CLI value', () => {
@@ -120,15 +120,18 @@ test('production duplicate guard skips only after successful same-day delivery',
 });
 
 
-test('Thai TTS script is concise and contains natural pause markers', () => {
+test('Thai TTS script targets a full 2–3 minute village announcement', () => {
   const weatherData = loadFixture('rainy-evening.json');
   const analysis = analyzeWeather(weatherData, THRESHOLDS);
   const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูง... เตรียมร่มไว้ก่อนออกจากบ้านนะ'];
   const dateInfo = buildThaiDateInfo('2026-09-22T06:00:00');
   const script = buildThaiScript(analysis, advice, LOCATION, dateInfo);
-  assert.match(script, /ตอนนี้\.\.\./);
-  assert.match(script, /วันนี้\.\.\./);
-  assert.ok(script.length < 900);
+  assert.match(script, /สวัสดีตอนเช้าครับ/);
+  assert.match(script, /ถ้าไล่ดูเป็นช่วง ๆ ของวันนี้/);
+  assert.match(script, /แล้วพบกันใหม่พรุ่งนี้เช้าครับ/);
+  assert.ok(script.length >= 900);
+  assert.ok(script.length <= 2200);
+  assert.ok(estimateDurationMs(script, 0.92) <= 190_000);
 });
 
 
