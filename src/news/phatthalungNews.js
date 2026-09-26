@@ -1,29 +1,28 @@
 // src/news/phatthalungNews.js
 // Conservative local-news adapter.
 // Primary source: Phatthalung Provincial Public Relations Office.
-// We only speak short, attributable headlines; if parsing is uncertain,
-// the news section is omitted rather than guessed.
+// Only short, attributable headlines are spoken; uncertain parsing is omitted.
 
 const LIST_URL = 'https://phatthalung.prd.go.th/th/page/item/index/id/12';
 const SOURCE_NAME = 'สำนักงานประชาสัมพันธ์จังหวัดพัทลุง';
 
 function cleanText(value) {
   return String(value || '')
-    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')
-    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/\\s+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 function normalizeTitle(value) {
   return cleanText(value)
-    .replace(/^ข่าวประชาสัมพันธ์\\s*/i, '')
-    .replace(/\\s+/g, ' ')
+    .replace(/^ข่าวประชาสัมพันธ์\s*/i, '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -41,13 +40,14 @@ function isUsefulHeadline(title) {
 
 function extractHeadlines(html, limit = 2) {
   const out = [];
-  const re = /<a[^>]+href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi;
+  const re = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let match;
   while ((match = re.exec(String(html || '')))) {
     const title = normalizeTitle(match[2]);
     if (!isUsefulHeadline(title)) continue;
     let url = null;
     try { url = new URL(match[1], LIST_URL).toString(); } catch {}
+    if (!url || !/phatthalung\.prd\.go\.th\/th\/content\/category\/detail\//i.test(url)) continue;
     if (out.some((x) => x.title === title)) continue;
     out.push({ title, url });
     if (out.length >= limit) break;
@@ -74,4 +74,4 @@ async function getLocalNews(limit = 2) {
   }
 }
 
-module.exports = { LIST_URL, SOURCE_NAME, extractHeadlines, fetchLocalNews, getLocalNews };
+module.exports = { LIST_URL, SOURCE_NAME, cleanText, normalizeTitle, isUsefulHeadline, extractHeadlines, fetchLocalNews, getLocalNews };
