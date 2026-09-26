@@ -14,7 +14,7 @@ const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
 const { withRetry } = require('./retry');
 const { log } = require('./logger');
 const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statusReport');
-const { getMarketBrief } = require('../market');
+const { getMarketBrief } = require('../market');\nconst { getLocalNews } = require('../news/phatthalungNews');
 
 async function runPipeline(config) {
   const { runId } = config;
