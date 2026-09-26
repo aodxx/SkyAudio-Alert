@@ -120,7 +120,15 @@ test('production duplicate guard skips only after successful same-day delivery',
 });
 
 
-test('local-news parser keeps useful headlines and drops weather-only items', () => {\n  const html = '<a href="/a">พยากรณ์อากาศ ประจำวันที่ 26 กันยายน 2569</a><a href="/b">จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน</a><a href="/c">เปิดโครงการใหม่เพื่อส่งเสริมอาชีพในพื้นที่</a>';\n  const items = extractHeadlines(html, 2);\n  assert.equal(items.length, 2);\n  assert.match(items[0].title, /พัฒนาชุมชน/);\n  assert.match(items[1].title, /ส่งเสริมอาชีพ/);\n});\n\ntest('Thai TTS script includes market prices and local news in the spoken report', () => {
+test('local-news parser keeps useful headlines and drops weather-only items', () => {
+  const html = '<a href="https://phatthalung.prd.go.th/th/content/category/detail/id/12/iid/1">พยากรณ์อากาศ ประจำวันที่ 26 กันยายน 2569</a><a href="https://phatthalung.prd.go.th/th/content/category/detail/id/12/iid/2">จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน</a><a href="https://phatthalung.prd.go.th/th/content/category/detail/id/12/iid/3">เปิดโครงการใหม่เพื่อส่งเสริมอาชีพในพื้นที่</a>';
+  const items = extractHeadlines(html, 2);
+  assert.equal(items.length, 2);
+  assert.match(items[0].title, /พัฒนาชุมชน/);
+  assert.match(items[1].title, /ส่งเสริมอาชีพ/);
+});
+
+test('Thai TTS script includes market prices and local news in the spoken report', () => {
   const weatherData = loadFixture('rainy-evening.json');
   const analysis = analyzeWeather(weatherData, THRESHOLDS);
   const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูง... เตรียมร่มไว้ก่อนออกจากบ้านนะ'];
