@@ -1,6 +1,6 @@
 // src/flex/builder.js
-// Phase 2: compact mobile-first weather cover.
-// Detailed market prices and local news are intentionally audio-only.
+// Phase 3: visual polish for the compact mobile-first weather cover.
+// Flex is intentionally glanceable; full market/news detail remains in audio.
 
 const { resolveThemeColors } = require('./themes');
 const { headerBlock, heroTempBlock, quickIndicatorsBox, hourlySection, rainProbabilityBox, footerBlock } = require('./components');
@@ -16,7 +16,8 @@ function buildFlex(forecastData) {
     headerBlock(forecastData.location),
     heroTempBlock(current),
     quickIndicatorsBox(current, colors.accent),
-    { type: 'text', text: 'พยากรณ์รายชั่วโมง', weight: 'bold', size: 'sm', color: '#FFFFFF', margin: 'md' },
+    { type: 'separator', margin: 'md', color: '#243246' },
+    { type: 'text', text: 'วันนี้', weight: 'bold', size: 'sm', color: '#F3F6FA', margin: 'md' },
     hourlySection(forecastData.hourlySlots || [], colors.accent),
     rainProbabilityBox(forecastData.daily || {}, colors.accent),
     footerBlock(),
@@ -28,7 +29,7 @@ function buildFlex(forecastData) {
     body: {
       type: 'box',
       layout: 'vertical',
-      paddingAll: 'lg',
+      paddingAll: 'md',
       backgroundColor: colors.background,
       contents: bodyContents,
     },
