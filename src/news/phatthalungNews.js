@@ -21,7 +21,7 @@ function cleanText(value) {
 
 function normalizeTitle(value) {
   return cleanText(value)
-    .replace(/^ข่าวประชาสัมพันธ์\s*/i, '')
+    .replace(/^ข่าวประชาสัมพันธ์(?:จังหวัดพัทลุง)?\s*:?[\s]*/i, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
