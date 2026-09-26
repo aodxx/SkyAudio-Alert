@@ -16,7 +16,7 @@ const { buildFlex } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
 const { buildAudioMessage } = require('../src/line/messagingApi');
-const { shouldSkipDuplicateProductionRun } = require('../src/core/statusReport');
+const { shouldSkipDuplicateProductionRun } = require('../src/core/statusReport');\nconst { extractHeadlines } = require('../src/news/phatthalungNews');\n
 
 const THRESHOLDS = {
   hotApparent: 35,
@@ -120,14 +120,14 @@ test('production duplicate guard skips only after successful same-day delivery',
 });
 
 
-test('Thai TTS script targets a full 2–3 minute village announcement', () => {
+test('local-news parser keeps useful headlines and drops weather-only items', () => {\n  const html = '<a href="/a">พยากรณ์อากาศ ประจำวันที่ 26 กันยายน 2569</a><a href="/b">จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน</a><a href="/c">เปิดโครงการใหม่เพื่อส่งเสริมอาชีพในพื้นที่</a>';\n  const items = extractHeadlines(html, 2);\n  assert.equal(items.length, 2);\n  assert.match(items[0].title, /พัฒนาชุมชน/);\n  assert.match(items[1].title, /ส่งเสริมอาชีพ/);\n});\n\ntest('Thai TTS script includes market prices and local news in the spoken report', () => {
   const weatherData = loadFixture('rainy-evening.json');
   const analysis = analyzeWeather(weatherData, THRESHOLDS);
   const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูง... เตรียมร่มไว้ก่อนออกจากบ้านนะ'];
   const dateInfo = buildThaiDateInfo('2026-09-22T06:00:00');
-  const script = buildThaiScript(analysis, advice, LOCATION, dateInfo);
+  const script = buildThaiScript(analysis, advice, LOCATION, dateInfo, [\n    { kind: 'palm', price: 5.25, date: '2569-09-24', status: 'ok' },\n    { kind: 'rubber', price: 82.5, date: '2569-09-25', status: 'ok' },\n  ], [\n    { title: 'จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน', status: 'ok' },\n  ]);
   assert.match(script, /สวัสดีตอนเช้าครับ/);
-  assert.match(script, /ถ้าไล่ดูเป็นช่วง ๆ ของวันนี้/);
+  assert.match(script, /ถ้าไล่ดูเป็นช่วง ๆ ของวันนี้/);\n  assert.match(script, /ปาล์มน้ำมัน ล่าสุด 5.25/);\n  assert.match(script, /ยางพารา ล่าสุด 82.50/);\n  assert.match(script, /จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน/);
   assert.match(script, /แล้วพบกันใหม่พรุ่งนี้เช้าครับ/);
   assert.ok(script.length >= 900);
   assert.ok(script.length <= 2200);
