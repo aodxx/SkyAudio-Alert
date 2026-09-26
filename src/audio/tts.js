@@ -7,7 +7,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const TTS_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
-const GEMINI_TTS_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-tts:generateContent';
+const GEMINI_TTS_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 function makeError(message, retryable = false, detail) {
   const err = new Error(message);
@@ -93,7 +93,9 @@ async function synthesizeWithGemini(script, config, opts = {}) {
     },
   };
 
-  const res = await doFetch(GEMINI_TTS_URL, {
+  const model = config.model || 'gemini-3.8-flash-tts';
+  const url = `${GEMINI_TTS_BASE_URL}/${encodeURIComponent(model)}:generateContent`;
+  const res = await doFetch(url, {
     method: 'POST',
     headers: {
       'x-goog-api-key': config.apiKey,
