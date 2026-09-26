@@ -16,6 +16,13 @@ function slotLabel(hour) {
   return 'ช่วงเย็น';
 }
 
+function formatThaiDate(value) {
+  const m = String(value || '').match(/^(25\d{2})-(\d{2})-(\d{2})$/);
+  if (!m) return value || '';
+  const months = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  return Number(m[3]) + ' ' + months[Number(m[2])] + ' ' + m[1];
+}
+
 function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBrief = [], localNews = []) {
   const { current, daily } = analysis;
   const temp = round(current.temperature);
@@ -37,7 +44,9 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBr
   if (current.windSpeed !== null) lines.push('ลมพัดประมาณ ' + current.windSpeed.toFixed(1) + ' กิโลเมตรต่อชั่วโมง');
   lines.push('');
 
-  if (tMin !== null && tMax !== null) lines.push('สำหรับวันนี้ อุณหภูมิจะอยู่ประมาณ ' + tMin + ' ถึง ' + tMax + ' องศา');
+  if (tMin !== null && tMax !== null) {
+    lines.push('สำหรับวันนี้ อุณหภูมิจะอยู่ประมาณ ' + tMin + ' ถึง ' + tMax + ' องศา');
+  }
 
   const slots = (analysis.hourlyToday || [])
     .filter((h) => h && h.time)
@@ -64,7 +73,7 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBr
 
   if (adviceSentences.length) {
     lines.push('เรื่องที่อยากฝากพี่น้องไว้สำหรับวันนี้ครับ');
-    for (const sentence of adviceSentences.slice(0, 3)) lines.push(sentence);
+    for (const sentence of adviceSentences.slice(0, 2)) lines.push(sentence);
   } else {
     lines.push('วันนี้ถ้าจะออกไปทำงานหรือเดินทาง ก็เตรียมตัวตามสภาพอากาศและดูแลสุขภาพกันด้วยนะครับ');
   }
@@ -75,10 +84,10 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBr
     lines.push('ต่อไปเป็นราคาผลผลิตล่าสุดที่ระบบตรวจพบจากแหล่งข้อมูลจังหวัดครับ');
     for (const item of usableMarket.slice(0, 2)) {
       const label = item.kind === 'palm' ? 'ปาล์มน้ำมัน' : 'ยางพารา';
-      const datePart = item.date ? ' ข้อมูลวันที่ ' + item.date : '';
+      const datePart = item.date ? ' ข้อมูลวันที่ ' + formatThaiDate(item.date) : '';
       lines.push(label + ' ล่าสุด ' + item.price.toFixed(2) + ' บาทต่อกิโลกรัม' + datePart);
     }
-    lines.push('ราคานี้เป็นข้อมูลล่าสุดที่ระบบหาได้ และวันที่ของข้อมูลอาจไม่ใช่วันเดียวกับวันที่ประกาศนะครับ');
+    lines.push('ย้ำอีกครั้งนะครับ ราคานี้เป็นข้อมูลล่าสุดที่ระบบตรวจพบ และวันที่ของข้อมูลอาจไม่ใช่วันเดียวกับวันนี้');
     lines.push('');
   }
 
@@ -86,9 +95,10 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBr
   if (usableNews.length) {
     lines.push('ปิดท้ายด้วยข่าวสารประชาสัมพันธ์จากจังหวัดพัทลุงครับ');
     for (const item of usableNews.slice(0, 2)) {
-      lines.push('ข่าวสาร คือ ' + item.title);
+      const datePart = item.dateThai ? ' ลงวันที่ ' + item.dateThai : '';
+      lines.push('มีข่าวว่า ' + item.title + datePart);
     }
-    lines.push('ข่าวสารชุดนี้มาจากสำนักงานประชาสัมพันธ์จังหวัดพัทลุงครับ');
+    lines.push('ข่าวสารนี้มาจากสำนักงานประชาสัมพันธ์จังหวัดพัทลุงครับ');
     lines.push('');
   }
 
@@ -102,4 +112,4 @@ function buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBr
   return lines.join('\n');
 }
 
-module.exports = { buildThaiScript };
+module.exports = { buildThaiScript, formatThaiDate };
