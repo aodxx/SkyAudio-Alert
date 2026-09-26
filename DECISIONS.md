@@ -85,3 +85,14 @@ Any credential pasted into chat should be treated as exposed and replaced before
 - Don't make it conditionally disappear when there is no announcement — it must render at a constant size every day so the card's layout/height doesn't jump.
 - Don't turn it into a second Flex message or otherwise grow the bubble to accommodate it — it must stay inside the existing header, by design, so the group doesn't feel the bot is taking over more chat space.
 - When the PWA/data source ships, wire it by populating `forecastData.announcement` (a plain string) upstream in the pipeline/formatter — `components.js`/`builder.js` should not need further changes for the basic case.
+
+
+## Decision 010 — Phase 1 audio carries market and local-news content
+
+**Date:** 2026-09-26
+
+**Decision:** The morning audio report carries the useful daily information set: weather, palm-oil price, rubber price, and a small number of local public-relations headlines. The Flex remains focused on compact weather presentation until Phase 2 redesign.
+
+**Reason:** Audio is the accessibility channel for residents who cannot comfortably read the Flex. Moving the longer information set into audio keeps the visual message compact while making the full morning briefing available by pressing Play.
+
+**Source policy:** Palm/rubber prices use the provincial agriculture/cooperatives source already established by the market adapter. Local news uses the Phatthalung Provincial Public Relations Office. If a source cannot be parsed safely, that section is omitted rather than guessed.
