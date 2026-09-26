@@ -25,6 +25,8 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install edge-tts
+      - name: Install FFmpeg for Gemini TTS MP3 conversion
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Install OCR for agricultural price images
         run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
       - name: Run test forecast
@@ -33,8 +35,11 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           LINE_CHANNEL_ACCESS_TOKEN_TEST: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_TEST }}
           LINE_GROUP_ID_TEST: ${{ secrets.LINE_GROUP_ID_TEST }}
-          TTS_PROVIDER: edge
-          TTS_VOICE_NAME: th-TH-PremwadeeNeural
+          TTS_PROVIDER: gemini
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_TTS_MODEL: gemini-3.8-flash-tts
+          TTS_VOICE_NAME: Sulafat
+          TTS_STYLE: 'warm, friendly and natural Thai village morning announcement; clear pronunciation; conversational and reassuring; moderately paced; suitable for older listeners; do not sound like a commercial or a newsreader'
           TTS_SPEAKING_RATE: '0.95'
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
