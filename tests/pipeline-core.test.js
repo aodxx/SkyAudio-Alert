@@ -71,6 +71,8 @@ test('AT-08: buildFlex produces a structurally valid bubble', () => {
   assert.ok(!JSON.stringify(flex).includes('ราคาผลผลิตล่าสุด'));
   assert.ok(JSON.stringify(flex).includes('ฟังรายละเอียดในข้อความเสียง'));
   assert.ok(JSON.stringify(flex).includes('น้องจุ่นจ้าน'));
+  assert.equal(flex.contents.body.paddingAll, 'md');
+  assert.ok(JSON.stringify(flex).includes('separator'));
 });
 
 test('AT-02: missing optional daily fields do not crash normalize/analyze', () => {
