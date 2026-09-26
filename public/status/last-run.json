@@ -2,23 +2,12 @@
   "runId": "2026-09-26-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {
-    "weather.fetch": "success",
-    "weather.normalize": "success",
-    "weather.analyze": "success",
-    "market.fetch": "success",
-    "forecast.render": "success",
-    "audio.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "success"
+  "stages": {},
+  "lastError": {
+    "stage": "line.send",
+    "message": "LINE push failed: 400",
+    "detail": "{\"message\":\"A message (messages[0]) in the request body is invalid\",\"details\":[{\"message\":\"invalid property\",\"property\":\"/body/contents/1/contents/1/alignItems\"}]}"
   },
-  "lastError": null,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@9617ec95a66a1febad9d40b12935af11d37c77c5/public/audio/2026-09-26.mp3",
-    "durationMs": 126048,
-    "bytes": 2016813,
-    "mimeType": "audio/mpeg"
-  },
-  "generatedAt": "2026-09-26T10:18:07.037Z"
+  "audio": null,
+  "generatedAt": "2026-09-26T11:11:29.986Z"
 }
