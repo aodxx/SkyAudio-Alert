@@ -51,8 +51,10 @@ function buildConfig() {
     },
     tts: {
       provider: optional('TTS_PROVIDER', 'edge').toLowerCase(),
-      apiKey: optional('GOOGLE_TTS_API_KEY', ''),
-      voiceName: optional('TTS_VOICE_NAME', 'th-TH-PremwadeeNeural'),
+      apiKey: optional('GEMINI_API_KEY', optional('GOOGLE_TTS_API_KEY', '')),
+      voiceName: optional('TTS_VOICE_NAME', 'Sulafat'),
+      model: optional('GEMINI_TTS_MODEL', 'gemini-3.8-flash-tts'),
+      style: optional('TTS_STYLE', 'warm, friendly and natural Thai village morning announcement; clear pronunciation; conversational and reassuring; moderately paced; suitable for older listeners; do not sound like a commercial or a newsreader'),
       languageCode: optional('TTS_LANGUAGE_CODE', 'th-TH'),
       speakingRate: parseFloat(optional('TTS_SPEAKING_RATE', '0.95')),
     },
@@ -66,7 +68,7 @@ function buildConfig() {
 
   if (Number.isNaN(config.location.lat) || Number.isNaN(config.location.lon)) throw new Error('WEATHER_LAT / WEATHER_LON are invalid');
   if (!Number.isFinite(config.tts.speakingRate) || config.tts.speakingRate <= 0) throw new Error('TTS_SPEAKING_RATE must be positive');
-  if (!['edge', 'google'].includes(config.tts.provider)) throw new Error('TTS_PROVIDER must be edge or google');
+  if (!['edge', 'google', 'gemini'].includes(config.tts.provider)) throw new Error('TTS_PROVIDER must be edge, google or gemini');
   return config;
 }
 
