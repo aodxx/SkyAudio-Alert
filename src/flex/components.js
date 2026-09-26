@@ -19,7 +19,7 @@ function heroTempBlock(current) {
     contents: [
       { type: 'box', layout: 'vertical', flex: 1, justifyContent: 'center', contents: [
         { type: 'box', layout: 'baseline', contents: [
-          { type: 'text', text: current.temperature !== null ? `${current.temperature}°` : '--°', size: '4xl', weight: 'bold', color: '#FFFFFF', flex: 0 },
+          { type: 'text', text: current.temperature !== null ? `${current.temperature}°` : '--°', size: '3xl', weight: 'bold', color: '#FFFFFF', flex: 0 },
           { type: 'text', text: current.icon || '🌤️', size: 'xl', margin: 'sm', flex: 0 },
         ] },
         { type: 'text', text: current.conditionLabel || 'สภาพอากาศวันนี้', size: 'sm', weight: 'bold', color: '#E6EDF5', margin: 'xs' },
@@ -41,7 +41,7 @@ function quickIndicatorsBox(current, accentColor) {
     ],
   });
   return {
-    type: 'box', layout: 'horizontal', margin: 'md', paddingAll: 'sm',
+    type: 'box', layout: 'horizontal', margin: 'sm', paddingAll: 'sm',
     backgroundColor: '#172338', cornerRadius: 'md', spacing: 'none',
     contents: [
       item('ความชื้น', `${current.humidity ?? '--'}%`),
@@ -53,7 +53,7 @@ function quickIndicatorsBox(current, accentColor) {
 
 function hourlySection(slots, accentColor) {
   return {
-    type: 'box', layout: 'horizontal', margin: 'md', spacing: 'none',
+    type: 'box', layout: 'horizontal', margin: 'sm', spacing: 'none',
     contents: slots.map((s) => ({
       type: 'box', layout: 'vertical', flex: 1, alignItems: 'center',
       contents: [
@@ -87,7 +87,7 @@ function rainProbabilityBox(daily, accentColor) {
 
 function footerBlock() {
   return {
-    type: 'box', layout: 'horizontal', margin: 'md', paddingTop: 'sm',
+    type: 'box', layout: 'horizontal', margin: 'sm', paddingTop: 'xs',
     contents: [
       { type: 'text', text: 'ฟังรายละเอียดในข้อความเสียง • Open-Meteo', size: 'xs', color: '#718097', flex: 1, wrap: true },
       { type: 'text', text: 'น้องจุ่นจ้าน', size: 'xs', color: '#718097', align: 'end' },
