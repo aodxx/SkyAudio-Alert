@@ -223,6 +223,8 @@ Examples:
 - last update
 - system identity: น้องจุ่นจ้าน
 
+Market prices and local news are intentionally kept out of the Flex during Phase 1 so the visual card remains compact; they are included in the audio briefing.
+
 ---
 
 # 8. Dynamic Visual Theme
@@ -479,11 +481,25 @@ The implementation must validate:
 ## 12.3 Length
 
 Target:
-- approximately 30–90 seconds
+- approximately 2–3 minutes
 
-Avoid unnecessarily long announcements.
+The audio is the full morning briefing for accessibility. Keep the Flex compact and move longer information into audio.
 
-## 12.4 Voice
+## 12.4 Content order
+
+The spoken briefing should normally follow this order:
+1. greeting and date
+2. current weather
+3. today's forecast by time period
+4. practical weather advice
+5. latest palm-oil price
+6. latest rubber price
+7. up to two short local public-relations headlines
+8. closing safety message
+
+Market/news dates must be spoken when available. Older data must never be presented as if it were today's value.
+
+## 12.5 Voice
 
 The voice should sound:
 - natural
