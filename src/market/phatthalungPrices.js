@@ -119,6 +119,7 @@ async function ocrImagesForPrice(html, kind) {
   const os = require('node:os');
   const path = require('node:path');
   const probe = spawnSync('tesseract', ['--version'], { encoding: 'utf8' });
+  const language = process.env.TESSERACT_LANG || 'tha+eng';
   if (probe.error || probe.status !== 0) return null;
 
   const imageUrls = extractImageSources(html);
@@ -130,7 +131,7 @@ async function ocrImagesForPrice(html, kind) {
       const buf = Buffer.from(await res.arrayBuffer());
       if (buf.length > 6 * 1024 * 1024) continue;
       fs.writeFileSync(file, buf);
-      const out = spawnSync('tesseract', [file, 'stdout', '--psm', '6'], {
+      const out = spawnSync('tesseract', [file, 'stdout', '--psm', '6', '-l', language], {
         encoding: 'utf8', timeout: 20000, maxBuffer: 1024 * 1024
       });
       if (out.status === 0) {
