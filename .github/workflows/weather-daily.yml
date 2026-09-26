@@ -31,7 +31,7 @@ jobs:
       - name: Install FFmpeg for Gemini TTS MP3 conversion
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Install OCR for agricultural price images
-        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-tha
       - name: Run daily forecast (TEST target)
         env:
           RUN_MODE: test
@@ -43,6 +43,7 @@ jobs:
           TTS_VOICE_NAME: Sulafat
           TTS_STYLE: 'warm, friendly and natural Thai village morning announcement; clear pronunciation; conversational and reassuring; moderately paced; suitable for older listeners; do not sound like a commercial or a newsreader'
           TTS_SPEAKING_RATE: '0.95'
+          TESSERACT_LANG: tha+eng
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
         run: node src/index.js
