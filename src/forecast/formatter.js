@@ -39,10 +39,10 @@ function pickSlots(hourlyToday) {
   }).filter(Boolean);
 }
 
-function buildForecastData(analysis, location, marketBrief = []) {
+function buildForecastData(analysis, location, marketBrief = [], localNews = []) {
   const adviceSentences = buildAdvice(analysis.adviceSignals);
   const dateInfo = buildThaiDateInfo(analysis.current.time);
-  const thaiScript = buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBrief);
+  const thaiScript = buildThaiScript(analysis, adviceSentences, location, dateInfo, marketBrief, localNews);
 
   return {
     location,
@@ -65,7 +65,7 @@ function buildForecastData(analysis, location, marketBrief = []) {
     },
     hourlySlots: pickSlots(analysis.hourlyToday),
     adviceSentences,
-    marketBrief,
+    marketBrief,\n    localNews,
     theme: analysis.theme,
     thaiScript,
   };
