@@ -38,6 +38,13 @@ function isUsefulHeadline(title) {
   return !blocked.some((re) => re.test(t));
 }
 
+function parseThaiDate(text) {
+  const m = String(text || '').match(/(\d{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)\s*(25\d{2})/);
+  if (!m) return null;
+  const months = {'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
+  return { iso: `${m[3]}-${String(months[m[2]]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`, thai: `${m[1]} ${m[2]} ${m[3]}` };
+}
+
 function extractHeadlines(html, limit = 2) {
   const out = [];
   const re = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
@@ -49,7 +56,9 @@ function extractHeadlines(html, limit = 2) {
     try { url = new URL(match[1], LIST_URL).toString(); } catch {}
     if (!url || !/phatthalung\.prd\.go\.th\/th\/content\/category\/detail\//i.test(url)) continue;
     if (out.some((x) => x.title === title)) continue;
-    out.push({ title, url });
+    const tail = String(html || '').slice(re.lastIndex, re.lastIndex + 500);
+    const date = parseThaiDate(cleanText(tail));
+    out.push({ title, url, date: date?.iso || null, dateThai: date?.thai || null });
     if (out.length >= limit) break;
   }
   return out;
@@ -59,7 +68,19 @@ async function fetchLocalNews(limit = 2) {
   const res = await fetch(LIST_URL, { headers: { 'user-agent': 'SkyAudio-Alert/0.4' } });
   if (!res.ok) throw new Error('local news HTTP ' + res.status);
   const html = await res.text();
-  return extractHeadlines(html, limit).map((item) => ({
+  const items = extractHeadlines(html, limit);
+  const enriched = await Promise.all(items.map(async (item) => {
+    try {
+      const article = await fetch(item.url, { headers: { 'user-agent': 'SkyAudio-Alert/0.4' } });
+      if (!article.ok) return item;
+      const articleHtml = await article.text();
+      const date = parseThaiDate(cleanText(articleHtml));
+      return { ...item, date: item.date || date?.iso || null, dateThai: item.dateThai || date?.thai || null };
+    } catch {
+      return item;
+    }
+  }));
+  return enriched.map((item) => ({
     ...item,
     sourceName: SOURCE_NAME,
     status: 'ok',
@@ -74,4 +95,4 @@ async function getLocalNews(limit = 2) {
   }
 }
 
-module.exports = { LIST_URL, SOURCE_NAME, cleanText, normalizeTitle, isUsefulHeadline, extractHeadlines, fetchLocalNews, getLocalNews };
+module.exports = { LIST_URL, SOURCE_NAME, cleanText, normalizeTitle, parseThaiDate, isUsefulHeadline, extractHeadlines, fetchLocalNews, getLocalNews };
