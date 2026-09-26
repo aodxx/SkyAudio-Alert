@@ -96,3 +96,15 @@ Any credential pasted into chat should be treated as exposed and replaced before
 **Reason:** Audio is the accessibility channel for residents who cannot comfortably read the Flex. Moving the longer information set into audio keeps the visual message compact while making the full morning briefing available by pressing Play.
 
 **Source policy:** Palm/rubber prices use the provincial agriculture/cooperatives source already established by the market adapter. Local news uses the Phatthalung Provincial Public Relations Office. If a source cannot be parsed safely, that section is omitted rather than guessed.
+
+## Decision 011 — Header photo is full-bleed and must stay a committed repo file
+
+**Date:** 2026-09-26
+
+**Decision:** `headerBlock()`'s village-hall photo (`assets/flex/village-hall-cutout.jpg`) is the header's full-bleed background (`size:'full'`, `aspectMode:'cover'`), overlaid with the sky-blue brand wash and a bottom text scrim, rather than a small side-by-side thumbnail.
+
+**Reason:** The Phase 4 side-by-side layout (photo at `flex:6` beside the text) rendered small and, per a resident/product ask, didn't read as "the village hall is the header" — a full-bleed photo does. The scrim keeps the existing text (name, district/province, ศาลาเอนกประสงค์ caption) legible over the photo without changing what information is shown.
+
+**Also recorded here:** the previous `village-hall-cutout.png` URL was broken — no file at that path was ever actually committed (an earlier session base64-staged a 120×77 placeholder into `README.md` to satisfy a CI check, then removed it in the very next commit, per commits `c896c00`/`54258fb`). Anyone touching this image must commit the real binary under `assets/flex/`, not stage it as a temporary text-file payload — `git log --all -- <path>` should show the file's real history, and `git ls-tree origin/main -- assets/flex` should list it before relying on the URL in a test or a production run.
+
+**Note — unrelated but observed while investigating:** Decision 009 describes an always-present `announcementBoard()` reserved slot wired through `heroTempBlock(current, announcement)`. That function/board is not present in the current `src/flex/components.js` (`heroTempBlock(current)` takes one argument) — it appears to have been dropped during a later compact-redesign phase without updating Decision 009. Not touched by this change; flagging so it isn't mistaken for intentional.

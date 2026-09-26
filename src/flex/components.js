@@ -1,54 +1,58 @@
 // src/flex/components.js
 // Compact, mobile-first LINE Flex components.
-// Phase 4: the header uses a real cutout of the village hall to establish local identity.
-// Market prices and local news intentionally stay in audio only.
+// Phase 4: the header is a full-bleed photo of the real village hall
+// (not a small side thumbnail) with a bottom text scrim — local identity,
+// edge-to-edge. Market prices and local news intentionally stay in audio only.
 
-const VILLAGE_HALL_IMAGE_URL = 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.png';
+const VILLAGE_HALL_IMAGE_URL = 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg';
 
+// Full-bleed photo header: the village hall photo is the actual background
+// (not a small side thumbnail), tinted with the established sky-blue brand
+// wash, with a bottom scrim for text legibility. Location name, district/
+// province, and the ศาลาเอนกประสงค์ caption are unchanged from Phase 4 —
+// only their placement (overlaid on the photo) is new.
 function headerBlock(location) {
   return {
     type: 'box',
     layout: 'vertical',
     margin: 'none',
-    paddingAll: 'md',
     cornerRadius: 'xl',
-    background: { type: 'linearGradient', angle: '180deg', startColor: '#8DDEFF', centerColor: '#49B8F4', endColor: '#2578B8', centerPosition: '55%' },
     contents: [
       {
-        type: 'box',
-        layout: 'horizontal',
-        spacing: 'sm',
-        contents: [
-          {
-            type: 'box',
-            layout: 'vertical',
-            flex: 5,
-            justifyContent: 'center',
-            contents: [
-              { type: 'text', text: location.name, weight: 'bold', size: 'xl', color: '#07335C' },
-              { type: 'text', text: `${location.district} • ${location.province}`, size: 'sm', color: '#0A477A', margin: 'xs' },
-              { type: 'box', layout: 'vertical', margin: 'sm', height: '3px', backgroundColor: '#BFEFFF', cornerRadius: 'sm', contents: [] },
-            ],
-          },
-          {
-            type: 'image',
-            url: VILLAGE_HALL_IMAGE_URL,
-            flex: 6,
-            size: 'full',
-            aspectRatio: '1.55:1',
-            aspectMode: 'fit',
-            margin: 'sm',
-          },
-        ],
+        type: 'image',
+        url: VILLAGE_HALL_IMAGE_URL,
+        size: 'full',
+        aspectMode: 'cover',
+        aspectRatio: '2.2:1',
+        gravity: 'center',
       },
       {
         type: 'box',
-        layout: 'horizontal',
-        margin: 'sm',
-        paddingTop: 'xs',
+        layout: 'vertical',
+        position: 'absolute',
+        offsetTop: '0px', offsetBottom: '0px', offsetStart: '0px', offsetEnd: '0px',
+        background: { type: 'linearGradient', angle: '180deg', startColor: '#1E5C9A55', endColor: '#07335C99' },
+        contents: [],
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        position: 'absolute',
+        offsetBottom: '0px', offsetStart: '0px', offsetEnd: '0px',
+        paddingAll: 'md',
+        background: { type: 'linearGradient', angle: '0deg', startColor: '#00193600', endColor: '#001936E6' },
         contents: [
-          { type: 'text', text: 'ศาลาเอนกประสงค์ประจำหมู่บ้าน', size: 'xs', color: '#EAF9FF', flex: 1, wrap: true },
-          { type: 'text', text: 'หมู่ 4 • โคกชะงาย', size: 'xs', color: '#D8F4FF', align: 'end' },
+          { type: 'text', text: location.name, weight: 'bold', size: 'xl', color: '#FFFFFF' },
+          { type: 'text', text: `${location.district} • ${location.province}`, size: 'sm', color: '#CFE8FF', margin: 'xs' },
+          {
+            type: 'box',
+            layout: 'horizontal',
+            margin: 'sm',
+            contents: [
+              { type: 'text', text: 'ศาลาเอนกประสงค์ประจำหมู่บ้าน', size: 'xs', color: '#EAF9FF', flex: 1, wrap: true },
+              { type: 'text', text: 'หมู่ 4 • โคกชะงาย', size: 'xs', color: '#D8F4FF', align: 'end' },
+            ],
+          },
         ],
       },
     ],

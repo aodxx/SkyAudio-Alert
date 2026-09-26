@@ -1,3 +1,9 @@
+## Unreleased — Header photo fix + full-bleed redesign
+- Fixed a broken image reference: `assets/flex/village-hall-cutout.png` was referenced by `src/flex/components.js` but was never actually committed to the repo (an earlier session base64-staged a 120×77 placeholder into `README.md` for a CI check, then removed it) — the header image has been rendering broken/missing since. Committed the real photo at `assets/flex/village-hall-cutout.jpg` (cropped from อ๊อด's photo of the actual pavilion, transparent corners removed, 2.2:1) and updated the URL/extension.
+- Redesigned `headerBlock()`: the photo is now the header's actual full-bleed background (`size:'full'`, edge-to-edge) instead of a small side-by-side thumbnail, with the existing sky-blue brand wash + a bottom scrim overlaid on top (`position:'absolute'`) so location name, district/province, and the ศาลาเอนกประสงค์ caption stay legible. No other components or the bubble's `mega` size changed.
+- Regenerated `docs/examples/sample-flex-rainy-evening.json`.
+- Added AT-09 regression test: asserts the header contains a `size:'full'`/`aspectMode:'cover'` image at the correct HTTPS URL and exactly two absolute overlays (tint + scrim) carrying the location text.
+
 ## Unreleased — Phase 1 audio expansion
 - Moved palm-oil and rubber prices into the spoken morning report; dates are spoken so stale data is not presented as today.
 - Added an official Phatthalung local-news adapter and included up to two short attributable headlines in the audio.

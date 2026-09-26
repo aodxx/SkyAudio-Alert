@@ -1,114 +1,201 @@
 {
   "type": "flex",
-  "altText": "พยากรณ์อากาศบ้านลำพาย 26° ท้องฟ้ามีเมฆมาก",
+  "altText": "อากาศ บ้านลำพาย 26° ท้องฟ้ามีเมฆมาก",
   "contents": {
     "type": "bubble",
-    "size": "giga",
-    "header": {
+    "size": "mega",
+    "body": {
       "type": "box",
       "layout": "vertical",
-      "paddingAll": "0px",
+      "paddingAll": "md",
+      "backgroundColor": "#070C15",
       "contents": [
         {
           "type": "box",
           "layout": "vertical",
-          "paddingAll": "lg",
-          "backgroundColor": "#1A237E",
+          "margin": "none",
+          "cornerRadius": "xl",
+          "contents": [
+            {
+              "type": "image",
+              "url": "https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg",
+              "size": "full",
+              "aspectMode": "cover",
+              "aspectRatio": "2.2:1",
+              "gravity": "center"
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "position": "absolute",
+              "offsetTop": "0px",
+              "offsetBottom": "0px",
+              "offsetStart": "0px",
+              "offsetEnd": "0px",
+              "background": {
+                "type": "linearGradient",
+                "angle": "180deg",
+                "startColor": "#1E5C9A55",
+                "endColor": "#07335C99"
+              },
+              "contents": []
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "position": "absolute",
+              "offsetBottom": "0px",
+              "offsetStart": "0px",
+              "offsetEnd": "0px",
+              "paddingAll": "md",
+              "background": {
+                "type": "linearGradient",
+                "angle": "0deg",
+                "startColor": "#00193600",
+                "endColor": "#001936E6"
+              },
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "บ้านลำพาย",
+                  "weight": "bold",
+                  "size": "xl",
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "text": "ต.โคกชะงาย • พัทลุง",
+                  "size": "sm",
+                  "color": "#CFE8FF",
+                  "margin": "xs"
+                },
+                {
+                  "type": "box",
+                  "layout": "horizontal",
+                  "margin": "sm",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "ศาลาเอนกประสงค์ประจำหมู่บ้าน",
+                      "size": "xs",
+                      "color": "#EAF9FF",
+                      "flex": 1,
+                      "wrap": true
+                    },
+                    {
+                      "type": "text",
+                      "text": "หมู่ 4 • โคกชะงาย",
+                      "size": "xs",
+                      "color": "#D8F4FF",
+                      "align": "end"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "horizontal",
+          "margin": "md",
           "contents": [
             {
               "type": "box",
               "layout": "vertical",
-              "paddingAll": "lg",
-              "backgroundColor": "#1A237E",
+              "flex": 1,
+              "justifyContent": "center",
               "contents": [
                 {
                   "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "บ้านลำพาย",
-                      "weight": "bold",
-                      "size": "xl",
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "text",
-                      "text": "ต.โคกชะงาย • พัทลุง",
-                      "size": "sm",
-                      "color": "#E0E0E0",
-                      "margin": "xs"
-                    }
-                  ]
-                },
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "margin": "lg",
+                  "layout": "baseline",
                   "contents": [
                     {
                       "type": "text",
                       "text": "26°",
                       "size": "3xl",
                       "weight": "bold",
-                      "color": "#FFFFFF"
+                      "color": "#FFFFFF",
+                      "flex": 0
                     },
                     {
-                      "type": "box",
-                      "layout": "baseline",
+                      "type": "text",
+                      "text": "☁️",
+                      "size": "xl",
                       "margin": "sm",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "☁️ ท้องฟ้ามีเมฆมาก",
-                          "size": "sm",
-                          "color": "#F5F5F5"
-                        },
-                        {
-                          "type": "text",
-                          "text": "  รู้สึกเหมือน 30°",
-                          "size": "sm",
-                          "color": "#D0D0D0"
-                        }
-                      ]
+                      "flex": 0
                     }
                   ]
+                },
+                {
+                  "type": "text",
+                  "text": "ท้องฟ้ามีเมฆมาก",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#E6EDF5",
+                  "margin": "xs"
+                },
+                {
+                  "type": "text",
+                  "text": "รู้สึก 30°",
+                  "size": "xs",
+                  "color": "#AEB9C8",
+                  "margin": "xs"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "flex": 0,
+              "justifyContent": "center",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "วันนี้",
+                  "size": "xs",
+                  "color": "#8FA0B4"
+                },
+                {
+                  "type": "text",
+                  "text": "25° / 32°",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#FFFFFF",
+                  "margin": "xs"
                 }
               ]
             }
           ]
-        }
-      ]
-    },
-    "body": {
-      "type": "box",
-      "layout": "vertical",
-      "paddingAll": "lg",
-      "contents": [
+        },
         {
           "type": "box",
           "layout": "horizontal",
-          "backgroundColor": "#F5F7FA",
+          "margin": "sm",
+          "paddingAll": "sm",
+          "backgroundColor": "#172B43",
           "cornerRadius": "md",
-          "paddingAll": "md",
-          "margin": "lg",
+          "spacing": "none",
           "contents": [
             {
               "type": "box",
               "layout": "vertical",
+              "flex": 1,
               "contents": [
                 {
                   "type": "text",
                   "text": "ความชื้น",
                   "size": "xs",
-                  "color": "#8A8A8A"
+                  "color": "#8392A6",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "89%",
-                  "size": "md",
+                  "size": "sm",
                   "weight": "bold",
-                  "color": "#212121",
+                  "color": "#F3F6FA",
+                  "align": "center",
                   "margin": "xs"
                 }
               ]
@@ -116,19 +203,22 @@
             {
               "type": "box",
               "layout": "vertical",
+              "flex": 1,
               "contents": [
                 {
                   "type": "text",
                   "text": "ลม",
                   "size": "xs",
-                  "color": "#8A8A8A"
+                  "color": "#8392A6",
+                  "align": "center"
                 },
                 {
                   "type": "text",
-                  "text": "7.2 กม./ชม.",
-                  "size": "md",
+                  "text": "7.2",
+                  "size": "sm",
                   "weight": "bold",
-                  "color": "#212121",
+                  "color": "#F3F6FA",
+                  "align": "center",
                   "margin": "xs"
                 }
               ]
@@ -136,19 +226,22 @@
             {
               "type": "box",
               "layout": "vertical",
+              "flex": 1,
               "contents": [
                 {
                   "type": "text",
                   "text": "ฝนตอนนี้",
                   "size": "xs",
-                  "color": "#8A8A8A"
+                  "color": "#8392A6",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "0 มม.",
-                  "size": "md",
+                  "size": "sm",
                   "weight": "bold",
-                  "color": "#212121",
+                  "color": "#F3F6FA",
+                  "align": "center",
                   "margin": "xs"
                 }
               ]
@@ -156,219 +249,183 @@
           ]
         },
         {
+          "type": "separator",
+          "margin": "md",
+          "color": "#31506F"
+        },
+        {
           "type": "text",
-          "text": "พยากรณ์รายชั่วโมง",
+          "text": "วันนี้",
           "weight": "bold",
           "size": "sm",
-          "color": "#212121",
-          "margin": "lg"
+          "color": "#F3F6FA",
+          "margin": "md"
         },
         {
           "type": "box",
           "layout": "horizontal",
-          "margin": "lg",
+          "margin": "sm",
+          "spacing": "none",
           "contents": [
             {
               "type": "box",
               "layout": "vertical",
-              "alignItems": "center",
+              "flex": 1,
               "contents": [
                 {
                   "type": "text",
                   "text": "06:00",
-                  "size": "xxs",
-                  "color": "#8A8A8A"
+                  "size": "xs",
+                  "color": "#8291A5",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "☁️",
-                  "size": "md",
-                  "margin": "xs"
+                  "size": "sm",
+                  "margin": "xs",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "26°",
-                  "size": "sm",
+                  "size": "xs",
                   "weight": "bold",
-                  "color": "#212121",
-                  "margin": "xs"
+                  "color": "#F3F6FA",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "42%",
-                  "size": "xxs",
-                  "color": "#1E88E5",
-                  "margin": "xs"
+                  "size": "xs",
+                  "color": "#64B5F6",
+                  "margin": "xs",
+                  "align": "center"
                 }
               ]
             },
             {
               "type": "box",
               "layout": "vertical",
-              "alignItems": "center",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "09:00",
-                  "size": "xxs",
-                  "color": "#8A8A8A"
-                },
-                {
-                  "type": "text",
-                  "text": "🌤️",
-                  "size": "md",
-                  "margin": "xs"
-                },
-                {
-                  "type": "text",
-                  "text": "28°",
-                  "size": "sm",
-                  "weight": "bold",
-                  "color": "#212121",
-                  "margin": "xs"
-                },
-                {
-                  "type": "text",
-                  "text": "12%",
-                  "size": "xxs",
-                  "color": "#1E88E5",
-                  "margin": "xs"
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "alignItems": "center",
+              "flex": 1,
               "contents": [
                 {
                   "type": "text",
                   "text": "12:00",
-                  "size": "xxs",
-                  "color": "#8A8A8A"
+                  "size": "xs",
+                  "color": "#8291A5",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "☁️",
-                  "size": "md",
-                  "margin": "xs"
+                  "size": "sm",
+                  "margin": "xs",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "31°",
-                  "size": "sm",
+                  "size": "xs",
                   "weight": "bold",
-                  "color": "#212121",
-                  "margin": "xs"
+                  "color": "#F3F6FA",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "25%",
-                  "size": "xxs",
-                  "color": "#1E88E5",
-                  "margin": "xs"
+                  "size": "xs",
+                  "color": "#64B5F6",
+                  "margin": "xs",
+                  "align": "center"
                 }
               ]
             },
             {
               "type": "box",
               "layout": "vertical",
-              "alignItems": "center",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "15:00",
-                  "size": "xxs",
-                  "color": "#8A8A8A"
-                },
-                {
-                  "type": "text",
-                  "text": "☁️",
-                  "size": "md",
-                  "margin": "xs"
-                },
-                {
-                  "type": "text",
-                  "text": "32°",
-                  "size": "sm",
-                  "weight": "bold",
-                  "color": "#212121",
-                  "margin": "xs"
-                },
-                {
-                  "type": "text",
-                  "text": "35%",
-                  "size": "xxs",
-                  "color": "#1E88E5",
-                  "margin": "xs"
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "alignItems": "center",
+              "flex": 1,
               "contents": [
                 {
                   "type": "text",
                   "text": "18:00",
-                  "size": "xxs",
-                  "color": "#8A8A8A"
+                  "size": "xs",
+                  "color": "#8291A5",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "⛈️",
-                  "size": "md",
-                  "margin": "xs"
+                  "size": "sm",
+                  "margin": "xs",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "27°",
-                  "size": "sm",
+                  "size": "xs",
                   "weight": "bold",
-                  "color": "#212121",
-                  "margin": "xs"
+                  "color": "#F3F6FA",
+                  "align": "center"
                 },
                 {
                   "type": "text",
                   "text": "98%",
-                  "size": "xxs",
-                  "color": "#1E88E5",
-                  "margin": "xs"
+                  "size": "xs",
+                  "color": "#64B5F6",
+                  "margin": "xs",
+                  "align": "center"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "box",
+          "layout": "vertical",
+          "margin": "sm",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ฝนวันนี้",
+                  "size": "xs",
+                  "color": "#8392A6",
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "98%",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#64B5F6",
+                  "align": "end"
                 }
               ]
             },
             {
               "type": "box",
-              "layout": "vertical",
-              "alignItems": "center",
+              "layout": "horizontal",
+              "margin": "xs",
+              "height": "4px",
+              "cornerRadius": "sm",
               "contents": [
                 {
-                  "type": "text",
-                  "text": "21:00",
-                  "size": "xxs",
-                  "color": "#8A8A8A"
+                  "type": "box",
+                  "layout": "vertical",
+                  "flex": 98,
+                  "backgroundColor": "#64B5F6",
+                  "contents": []
                 },
                 {
-                  "type": "text",
-                  "text": "🌧️",
-                  "size": "md",
-                  "margin": "xs"
-                },
-                {
-                  "type": "text",
-                  "text": "26°",
-                  "size": "sm",
-                  "weight": "bold",
-                  "color": "#212121",
-                  "margin": "xs"
-                },
-                {
-                  "type": "text",
-                  "text": "60%",
-                  "size": "xxs",
-                  "color": "#1E88E5",
-                  "margin": "xs"
+                  "type": "box",
+                  "layout": "vertical",
+                  "flex": 2,
+                  "backgroundColor": "#334156",
+                  "contents": []
                 }
               ]
             }
@@ -377,63 +434,23 @@
         {
           "type": "box",
           "layout": "horizontal",
-          "margin": "lg",
+          "margin": "sm",
+          "paddingTop": "xs",
           "contents": [
             {
               "type": "text",
-              "text": "ต่ำสุด 25°",
-              "size": "sm",
-              "color": "#546E7A"
-            },
-            {
-              "type": "text",
-              "text": "สูงสุด 32°",
-              "size": "sm",
-              "color": "#546E7A",
-              "align": "end"
-            }
-          ]
-        },
-        {
-          "type": "box",
-          "layout": "vertical",
-          "backgroundColor": "#FFF8E1",
-          "cornerRadius": "md",
-          "paddingAll": "md",
-          "margin": "lg",
-          "contents": [
-            {
-              "type": "text",
-              "text": "คำแนะนำวันนี้",
-              "weight": "bold",
-              "size": "sm",
-              "color": "#795548"
-            },
-            {
-              "type": "text",
-              "text": "ช่วงเย็นมีโอกาสฝนสูง ควรเตรียมร่มไว้ก่อนออกจากบ้าน",
-              "size": "sm",
-              "color": "#5D4037",
-              "wrap": true,
-              "margin": "xs"
-            }
-          ]
-        },
-        {
-          "type": "box",
-          "layout": "vertical",
-          "margin": "lg",
-          "contents": [
-            {
-              "type": "separator"
-            },
-            {
-              "type": "text",
-              "text": "ข้อมูลจาก Open-Meteo • อัปเดตล่าสุดโดยน้องจุ่นจ้าน",
-              "size": "xxs",
-              "color": "#B0B0B0",
-              "margin": "md",
+              "text": "ฟังรายละเอียดในข้อความเสียง • Open-Meteo",
+              "size": "xs",
+              "color": "#718097",
+              "flex": 1,
               "wrap": true
+            },
+            {
+              "type": "text",
+              "text": "น้องจุ่นจ้าน",
+              "size": "xs",
+              "color": "#718097",
+              "align": "end"
             }
           ]
         }

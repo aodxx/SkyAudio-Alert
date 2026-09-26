@@ -82,6 +82,26 @@ test('LINE Flex payload does not use unsupported alignItems property', () => {
   assert.equal(JSON.stringify(flex).includes('alignItems'), false);
 });
 
+test('AT-09: header is a full-bleed village-hall photo (not a side thumbnail) with a legible text scrim', () => {
+  const weatherData = loadFixture('sunny.json');
+  const analysis = analyzeWeather(weatherData, THRESHOLDS);
+  const flex = buildFlex(buildForecastData(analysis, LOCATION));
+  const header = flex.contents.body.contents[0];
+
+  const photoImage = header.contents.find((c) => c.type === 'image');
+  assert.ok(photoImage, 'header must contain the village-hall photo');
+  assert.equal(photoImage.url, 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg');
+  assert.equal(photoImage.size, 'full', 'photo must fill the header, not sit beside the text');
+  assert.equal(photoImage.aspectMode, 'cover');
+
+  const overlays = header.contents.filter((c) => c.position === 'absolute');
+  assert.equal(overlays.length, 2, 'expected a brand-tint wash and a bottom text scrim');
+  const scrimTexts = JSON.stringify(overlays[1]);
+  assert.ok(scrimTexts.includes(LOCATION.name));
+  assert.ok(scrimTexts.includes(LOCATION.district));
+  assert.ok(scrimTexts.includes('ศาลาเอนกประสงค์ประจำหมู่บ้าน'));
+});
+
 test('AT-02: missing optional daily fields do not crash normalize/analyze', () => {
   const raw = JSON.parse(
     fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', 'sunny.json'), 'utf8')
