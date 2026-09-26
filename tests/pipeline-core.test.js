@@ -16,7 +16,9 @@ const { buildFlex } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
 const { buildAudioMessage } = require('../src/line/messagingApi');
-const { shouldSkipDuplicateProductionRun } = require('../src/core/statusReport');\nconst { extractHeadlines } = require('../src/news/phatthalungNews');\n
+const { shouldSkipDuplicateProductionRun } = require('../src/core/statusReport');
+const { extractHeadlines } = require('../src/news/phatthalungNews');
+
 
 const THRESHOLDS = {
   hotApparent: 35,
@@ -133,9 +135,17 @@ test('Thai TTS script includes market prices and local news in the spoken report
   const analysis = analyzeWeather(weatherData, THRESHOLDS);
   const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูง... เตรียมร่มไว้ก่อนออกจากบ้านนะ'];
   const dateInfo = buildThaiDateInfo('2026-09-22T06:00:00');
-  const script = buildThaiScript(analysis, advice, LOCATION, dateInfo, [\n    { kind: 'palm', price: 5.25, date: '2569-09-24', status: 'ok' },\n    { kind: 'rubber', price: 82.5, date: '2569-09-25', status: 'ok' },\n  ], [\n    { title: 'จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน', status: 'ok' },\n  ]);
+  const script = buildThaiScript(analysis, advice, LOCATION, dateInfo, [
+    { kind: 'palm', price: 5.25, date: '2569-09-24', status: 'ok' },
+    { kind: 'rubber', price: 82.5, date: '2569-09-25', status: 'ok' },
+  ], [
+    { title: 'จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน', status: 'ok' },
+  ]);
   assert.match(script, /สวัสดีตอนเช้าครับ/);
-  assert.match(script, /ถ้าไล่ดูเป็นช่วง ๆ ของวันนี้/);\n  assert.match(script, /ปาล์มน้ำมัน ล่าสุด 5.25/);\n  assert.match(script, /ยางพารา ล่าสุด 82.50/);\n  assert.match(script, /จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน/);
+  assert.match(script, /ถ้าไล่ดูเป็นช่วง ๆ ของวันนี้/);
+  assert.match(script, /ปาล์มน้ำมัน ล่าสุด 5.25/);
+  assert.match(script, /ยางพารา ล่าสุด 82.50/);
+  assert.match(script, /จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน/);
   assert.match(script, /แล้วพบกันใหม่พรุ่งนี้เช้าครับ/);
   assert.ok(script.length >= 900);
   assert.ok(script.length <= 2200);
