@@ -1,3 +1,9 @@
+## Unreleased — Phase 1 audio expansion
+- Moved palm-oil and rubber prices into the spoken morning report; dates are spoken so stale data is not presented as today.
+- Added an official Phatthalung local-news adapter and included up to two short attributable headlines in the audio.
+- Tuned the Thai script for a 2–3 minute village loudspeaker format with Gemini TTS as the production voice.
+- Added parser and spoken-content regression tests; Node CI is green after the phase1 changes.
+
 # Changelog
 
 ## Unreleased — Production hardening
