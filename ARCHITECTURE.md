@@ -15,10 +15,12 @@ core/pipeline.js
         ├─▶ weather/normalize.js   → stable WeatherData shape
         ├─▶ weather/analyzer.js    → theme + adviceSignals (deterministic rules)
         │
+        ├─▶ market/phatthalungPrices.js → palm/rubber prices
+        ├─▶ news/phatthalungNews.js → official local headlines
         ├─▶ forecast/formatter.js  → hourly slots, advice sentences, Thai script
         ├─▶ flex/builder.js        → LINE Flex JSON (visual message)
         │
-        ├─▶ audio/tts.js           → Edge TTS (free default; Google optional)
+        ├─▶ audio/tts.js           → Gemini TTS (village loudspeaker style)
         ├─▶ audio/validate.js      → duration/size checks
         ├─▶ audio/storage.js       → commit MP3 to this repo, serve via jsDelivr
         │
@@ -32,7 +34,7 @@ core/pipeline.js
 | Weather data | Open-Meteo — free, no API key |
 | Scheduler/runner | GitHub Actions — free minutes on a public repo |
 | Audio hosting | The repo itself + jsDelivr CDN — free, HTTPS, no bucket |
-| Text-to-speech | Edge TTS via `edge-tts` (free default); Google TTS remains optional |
+| Text-to-speech | Gemini TTS via configured API key; model/voice are configuration-driven |
 | Messaging | LINE Messaging API — free push messages within LINE's own limits |
 
 No server runs 24/7. The only recurring job is the scheduled GitHub Actions run.
@@ -45,4 +47,4 @@ No server runs 24/7. The only recurring job is the scheduled GitHub Actions run.
 
 ## Provider independence (PRD G7)
 
-Every external call sits behind one small adapter file (`openMeteo.js`, `tts.js`, `messagingApi.js`). Swapping a provider means rewriting one file, not the pipeline.
+Every external call sits behind one small adapter file (`openMeteo.js`, `phatthalungPrices.js`, `phatthalungNews.js`, `tts.js`, `messagingApi.js`). Swapping a provider means rewriting one file, not the pipeline.
