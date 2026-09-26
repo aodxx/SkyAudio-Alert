@@ -75,6 +75,13 @@ test('AT-08: buildFlex produces a structurally valid bubble', () => {
   assert.ok(JSON.stringify(flex).includes('separator'));
 });
 
+test('LINE Flex payload does not use unsupported alignItems property', () => {
+  const weatherData = loadFixture('rainy-evening.json');
+  const analysis = analyzeWeather(weatherData, THRESHOLDS);
+  const flex = buildFlex(buildForecastData(analysis, LOCATION));
+  assert.equal(JSON.stringify(flex).includes('alignItems'), false);
+});
+
 test('AT-02: missing optional daily fields do not crash normalize/analyze', () => {
   const raw = JSON.parse(
     fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', 'sunny.json'), 'utf8')

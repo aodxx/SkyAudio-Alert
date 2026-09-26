@@ -15,7 +15,7 @@ function headerBlock(location) {
 
 function heroTempBlock(current) {
   return {
-    type: 'box', layout: 'horizontal', margin: 'md', alignItems: 'center',
+    type: 'box', layout: 'horizontal', margin: 'md',
     contents: [
       { type: 'box', layout: 'vertical', flex: 1, justifyContent: 'center', contents: [
         { type: 'box', layout: 'baseline', contents: [
@@ -25,7 +25,7 @@ function heroTempBlock(current) {
         { type: 'text', text: current.conditionLabel || 'สภาพอากาศวันนี้', size: 'sm', weight: 'bold', color: '#E6EDF5', margin: 'xs' },
         { type: 'text', text: `รู้สึก ${current.apparentTemperature ?? '--'}°`, size: 'xs', color: '#AEB9C8', margin: 'xs' },
       ] },
-      { type: 'box', layout: 'vertical', flex: 0, alignItems: 'end', justifyContent: 'center', contents: [
+      { type: 'box', layout: 'vertical', flex: 0, justifyContent: 'center', contents: [
         { type: 'text', text: 'วันนี้', size: 'xs', color: '#8FA0B4' },
         { type: 'text', text: current.todayRange || '', size: 'sm', weight: 'bold', color: '#FFFFFF', margin: 'xs' },
       ] },
@@ -55,7 +55,7 @@ function hourlySection(slots, accentColor) {
   return {
     type: 'box', layout: 'horizontal', margin: 'sm', spacing: 'none',
     contents: slots.map((s) => ({
-      type: 'box', layout: 'vertical', flex: 1, alignItems: 'center',
+      type: 'box', layout: 'vertical', flex: 1,
       contents: [
         { type: 'text', text: s.label, size: 'xs', color: '#8291A5', align: 'center' },
         { type: 'text', text: s.icon || '🌤️', size: 'sm', margin: 'xs', align: 'center' },
