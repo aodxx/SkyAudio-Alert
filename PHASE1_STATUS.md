@@ -18,3 +18,11 @@ PRD, repository structure, decisions, API contract.
 - Run the manual test workflow against real test LINE credentials + a real Google TTS key.
 - Watch a few real daily runs in test mode before switching `LINE_GROUP_ID_PROD` to the real group.
 - Optional later: multiple villages/groups, rain-nowcasting, LLM rewriting layer with deterministic fallback (PRD section 25).
+
+
+## Phase 1 — Audio content expansion (current)
+- Gemini TTS remains the primary audio channel at approximately 2–3 minutes.
+- Palm and rubber latest published prices are spoken in the audio with their source date.
+- Local-news headlines are fetched conservatively from the Phatthalung Provincial Public Relations Office and spoken with source attribution.
+- Flex remains unchanged in this phase; compact Flex redesign is Phase 2.
+- If market/news parsing fails, the system omits that section rather than inventing or repeating stale data.
