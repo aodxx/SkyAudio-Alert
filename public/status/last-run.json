@@ -16,10 +16,10 @@
   },
   "lastError": null,
   "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@c24a6c91967cb1a3e029f70047b3286d21678f63/public/audio/2026-09-27.mp3",
-    "durationMs": 157392,
-    "bytes": 2518317,
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@8ec17549f376950ce7aaf35180c40ca98cd2d4e9/public/audio/2026-09-27.mp3",
+    "durationMs": 154032,
+    "bytes": 2464557,
     "mimeType": "audio/mpeg"
   },
-  "generatedAt": "2026-09-27T01:07:14.859Z"
+  "generatedAt": "2026-09-27T02:14:10.625Z"
 }
