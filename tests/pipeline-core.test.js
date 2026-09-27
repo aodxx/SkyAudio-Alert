@@ -82,7 +82,7 @@ test('LINE Flex payload does not use unsupported alignItems property', () => {
   assert.equal(JSON.stringify(flex).includes('alignItems'), false);
 });
 
-test('AT-09: header is a full-bleed village-hall photo (not a side thumbnail) with a legible text scrim', () => {
+test('AT-09: header is a full-bleed village-hall photo (not a side thumbnail), gravity keeps the signboard safe, and text sits on one smooth scrim', () => {
   const weatherData = loadFixture('sunny.json');
   const analysis = analyzeWeather(weatherData, THRESHOLDS);
   const flex = buildFlex(buildForecastData(analysis, LOCATION));
@@ -93,13 +93,16 @@ test('AT-09: header is a full-bleed village-hall photo (not a side thumbnail) wi
   assert.equal(photoImage.url, 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg');
   assert.equal(photoImage.size, 'full', 'photo must fill the header, not sit beside the text');
   assert.equal(photoImage.aspectMode, 'cover');
+  assert.equal(photoImage.gravity, 'top', 'must crop from the bottom, never off the top where the signboard is');
+  assert.equal(header.height, '200px', 'explicit height keeps the crop deterministic across bubble widths');
 
   const overlays = header.contents.filter((c) => c.position === 'absolute');
-  assert.equal(overlays.length, 2, 'expected a brand-tint wash and a bottom text scrim');
+  assert.equal(overlays.length, 2, 'expected one full-height wash + one bottom text box, no extra seams');
+  assert.equal(overlays[0].offsetTop, '0px', 'the wash must span the full photo height, not just a bottom strip');
+
   const scrimTexts = JSON.stringify(overlays[1]);
   assert.ok(scrimTexts.includes(LOCATION.name));
   assert.ok(scrimTexts.includes(LOCATION.district));
-  assert.ok(scrimTexts.includes('ศาลาเอนกประสงค์ประจำหมู่บ้าน'));
 });
 
 test('AT-02: missing optional daily fields do not crash normalize/analyze', () => {

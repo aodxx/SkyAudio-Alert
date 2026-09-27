@@ -6,16 +6,23 @@
 
 const VILLAGE_HALL_IMAGE_URL = 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg';
 
-// Full-bleed photo header: the village hall photo is the actual background
-// (not a small side thumbnail), tinted with the established sky-blue brand
-// wash, with a bottom scrim for text legibility. Location name, district/
-// province, and the ศาลาเอนกประสงค์ caption are unchanged from Phase 4 —
-// only their placement (overlaid on the photo) is new.
+// Full-bleed photo header: the village hall photo is the actual background,
+// sized with an explicit pixel height (not aspectRatio-on-Image) so the crop
+// is deterministic across bubble widths, with gravity:'top' so the signboard
+// stays visible even if the client needs to crop — cropping from the bottom
+// (pillars/entrance) rather than the top (the sign) if anything has to go.
+// A single gradient wash spans the FULL photo height (one box, not two) so
+// there is no visible seam between "photo" and "text scrim" — it just fades
+// gradually. The redundant second caption line (ศาลาเอนกประสงค์.../หมู่ 4...)
+// was dropped: the real signboard in the photo already says this, and having
+// the same words twice was the "too dense" clutter that made the header feel
+// crowded.
 function headerBlock(location) {
   return {
     type: 'box',
     layout: 'vertical',
     margin: 'none',
+    height: '200px',
     cornerRadius: 'xl',
     contents: [
       {
@@ -23,15 +30,14 @@ function headerBlock(location) {
         url: VILLAGE_HALL_IMAGE_URL,
         size: 'full',
         aspectMode: 'cover',
-        aspectRatio: '2.2:1',
-        gravity: 'center',
+        gravity: 'top',
       },
       {
         type: 'box',
         layout: 'vertical',
         position: 'absolute',
         offsetTop: '0px', offsetBottom: '0px', offsetStart: '0px', offsetEnd: '0px',
-        background: { type: 'linearGradient', angle: '180deg', startColor: '#1E5C9A55', endColor: '#07335C99' },
+        background: { type: 'linearGradient', angle: '0deg', startColor: '#0A213D1A', endColor: '#04101FE8' },
         contents: [],
       },
       {
@@ -40,19 +46,9 @@ function headerBlock(location) {
         position: 'absolute',
         offsetBottom: '0px', offsetStart: '0px', offsetEnd: '0px',
         paddingAll: 'md',
-        background: { type: 'linearGradient', angle: '0deg', startColor: '#00193600', endColor: '#001936E6' },
         contents: [
           { type: 'text', text: location.name, weight: 'bold', size: 'xl', color: '#FFFFFF' },
           { type: 'text', text: `${location.district} • ${location.province}`, size: 'sm', color: '#CFE8FF', margin: 'xs' },
-          {
-            type: 'box',
-            layout: 'horizontal',
-            margin: 'sm',
-            contents: [
-              { type: 'text', text: 'ศาลาเอนกประสงค์ประจำหมู่บ้าน', size: 'xs', color: '#EAF9FF', flex: 1, wrap: true },
-              { type: 'text', text: 'หมู่ 4 • โคกชะงาย', size: 'xs', color: '#D8F4FF', align: 'end' },
-            ],
-          },
         ],
       },
     ],

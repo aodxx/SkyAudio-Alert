@@ -14,6 +14,7 @@
           "type": "box",
           "layout": "vertical",
           "margin": "none",
+          "height": "200px",
           "cornerRadius": "xl",
           "contents": [
             {
@@ -21,8 +22,7 @@
               "url": "https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg",
               "size": "full",
               "aspectMode": "cover",
-              "aspectRatio": "2.2:1",
-              "gravity": "center"
+              "gravity": "top"
             },
             {
               "type": "box",
@@ -34,9 +34,9 @@
               "offsetEnd": "0px",
               "background": {
                 "type": "linearGradient",
-                "angle": "180deg",
-                "startColor": "#1E5C9A55",
-                "endColor": "#07335C99"
+                "angle": "0deg",
+                "startColor": "#0A213D1A",
+                "endColor": "#04101FE8"
               },
               "contents": []
             },
@@ -48,12 +48,6 @@
               "offsetStart": "0px",
               "offsetEnd": "0px",
               "paddingAll": "md",
-              "background": {
-                "type": "linearGradient",
-                "angle": "0deg",
-                "startColor": "#00193600",
-                "endColor": "#001936E6"
-              },
               "contents": [
                 {
                   "type": "text",
@@ -68,28 +62,6 @@
                   "size": "sm",
                   "color": "#CFE8FF",
                   "margin": "xs"
-                },
-                {
-                  "type": "box",
-                  "layout": "horizontal",
-                  "margin": "sm",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "ศาลาเอนกประสงค์ประจำหมู่บ้าน",
-                      "size": "xs",
-                      "color": "#EAF9FF",
-                      "flex": 1,
-                      "wrap": true
-                    },
-                    {
-                      "type": "text",
-                      "text": "หมู่ 4 • โคกชะงาย",
-                      "size": "xs",
-                      "color": "#D8F4FF",
-                      "align": "end"
-                    }
-                  ]
                 }
               ]
             }
