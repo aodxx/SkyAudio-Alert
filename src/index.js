@@ -28,6 +28,8 @@ async function main() {
     process.exit(0);
   } catch (err) {
     log(config.runId, err.stage || 'run', 'failure', { message: err.message, detail: err.detail });
+    // runPipeline writes the structured stage report before rethrowing;
+    // keep this fallback for failures that occur outside the pipeline.
     writeStatusReport(
       { runId: config.runId, stages: {}, lastError: { stage: err.stage, message: err.message, detail: err.detail } },
       config
