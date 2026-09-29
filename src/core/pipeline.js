@@ -27,7 +27,9 @@ async function runPipeline(config) {
 
   if (shouldSkipDuplicateProductionRun(config)) {
     mark('run', 'skipped', { reason: 'production announcement already delivered successfully today (Asia/Bangkok)' });
-    return { ...result, skipped: true, skipReason: 'duplicate-production-run' };
+    const skippedResult = { ...result, skipped: true, skipReason: 'duplicate-production-run' };
+    writeStatusReport(skippedResult, config);
+    return skippedResult;
   }
 
   mark('weather.fetch', 'start');
@@ -76,6 +78,8 @@ async function runPipeline(config) {
   } catch (err) {
     const stage = err.stage || 'audio';
     mark(stage, 'failure', { message: err.message, detail: err.detail });
+    result.lastError = { stage: err.stage, message: err.message, detail: err.detail };
+    writeStatusReport(result, config);
     throw err;
   }
 
