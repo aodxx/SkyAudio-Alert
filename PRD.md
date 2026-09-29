@@ -630,6 +630,25 @@ Possible costs may arise if a selected TTS provider or storage provider exceeds 
 
 # 17. Reliability Requirements
 
+## Current verified status — 2026-09-29
+
+The latest real TEST run is `2026-09-29-lampai-test` with `dryRun=false`. All required stages reported success: weather fetch/normalize/analyze, market fetch, local-news fetch, forecast render, audio synthesis/validation/storage, and LINE send. No error was reported.
+
+The generated audio was **154.08 seconds (2:34.08)**, **2,465,325 bytes**, MIME type `audio/mpeg`, and the LINE delivery stage reported success. This verifies the end-to-end **TEST** path, including the palm-oil/rubber and local-news sections.
+
+This does **not** mean Production is complete. The current scheduled workflow is still explicitly configured for the TEST LINE destination. Production acceptance remains a separate step.
+
+### Reliability evidence
+
+| Requirement | Current evidence |
+|---|---|
+| R1 weather retry | Implemented in pipeline; transient errors use retry |
+| R2 LINE retry | Implemented in pipeline; transient LINE errors use retry |
+| R3 TTS failure identification | Implemented; required audio failures fail closed |
+| R4 no fabricated weather | Implemented; weather retrieval failure stops the run |
+| R5 unique run ID | Implemented; latest run ID is `2026-09-29-lampai-test` |
+| R6 failed-stage observability | Implemented; each stage is recorded in `public/status/last-run.json` |
+
 ## R1
 A transient weather API failure should be retried.
 
