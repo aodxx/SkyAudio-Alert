@@ -1,25 +1,13 @@
 {
-  "runId": "2026-10-03-lampai-test",
+  "runId": "2026-10-04-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {
-    "weather.fetch": "success",
-    "weather.normalize": "success",
-    "weather.analyze": "success",
-    "market.fetch": "success",
-    "news.fetch": "success",
-    "forecast.render": "success",
-    "audio.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "success"
+  "stages": {},
+  "lastError": {
+    "stage": "content.generate",
+    "message": "Gemini content request failed: 400",
+    "detail": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"* GenerateContentRequest.model: unexpected model name format\\n\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n"
   },
-  "lastError": null,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@36218b402a9d5b1a6e8fe8b9ef4dbbfdd0cf3f99/public/audio/2026-10-03.mp3",
-    "durationMs": 147408,
-    "bytes": 2358573,
-    "mimeType": "audio/mpeg"
-  },
-  "generatedAt": "2026-10-03T01:35:14.993Z"
+  "audio": null,
+  "generatedAt": "2026-10-03T19:07:33.267Z"
 }
