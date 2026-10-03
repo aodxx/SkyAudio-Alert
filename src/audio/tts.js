@@ -9,6 +9,10 @@ const { execFileSync } = require('node:child_process');
 const TTS_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
 const GEMINI_TTS_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
+function normalizeGeminiModelName(value) {
+  return String(value || '').trim().replace(/^models\//i, '');
+}
+
 function makeError(message, retryable = false, detail) {
   const err = new Error(message);
   err.stage = 'audio.synthesize';
@@ -73,12 +77,19 @@ async function synthesizeWithGemini(script, config, opts = {}) {
     contents: [{ role: 'user', parts: [{ text: script, speech_metadata: { style } }] }],
     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { voice: config.voiceName } } },
   };
-  const model = config.model || 'gemini-3.8-flash-tts';
+  const model = normalizeGeminiModelName(config.model) || 'gemini-3.8-flash-tts';
   const url = GEMINI_TTS_BASE_URL + '/' + encodeURIComponent(model) + ':generateContent';
-  const res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  let res;
+  try {
+    res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  } catch (error) {
+    const detail = String(error?.message || 'network request failed').slice(0, 500);
+    throw makeError('Gemini TTS request failed before response', true, detail);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw makeError('Gemini TTS request failed: ' + res.status, res.status >= 500 || res.status === 429, text.slice(0, 500));
+    const retryable = res.status === 408 || res.status === 429 || (res.status >= 500 && res.status < 600);
+    throw makeError('Gemini TTS request failed: ' + res.status, retryable, text.slice(0, 500));
   }
   const json = await res.json();
   const encoded = json.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data)?.inlineData?.data;

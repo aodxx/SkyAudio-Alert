@@ -78,3 +78,40 @@ test('Gemini content adapter retries transient HTTP/network errors but not inval
     (error) => error.retryable === false,
   );
 });
+test('Gemini TTS adapter removes models/ prefix before making the GenerateContent request', async () => {
+  const { synthesizeSpeech } = require('../src/audio/tts');
+  let requestedUrl;
+
+  await assert.rejects(
+    synthesizeSpeech('ข้อความทดสอบเสียง', {
+      provider: 'gemini', apiKey: 'test-key', model: 'models/gemini-3.8-flash-tts',
+      profile: 'male-friendly', voiceName: 'Achird', speakingRate: 1,
+    }, {
+      fetchImpl: async (url) => {
+        requestedUrl = url;
+        return { ok: false, status: 400, text: async () => 'invalid model format' };
+      },
+    }),
+    (error) => error.message === 'Gemini TTS request failed: 400',
+  );
+
+  assert.equal(requestedUrl, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-tts:generateContent');
+});
+test('Gemini TTS adapter retries transient HTTP/network errors but not invalid requests', async () => {
+  const { synthesizeSpeech } = require('../src/audio/tts');
+  const config = { provider: 'gemini', apiKey: 'test-key', model: 'gemini-3.8-flash-tts', profile: 'male-friendly', voiceName: 'Achird', speakingRate: 1 };
+  const failedResponse = (status) => ({ ok: false, status, text: async () => 'temporary test error' });
+
+  await assert.rejects(
+    synthesizeSpeech('ข้อความทดสอบเสียง', config, { fetchImpl: async () => failedResponse(408) }),
+    (error) => error.retryable === true,
+  );
+  await assert.rejects(
+    synthesizeSpeech('ข้อความทดสอบเสียง', config, { fetchImpl: async () => { throw new TypeError('network unavailable'); } }),
+    (error) => error.retryable === true,
+  );
+  await assert.rejects(
+    synthesizeSpeech('ข้อความทดสอบเสียง', config, { fetchImpl: async () => failedResponse(400) }),
+    (error) => error.retryable === false,
+  );
+});
