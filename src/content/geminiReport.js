@@ -104,10 +104,17 @@ async function generateGeminiReport(context, config, opts = {}) {
     },
   };
   const url = `${GEMINI_BASE_URL}/${encodeURIComponent(model)}:generateContent`;
-  const res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  let res;
+  try {
+    res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  } catch (error) {
+    const detail = String(error?.message || 'network request failed').slice(0, 500);
+    throw reportError('Gemini content request failed before response', true, detail);
+  }
   if (!res.ok) {
     const detail = (await res.text().catch(() => '')).slice(0, 500);
-    throw reportError(`Gemini content request failed: ${res.status}`, res.status >= 500 || res.status === 429, detail);
+    const retryable = res.status === 408 || res.status === 429 || (res.status >= 500 && res.status < 600);
+    throw reportError(`Gemini content request failed: ${res.status}`, retryable, detail);
   }
   const text = extractText(await res.json());
   const parsed = parseReportDraft(text);

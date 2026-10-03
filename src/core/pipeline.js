@@ -14,7 +14,7 @@ const { synthesizeSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
 const { storeAudio } = require('../audio/storage');
 const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
-const { withRetry } = require('./retry');
+const { withRetry, GEMINI_RETRY_OPTIONS } = require('./retry');
 const { log } = require('./logger');
 const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statusReport');
 
@@ -64,7 +64,8 @@ async function runPipeline(config) {
   const dateInfo = new Intl.DateTimeFormat('th-TH', { timeZone: config.location.timezone, dateStyle: 'long' }).format(new Date());
   mark('content.generate', 'start');
   const report = await withRetry(() => generateGeminiReport({ floodSituation, weatherAnalysis, location: config.location, date: dateInfo }, config), {
-    onRetry: (err, attempt) => mark('content.generate', 'retry', { attempt, message: err.message }),
+    ...GEMINI_RETRY_OPTIONS,
+    onRetry: (err, attempt, delayMs) => mark('content.generate', 'retry', { attempt, delayMs, message: err.message }),
   });
   mark('content.generate', 'success', { provider: report.provider, priority: report.priority, characters: report.spokenText.length });
 
@@ -78,7 +79,8 @@ async function runPipeline(config) {
   try {
     mark('tts.synthesize', 'start');
     const audioBuffer = await withRetry(() => synthesizeSpeech(report.spokenText, config.tts), {
-      onRetry: (err, attempt) => mark('tts.synthesize', 'retry', { attempt, message: err.message }),
+      ...(config.tts.provider === 'gemini' ? GEMINI_RETRY_OPTIONS : {}),
+      onRetry: (err, attempt, delayMs) => mark('tts.synthesize', 'retry', { attempt, delayMs, message: err.message }),
     });
     mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, scriptLength: report.spokenText.length, bytes: audioBuffer.length });
     mark('audio.validate', 'start');

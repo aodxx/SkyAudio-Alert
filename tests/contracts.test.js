@@ -59,3 +59,22 @@ test('Gemini content adapter removes models/ prefix before making the GenerateCo
   assert.equal(requestedUrl, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
   assert.equal(report.provider, 'gemini');
 });
+test('Gemini content adapter retries transient HTTP/network errors but not invalid requests', async () => {
+  const { generateGeminiReport } = require('../src/content/geminiReport');
+  const context = { floodSituation: { severity: 'normal', summary: 'สถานการณ์ปกติ', actions: [], freshness: { state: 'fresh' } }, weatherAnalysis: {}, location: { province: 'พัทลุง' }, date: '4 ต.ค.' };
+  const config = { mode: 'test', dryRun: true, content: { apiKey: 'test-key', model: 'gemini-test' } };
+  const failedResponse = (status) => ({ ok: false, status, text: async () => 'temporary test error' });
+
+  await assert.rejects(
+    generateGeminiReport(context, config, { fetchImpl: async () => failedResponse(408) }),
+    (error) => error.retryable === true,
+  );
+  await assert.rejects(
+    generateGeminiReport(context, config, { fetchImpl: async () => { throw new TypeError('network unavailable'); } }),
+    (error) => error.retryable === true,
+  );
+  await assert.rejects(
+    generateGeminiReport(context, config, { fetchImpl: async () => failedResponse(400) }),
+    (error) => error.retryable === false,
+  );
+});
