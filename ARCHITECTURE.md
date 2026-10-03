@@ -1,5 +1,7 @@
 # SkyAudio-Alert — Architecture
 
+> **Scope review notice — 2026-10-03:** data flow ในเอกสารนี้ยังเป็น legacy weather + market/news และยังไม่ใช่ architecture ที่อนุมัติสำหรับ flood-first runtime ให้ยึด [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) และ [`docs/REFACTOR_PLAN_FLOOD_WEATHER.md`](docs/REFACTOR_PLAN_FLOOD_WEATHER.md) จนกว่าจะ rewrite flow เป็น flood → weather → Gemini content → Gemini TTS → Flex/LINE
+
 ## Data flow
 
 ```text

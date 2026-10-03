@@ -7,6 +7,10 @@
 **Community assistant:** น้องจุ่นจ้าน  
 **Primary repository:** `aodxx/SkyAudio-Alert`
 
+> **Revision notice — 2026-10-03:** ข้อกำหนดเดิมที่ระบุว่าใช้สคริปต์ deterministic, มีลำดับรายงานตายตัว หรือกำหนดเสียงประมาณ 2–3 นาที ถูก supersede สำหรับ narrative/audio โดย `DECISIONS.md` Decision 015 และ [`docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md`](docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md): Gemini จะสร้างเนื้อหาตาม facts และความสำคัญของแต่ละวันแบบยืดหยุ่น แล้วใช้ Gemini TTS model/voice ที่ตั้งค่าได้ พร้อม deterministic safety validation และ fallback
+>
+> **Pre-implementation gate:** อ่าน [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) ก่อนใช้ PRD นี้แก้โค้ด เพราะหลาย section ด้านล่างยังเป็น baseline ของ legacy weather runtime และจะถูก rewrite ตาม scope report
+
 ---
 
 ## 1. Executive Summary

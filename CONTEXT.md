@@ -1,5 +1,7 @@
 # SkyAudio-Alert — Current Context
 
+> **Current direction — 2026-10-03:** product pivot แล้วเป็น flood-first + weather, Gemini adaptive content และ Gemini TTS; ส่วนข้อความ weather/market ในบันทึกด้านล่างเป็น historical acceptance ของ legacy runtime ให้ยึด [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) สำหรับงานถัดไป
+
 ## Verified in this work session
 
 The latest GitHub Actions run was successful only because the previous pipeline swallowed an Edge TTS failure and sent a Flex-only dry-run result. The real log showed Edge TTS argument parsing failed when `-5%` was passed as a separate argument. The pipeline therefore did not satisfy the master task acceptance criteria.

@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test tests/*.test.js",
-    "dryrun": "DRY_RUN=true RUN_MODE=test node src/index.js"
+    "dryrun": "DRY_RUN=true RUN_MODE=test TTS_PROVIDER=mock node src/index.js"
   },
   "dependencies": {},
   "license": "UNLICENSED"

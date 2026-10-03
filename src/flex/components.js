@@ -1,140 +1,50 @@
 // src/flex/components.js
-// Compact, mobile-first LINE Flex components.
-// Phase 4: the header is a full-bleed photo of the real village hall
-// (not a small side thumbnail) with a bottom text scrim — local identity,
-// edge-to-edge. Market prices and local news intentionally stay in audio only.
+// Compact flood-first LINE Flex components. No market/news content.
 
-const VILLAGE_HALL_IMAGE_URL = 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg';
+const LINKS = Object.freeze({
+  cctv: 'https://cctv.maholan.net/',
+  flood: 'https://chachoengsao-flood.vercel.app/phatthalung',
+  weather: 'https://chachoengsao-flood.vercel.app/phatthalung/weather',
+});
+const SEVERITY = Object.freeze({ normal: { label: 'ปกติ', color: '#0F766E', wash: '#D1FAE5' }, watch: { label: 'เฝ้าระวัง', color: '#B45309', wash: '#FEF3C7' }, affected: { label: 'ได้รับผลกระทบ', color: '#C2410C', wash: '#FFEDD5' }, critical: { label: 'วิกฤต', color: '#B91C1C', wash: '#FEE2E2' }, unknown: { label: 'ยังยืนยันไม่ได้', color: '#475569', wash: '#E2E8F0' } });
 
-// Full-bleed photo header: the village hall photo is the actual background,
-// sized with an explicit pixel height (not aspectRatio-on-Image) so the crop
-// is deterministic across bubble widths, with gravity:'top' so the signboard
-// stays visible even if the client needs to crop — cropping from the bottom
-// (pillars/entrance) rather than the top (the sign) if anything has to go.
-// A single gradient wash spans the FULL photo height (one box, not two) so
-// there is no visible seam between "photo" and "text scrim" — it just fades
-// gradually. The redundant second caption line (ศาลาเอนกประสงค์.../หมู่ 4...)
-// was dropped: the real signboard in the photo already says this, and having
-// the same words twice was the "too dense" clutter that made the header feel
-// crowded.
-function headerBlock(location) {
-  return {
-    type: 'box',
-    layout: 'vertical',
-    margin: 'none',
-    height: '200px',
-    cornerRadius: 'xl',
-    contents: [
-      {
-        type: 'image',
-        url: VILLAGE_HALL_IMAGE_URL,
-        size: 'full',
-        aspectMode: 'cover',
-        gravity: 'top',
-      },
-      {
-        type: 'box',
-        layout: 'vertical',
-        position: 'absolute',
-        offsetTop: '0px', offsetBottom: '0px', offsetStart: '0px', offsetEnd: '0px',
-        background: { type: 'linearGradient', angle: '0deg', startColor: '#0A213D1A', endColor: '#04101FE8' },
-        contents: [],
-      },
-      {
-        type: 'box',
-        layout: 'vertical',
-        position: 'absolute',
-        offsetBottom: '0px', offsetStart: '0px', offsetEnd: '0px',
-        paddingAll: 'md',
-        contents: [
-          { type: 'text', text: location.name, weight: 'bold', size: 'xl', color: '#FFFFFF' },
-          { type: 'text', text: `${location.district} • ${location.province}`, size: 'sm', color: '#CFE8FF', margin: 'xs' },
-        ],
-      },
-    ],
-  };
+function headerBlock(location, dateInfo) {
+  return { type: 'box', layout: 'vertical', paddingAll: 'md', background: { type: 'linearGradient', angle: '135deg', startColor: '#0F2742', endColor: '#155E75' }, contents: [
+    { type: 'text', text: 'น้องจุ่นจ้าน • รายงานประจำวัน', size: 'sm', weight: 'bold', color: '#BAE6FD' },
+    { type: 'text', text: location.name || 'บ้านลำพาย', size: 'xl', weight: 'bold', color: '#FFFFFF', margin: 'xs' },
+    { type: 'text', text: `${location.district || ''} • ${location.province || 'พัทลุง'}${dateInfo?.solarText ? ` • ${dateInfo.solarText}` : ''}`, size: 'xs', color: '#E0F2FE', margin: 'xs', wrap: true },
+  ] };
 }
-
-function heroTempBlock(current) {
-  return {
-    type: 'box', layout: 'horizontal', margin: 'md',
-    contents: [
-      { type: 'box', layout: 'vertical', flex: 1, justifyContent: 'center', contents: [
-        { type: 'box', layout: 'baseline', contents: [
-          { type: 'text', text: current.temperature !== null ? `${current.temperature}°` : '--°', size: '3xl', weight: 'bold', color: '#FFFFFF', flex: 0 },
-          { type: 'text', text: current.icon || '🌤️', size: 'xl', margin: 'sm', flex: 0 },
-        ] },
-        { type: 'text', text: current.conditionLabel || 'สภาพอากาศวันนี้', size: 'sm', weight: 'bold', color: '#E6EDF5', margin: 'xs' },
-        { type: 'text', text: `รู้สึก ${current.apparentTemperature ?? '--'}°`, size: 'xs', color: '#AEB9C8', margin: 'xs' },
-      ] },
-      { type: 'box', layout: 'vertical', flex: 0, justifyContent: 'center', contents: [
-        { type: 'text', text: 'วันนี้', size: 'xs', color: '#8FA0B4' },
-        { type: 'text', text: current.todayRange || '', size: 'sm', weight: 'bold', color: '#FFFFFF', margin: 'xs' },
-      ] },
-    ],
-  };
+function floodStatusBlock(flood) {
+  const style = SEVERITY[flood?.severity] || SEVERITY.unknown;
+  const stations = Array.isArray(flood?.stations) ? flood.stations : [];
+  const stationText = stations.slice(0, 2).map((s) => `${s.name}${s.label ? ` · ${s.label}` : ''}`).join('\n');
+  return { type: 'box', layout: 'vertical', margin: 'md', paddingAll: 'md', cornerRadius: 'lg', backgroundColor: style.wash, contents: [
+    { type: 'box', layout: 'horizontal', contents: [
+      { type: 'text', text: 'สถานการณ์น้ำ', size: 'sm', weight: 'bold', color: '#334155', flex: 1 },
+      { type: 'text', text: style.label, size: 'sm', weight: 'bold', color: style.color, align: 'end' },
+    ] },
+    { type: 'text', text: flood?.summary || 'ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้', size: 'md', weight: 'bold', color: '#0F172A', margin: 'sm', wrap: true },
+    stationText ? { type: 'text', text: stationText, size: 'xs', color: '#475569', margin: 'sm', wrap: true } : { type: 'text', text: 'เปิดศูนย์ข้อมูลเพื่อดูสถานีล่าสุด', size: 'xs', color: '#64748B', margin: 'sm' },
+    { type: 'text', text: `ข้อมูล: ${flood?.freshness?.state === 'stale' ? 'เก่ากว่าเกณฑ์' : flood?.freshness?.state === 'fresh' ? 'อัปเดตแล้ว' : 'ยังไม่ทราบความสดใหม่'}`, size: 'xs', color: '#64748B', margin: 'sm' },
+  ] };
 }
-
-function quickIndicatorsBox(current) {
-  const item = (label, value) => ({
-    type: 'box', layout: 'vertical', flex: 1, contents: [
-      { type: 'text', text: label, size: 'xs', color: '#8392A6', align: 'center' },
-      { type: 'text', text: value, size: 'sm', weight: 'bold', color: '#F3F6FA', align: 'center', margin: 'xs' },
-    ],
-  });
-  return {
-    type: 'box', layout: 'horizontal', margin: 'sm', paddingAll: 'sm',
-    backgroundColor: '#172B43', cornerRadius: 'md', spacing: 'none',
-    contents: [
-      item('ความชื้น', `${current.humidity ?? '--'}%`),
-      item('ลม', `${current.windSpeed ?? '--'}`),
-      item('ฝนตอนนี้', `${current.precipitation ?? 0} มม.`),
-    ],
-  };
+function weatherBlock(data) {
+  return { type: 'box', layout: 'vertical', margin: 'md', paddingAll: 'md', cornerRadius: 'lg', backgroundColor: '#EFF6FF', contents: [
+    { type: 'text', text: 'พยากรณ์อากาศ', size: 'sm', weight: 'bold', color: '#1E3A8A' },
+    { type: 'text', text: `${data.current?.icon || '🌦️'} ${data.current?.conditionLabel || 'ไม่ทราบสภาพอากาศ'} · ${data.current?.temperature ?? '--'}°`, size: 'md', weight: 'bold', color: '#0F172A', margin: 'sm' },
+    { type: 'text', text: `ฝนวันนี้ ${data.daily?.precipitationProbabilityMax ?? '--'}% · ลม ${data.current?.windSpeed ?? '--'}`, size: 'xs', color: '#475569', margin: 'xs' },
+  ] };
 }
-
-function hourlySection(slots, accentColor) {
-  return {
-    type: 'box', layout: 'horizontal', margin: 'sm', spacing: 'none',
-    contents: slots.map((s) => ({
-      type: 'box', layout: 'vertical', flex: 1,
-      contents: [
-        { type: 'text', text: s.label, size: 'xs', color: '#8291A5', align: 'center' },
-        { type: 'text', text: s.icon || '🌤️', size: 'sm', margin: 'xs', align: 'center' },
-        { type: 'text', text: s.temperature !== null ? `${s.temperature}°` : '--°', size: 'xs', weight: 'bold', color: '#F3F6FA', align: 'center' },
-        { type: 'text', text: `${s.precipitationProbability}%`, size: 'xs', color: accentColor, margin: 'xs', align: 'center' },
-      ],
-    })),
-  };
+function actionButton(label, uri, color) {
+  return { type: 'button', style: 'primary', height: 'sm', color, action: { type: 'uri', label, uri } };
 }
-
-function rainProbabilityBox(daily, accentColor) {
-  const probability = Math.max(0, Math.min(100, Number(daily.precipitationProbabilityMax ?? 0)));
-  return {
-    type: 'box', layout: 'vertical', margin: 'sm',
-    contents: [
-      { type: 'box', layout: 'horizontal', contents: [
-        { type: 'text', text: 'ฝนวันนี้', size: 'xs', color: '#8392A6', flex: 1 },
-        { type: 'text', text: `${probability}%`, size: 'xs', weight: 'bold', color: accentColor, align: 'end' },
-      ] },
-      { type: 'box', layout: 'horizontal', margin: 'xs', height: '4px', cornerRadius: 'sm',
-        contents: [
-          { type: 'box', layout: 'vertical', flex: Math.max(1, probability), backgroundColor: accentColor, contents: [] },
-          { type: 'box', layout: 'vertical', flex: Math.max(1, 100 - probability), backgroundColor: '#334156', contents: [] },
-        ],
-      },
-    ],
-  };
+function actionButtons(floodSeverity) {
+  const buttons = [actionButton('ดูสถานะน้ำ / CCTV', LINKS.cctv, '#0F766E'), actionButton('สถานการณ์น้ำพัทลุง', LINKS.flood, '#1D4ED8')];
+  if (floodSeverity !== 'critical') buttons.push(actionButton('พยากรณ์อากาศ / เรดาร์ฝน', LINKS.weather, '#2563EB'));
+  return { type: 'box', layout: 'vertical', spacing: 'sm', margin: 'md', contents: buttons };
 }
-
 function footerBlock() {
-  return {
-    type: 'box', layout: 'horizontal', margin: 'sm', paddingTop: 'xs',
-    contents: [
-      { type: 'text', text: 'ฟังรายละเอียดในข้อความเสียง • Open-Meteo', size: 'xs', color: '#718097', flex: 1, wrap: true },
-      { type: 'text', text: 'น้องจุ่นจ้าน', size: 'xs', color: '#718097', align: 'end' },
-    ],
-  };
+  return { type: 'box', layout: 'horizontal', margin: 'md', contents: [{ type: 'text', text: 'ฟังรายละเอียดในข้อความเสียง', size: 'xs', color: '#64748B', flex: 1 }, { type: 'text', text: 'น้องจุ่นจ้าน', size: 'xs', color: '#64748B', align: 'end' }] };
 }
-
-module.exports = { headerBlock, heroTempBlock, quickIndicatorsBox, hourlySection, rainProbabilityBox, footerBlock };
+module.exports = { LINKS, SEVERITY, headerBlock, floodStatusBlock, weatherBlock, actionButtons, footerBlock };

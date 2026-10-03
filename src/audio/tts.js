@@ -57,14 +57,14 @@ async function synthesizeWithGemini(script, config, opts = {}) {
   const doFetch = opts.fetchImpl || fetch;
   if (!config.apiKey) throw makeError('GEMINI_API_KEY is not configured');
   const style = config.style || [
-    'Thai male village loudspeaker announcer',
+    config.profile === 'female-friendly' ? 'Thai female village loudspeaker announcer' : 'Thai male village loudspeaker announcer',
     'warm, familiar, friendly and human',
     'sounds like a real local community morning announcement, not a studio commercial',
     'clear Thai pronunciation for older listeners',
     'moderately slow and relaxed',
     'natural breathing and short pauses between topics',
     'slightly cheerful but calm',
-    'gentle emphasis on temperatures, rain chances, safety advice and local prices',
+    'gentle emphasis on flood status, temperatures, rain chances and safety advice',
     'do not sound like a television newsreader',
     'do not rush or read every sentence with the same rhythm',
     'keep the tone conversational and reassuring',
@@ -101,8 +101,15 @@ async function synthesizeWithGemini(script, config, opts = {}) {
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
+function synthesizeWithMock(config) {
+  const file = config.mockFile || 'public/audio/2026-10-03.mp3';
+  if (!fs.existsSync(file)) throw makeError('TTS mock file does not exist: ' + file);
+  return fs.readFileSync(file);
+}
+
 async function synthesizeSpeech(script, config, opts = {}) {
   if (!script || !script.trim()) throw makeError('Thai TTS script is empty');
+  if (config.provider === 'mock') return synthesizeWithMock(config);
   if (config.provider === 'gemini') return synthesizeWithGemini(script, config, opts);
   if (config.provider === 'google') return synthesizeWithGoogle(script, config, opts);
   return synthesizeWithEdge(script, config);

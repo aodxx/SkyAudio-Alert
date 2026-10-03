@@ -1,5 +1,7 @@
 # SkyAudio-Alert — Verification Checklist
 
+> **Scope review notice — 2026-10-03:** รายการด้านล่างเป็นหลักฐานการผ่านของระบบ legacy ใน TEST เท่านั้น ไม่ใช่ acceptance ของ flood-first product ใหม่ ให้ใช้ [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) และ checklist ใน design/refactor docs เพื่อสร้างรายการตรวจชุดใหม่ก่อนเปิด production
+
 ## ขั้นที่ 1 — Foundation
 - [x] PRD / architecture / core repository structure
 

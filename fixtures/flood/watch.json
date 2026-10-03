@@ -1,0 +1,14 @@
+{
+  "severity": "watch",
+  "summary": "ระดับน้ำมากและควรติดตามการเปลี่ยนแปลง",
+  "trend": "rising",
+  "confidence": "high",
+  "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+  "water": { "level": 0.42, "levelUnit": "เมตรต่ำกว่าตลิ่ง", "threshold": 0, "thresholdUnit": "เมตร" },
+  "affectedAreas": ["คลองบางม่วง"],
+  "roads": [],
+  "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung", "publisher": "สสน." },
+  "observedAt": "2026-10-03T13:40:00Z",
+  "retrievedAt": "2026-10-03T14:00:00Z",
+  "actions": ["ติดตามระดับน้ำ", "เตรียมของจำเป็น"]
+}

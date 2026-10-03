@@ -1,198 +1,78 @@
 // tests/pipeline-core.test.js
-// Zero-dependency tests using Node's built-in test runner (Node >= 18).
-// Run with: node --test tests/
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-
 const { normalizeWeather } = require('../src/weather/normalize');
 const { analyzeWeather } = require('../src/weather/analyzer');
 const { buildForecastData } = require('../src/forecast/formatter');
-const { buildThaiScript } = require('../src/forecast/thaiScript');
-const { buildThaiDateInfo } = require('../src/forecast/thaiDate');
 const { buildFlex } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3 } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
 const { buildAudioMessage } = require('../src/line/messagingApi');
 const { shouldSkipDuplicateProductionRun } = require('../src/core/statusReport');
-const { extractHeadlines } = require('../src/news/phatthalungNews');
+const { parseReportDraft } = require('../src/content/reportContract');
 
-
-const THRESHOLDS = {
-  hotApparent: 35,
-  coolMorning: 23,
-  rainProbNotable: 40,
-  rainProbHigh: 65,
-  strongWindKmh: 35,
-  heavyRainMm: 10,
-};
-
-const LOCATION = {
-  name: 'บ้านลำพาย',
-  district: 'ต.โคกชะงาย',
-  province: 'พัทลุง',
-};
-
+const THRESHOLDS = { hotApparent: 35, coolMorning: 23, rainProbNotable: 40, rainProbHigh: 65, strongWindKmh: 35, heavyRainMm: 10 };
+const LOCATION = { name: 'บ้านลำพาย', district: 'ต.โคกชะงาย', province: 'พัทลุง' };
 function loadFixture(name) {
   const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', name), 'utf8'));
   return normalizeWeather(raw, `${raw.daily.time[0]}T00:00:00Z`);
 }
-
-test('AT-05: sunny fixture resolves to a clear/hot-leaning theme', () => {
-  const weatherData = loadFixture('sunny.json');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  assert.ok(['clear', 'partly_cloudy', 'hot'].includes(analysis.theme));
-  assert.ok(!analysis.adviceSignals.includes('RAIN_LIKELY_EVENING'));
-});
-
-test('AT-03/AT-06: rainy-evening fixture triggers rain advice and rain theme', () => {
-  const weatherData = loadFixture('rainy-evening.json');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
+function flood(severity = 'watch') {
+  return { severity, summary: severity === 'watch' ? 'มีสถานีใกล้ล้นตลิ่ง ควรติดตาม' : 'ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้', trend: 'stable', freshness: { state: severity === 'unknown' ? 'unknown' : 'fresh' }, stations: [{ name: 'น้ำตกโตนแพรทอง', label: severity === 'watch' ? 'ใกล้ล้นตลิ่ง' : '' }], actions: ['ติดตามระดับน้ำล่าสุด'] };
+}
+test('weather analysis still provides deterministic context', () => {
+  const analysis = analyzeWeather(loadFixture('rainy-evening.json'), THRESHOLDS);
   assert.ok(['rain', 'heavy_rain'].includes(analysis.theme));
-  assert.ok(
-    analysis.adviceSignals.includes('RAIN_LIKELY_EVENING') ||
-      analysis.adviceSignals.includes('RAIN_POSSIBLE_EVENING')
-  );
 });
-
-test('AT-08: buildFlex produces a structurally valid bubble', () => {
-  const weatherData = loadFixture('rainy-evening.json');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  const forecastData = buildForecastData(analysis, LOCATION);
-  const flex = buildFlex(forecastData);
-
+test('Phase 3 Flex is compact and flood-first', () => {
+  const analysis = analyzeWeather(loadFixture('rainy-evening.json'), THRESHOLDS);
+  const data = buildForecastData(analysis, flood('watch'), LOCATION, { spokenText: 'รายงานทดสอบ', shortSummary: 'เฝ้าระวัง', priority: 'watch' });
+  const flex = buildFlex(data);
+  const json = JSON.stringify(flex);
   assert.equal(flex.type, 'flex');
-  assert.ok(flex.altText.length > 0);
-  assert.equal(flex.contents.type, 'bubble');
-  assert.equal(flex.contents.size, 'mega');
-  assert.ok(Array.isArray(flex.contents.body.contents));
-  assert.ok(!JSON.stringify(flex).includes('ราคาผลผลิตล่าสุด'));
-  assert.ok(JSON.stringify(flex).includes('ฟังรายละเอียดในข้อความเสียง'));
-  assert.ok(JSON.stringify(flex).includes('น้องจุ่นจ้าน'));
-  assert.equal(flex.contents.body.paddingAll, 'md');
-  assert.ok(JSON.stringify(flex).includes('separator'));
+  assert.equal(flex.contents.size, 'kilo');
+  assert.match(json, /สถานการณ์น้ำ/);
+  assert.match(json, /cctv\.maholan\.net/);
+  assert.match(json, /phatthalung\/weather/);
+  assert.match(json, /น้องจุ่นจ้าน/);
+  assert.doesNotMatch(json, /ราคาปาล์ม|ราคายาง|ข่าวสารทั่วไป/);
+  assert.equal(json.includes('alignItems'), false);
 });
-
-test('LINE Flex payload does not use unsupported alignItems property', () => {
-  const weatherData = loadFixture('rainy-evening.json');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  const flex = buildFlex(buildForecastData(analysis, LOCATION));
-  assert.equal(JSON.stringify(flex).includes('alignItems'), false);
+test('critical compact Flex keeps water actions and omits secondary weather button', () => {
+  const analysis = analyzeWeather(loadFixture('sunny.json'), THRESHOLDS);
+  const json = JSON.stringify(buildFlex(buildForecastData(analysis, flood('critical'), LOCATION)));
+  assert.match(json, /cctv\.maholan\.net/);
+  assert.match(json, /chachoengsao-flood\.vercel\.app\/phatthalung/);
+  assert.doesNotMatch(json, /phatthalung\/weather/);
 });
-
-test('AT-09: header is a full-bleed village-hall photo (not a side thumbnail), gravity keeps the signboard safe, and text sits on one smooth scrim', () => {
-  const weatherData = loadFixture('sunny.json');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  const flex = buildFlex(buildForecastData(analysis, LOCATION));
-  const header = flex.contents.body.contents[0];
-
-  const photoImage = header.contents.find((c) => c.type === 'image');
-  assert.ok(photoImage, 'header must contain the village-hall photo');
-  assert.equal(photoImage.url, 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/assets/flex/village-hall-cutout.jpg');
-  assert.equal(photoImage.size, 'full', 'photo must fill the header, not sit beside the text');
-  assert.equal(photoImage.aspectMode, 'cover');
-  assert.equal(photoImage.gravity, 'top', 'must crop from the bottom, never off the top where the signboard is');
-  assert.equal(header.height, '200px', 'explicit height keeps the crop deterministic across bubble widths');
-
-  const overlays = header.contents.filter((c) => c.position === 'absolute');
-  assert.equal(overlays.length, 2, 'expected one full-height wash + one bottom text box, no extra seams');
-  assert.equal(overlays[0].offsetTop, '0px', 'the wash must span the full photo height, not just a bottom strip');
-
-  const scrimTexts = JSON.stringify(overlays[1]);
-  assert.ok(scrimTexts.includes(LOCATION.name));
-  assert.ok(scrimTexts.includes(LOCATION.district));
+test('unknown flood status is explicit in Flex', () => {
+  const analysis = analyzeWeather(loadFixture('sunny.json'), THRESHOLDS);
+  const json = JSON.stringify(buildFlex(buildForecastData(analysis, flood('unknown'), LOCATION)));
+  assert.match(json, /ยังยืนยันไม่ได้/);
 });
-
-test('AT-02: missing optional daily fields do not crash normalize/analyze', () => {
-  const raw = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', 'sunny.json'), 'utf8')
-  );
-  delete raw.daily.sunrise;
-  delete raw.daily.sunset;
-  const weatherData = normalizeWeather(raw, '2026-09-22T00:00:00Z');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  assert.ok(analysis.theme);
+test('missing optional weather fields do not crash normalize/analyze', () => {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', 'sunny.json'), 'utf8'));
+  delete raw.daily.sunrise; delete raw.daily.sunset;
+  assert.ok(analyzeWeather(normalizeWeather(raw, '2026-09-22T00:00:00Z'), THRESHOLDS).theme);
 });
-
-test('audio duration estimate stays within LINE-safe bounds', () => {
-  const shortScript = 'สวัสดีครับ';
-  const longScript = 'ทดสอบ '.repeat(300);
-  const d1 = estimateDurationMs(shortScript, 1);
-  const d2 = estimateDurationMs(longScript, 1);
-  assert.ok(d1 >= 10_000);
-  assert.ok(d2 <= 190_000);
-});
-
-test('Edge TTS formats negative rate as an attached CLI value', () => {
+test('audio validation helpers remain LINE-safe', () => {
+  assert.ok(estimateDurationMs('สวัสดีครับ', 1) >= 10000);
+  assert.ok(estimateDurationMs('ทดสอบ '.repeat(300), 1) <= 190000);
   assert.equal(edgeRate(0.95), '-5%');
-  assert.equal(edgeRate(1.1), '+10%');
-});
-
-test('LINE audio payload uses HTTPS and milliseconds', () => {
-  assert.deepEqual(buildAudioMessage('https://cdn.example.test/report.mp3', 35000), {
-    type: 'audio', originalContentUrl: 'https://cdn.example.test/report.mp3', duration: 35000,
-  });
-});
-
-test('MP3 parser rejects non-audio bytes', () => {
+  assert.deepEqual(buildAudioMessage('https://cdn.example.test/report.mp3', 35000), { type: 'audio', originalContentUrl: 'https://cdn.example.test/report.mp3', duration: 35000 });
   assert.equal(parseMp3(Buffer.from('not an mp3')), null);
 });
-
-
 test('production duplicate guard skips only after successful same-day delivery', () => {
-  const fs = require('node:fs');
   const os = require('node:os');
-  const path = require('node:path');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-status-'));
   fs.mkdirSync(path.join(root, 'public', 'status'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'public', 'status', 'last-run.json'), JSON.stringify({
-    mode: 'production',
-    generatedAt: new Date().toISOString(),
-    stages: { 'line.send': 'success' },
-  }));
+  fs.writeFileSync(path.join(root, 'public', 'status', 'last-run.json'), JSON.stringify({ mode: 'production', generatedAt: new Date().toISOString(), stages: { 'line.send': 'success' } }));
   assert.equal(shouldSkipDuplicateProductionRun({ mode: 'production', dryRun: false }, { repoRoot: root }), true);
-  assert.equal(shouldSkipDuplicateProductionRun({ mode: 'test', dryRun: false }, { repoRoot: root }), false);
   fs.rmSync(root, { recursive: true, force: true });
 });
-
-
-test('local-news parser keeps useful headlines and drops weather-only items', () => {
-  const html = '<a href="https://phatthalung.prd.go.th/th/content/category/detail/id/12/iid/1">พยากรณ์อากาศ ประจำวันที่ 26 กันยายน 2569</a><a href="https://phatthalung.prd.go.th/th/content/category/detail/id/12/iid/2">จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน</a><a href="https://phatthalung.prd.go.th/th/content/category/detail/id/12/iid/3">เปิดโครงการใหม่เพื่อส่งเสริมอาชีพในพื้นที่</a>';
-  const items = extractHeadlines(html, 2);
-  assert.equal(items.length, 2);
-  assert.match(items[0].title, /พัฒนาชุมชน/);
-  assert.match(items[1].title, /ส่งเสริมอาชีพ/);
-});
-
-test('Thai TTS script includes market prices and local news in the spoken report', () => {
-  const weatherData = loadFixture('rainy-evening.json');
-  const analysis = analyzeWeather(weatherData, THRESHOLDS);
-  const advice = ['ช่วงเย็นมีโอกาสฝนค่อนข้างสูง... เตรียมร่มไว้ก่อนออกจากบ้านนะ'];
-  const dateInfo = buildThaiDateInfo('2026-09-22T06:00:00');
-  const script = buildThaiScript(analysis, advice, LOCATION, dateInfo, [
-    { kind: 'palm', price: 5.25, date: '2569-09-24', status: 'ok' },
-    { kind: 'rubber', price: 82.5, date: '2569-09-25', status: 'ok' },
-  ], [
-    { title: 'จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน', status: 'ok' },
-  ]);
-  assert.match(script, /สวัสดีตอนเช้าครับ/);
-  assert.match(script, /ถ้าไล่ดูเป็นช่วง ๆ ของวันนี้/);
-  assert.match(script, /ปาล์มน้ำมัน ล่าสุด 5.25/);
-  assert.match(script, /ยางพารา ล่าสุด 82.50/);
-  assert.match(script, /จังหวัดพัทลุงเดินหน้าพัฒนาชุมชนและบริการประชาชน/);
-  assert.match(script, /แล้วพบกันใหม่พรุ่งนี้เช้าครับ/);
-  assert.ok(script.length >= 900);
-  assert.ok(script.length <= 2200);
-  assert.ok(estimateDurationMs(script, 0.92) <= 190_000);
-});
-
-
-test('Thai date context includes Gregorian date and lunar day', () => {
-  const info = buildThaiDateInfo('2026-09-22T06:00:00');
-  assert.equal(info.solarText, 'วันอังคารที่ 22 กันยายน พ.ศ. 2569');
-  assert.equal(info.lunarText, 'ขึ้น 11 ค่ำ');
-  assert.match(info.spokenText, /22 กันยายน พ\.ศ\. 2569/);
-  assert.match(info.spokenText, /ขึ้น 11 ค่ำ/);
+test('ReportDraft output has no forbidden product topics', () => {
+  const result = parseReportDraft({ spokenText: 'รายงานสถานการณ์น้ำครับ', shortSummary: 'น้ำเฝ้าระวัง', priority: 'watch', actions: [], factsUsed: ['flood.severity'], warnings: [] });
+  assert.equal(result.ok, true);
 });

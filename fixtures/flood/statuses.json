@@ -1,0 +1,37 @@
+{
+  "affected": {
+    "severity": "affected",
+    "summary": "มีพื้นที่ลุ่มต่ำได้รับผลกระทบและควรหลีกเลี่ยงเส้นทาง",
+    "trend": "rising",
+    "confidence": "medium",
+    "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+    "affectedAreas": ["พื้นที่ลุ่มต่ำใกล้คลอง"],
+    "roads": ["ถนนทางเข้าหมู่บ้าน"],
+    "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung" },
+    "observedAt": "2026-10-03T13:40:00Z",
+    "retrievedAt": "2026-10-03T14:00:00Z",
+    "actions": ["หลีกเลี่ยงเส้นทาง", "ติดตามประกาศล่าสุด"]
+  },
+  "critical": {
+    "severity": "critical",
+    "summary": "มีคำเตือนเร่งด่วนและต้องติดตามคำแนะนำจากหน่วยงาน",
+    "trend": "rising",
+    "confidence": "high",
+    "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+    "roads": ["ถนนสายหลัก"],
+    "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung" },
+    "observedAt": "2026-10-03T13:40:00Z",
+    "retrievedAt": "2026-10-03T14:00:00Z",
+    "actions": ["หลีกเลี่ยงพื้นที่เสี่ยง", "ติดตามประกาศทางการ"]
+  },
+  "unknown": {
+    "severity": "unknown",
+    "summary": "ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้",
+    "trend": "unknown",
+    "confidence": "none",
+    "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+    "source": { "name": "ยังไม่พบข้อมูลต้นทาง", "url": "https://chachoengsao-flood.vercel.app/phatthalung" },
+    "retrievedAt": "2026-10-03T14:00:00Z",
+    "freshness": { "state": "unknown", "ageMinutes": null }
+  }
+}

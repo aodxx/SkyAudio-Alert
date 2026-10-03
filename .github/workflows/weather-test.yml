@@ -1,10 +1,10 @@
-name: Manual weather test
+name: Manual flood/weather test
 
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (build audio/Flex, do not push LINE or commit audio)'
+        description: 'Dry run (build flood/weather/Flex/audio, do not push LINE or commit audio)'
         type: boolean
         default: true
 
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  send-test-forecast:
+  send-test-report:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,27 +21,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install free Thai TTS
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install edge-tts
       - name: Install FFmpeg for Gemini TTS MP3 conversion
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Install OCR for agricultural price images
-        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-tha
-      - name: Run test forecast
+      - name: Run flood/weather test
         env:
           RUN_MODE: test
           DRY_RUN: ${{ inputs.dry_run }}
           LINE_CHANNEL_ACCESS_TOKEN_TEST: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_TEST }}
           LINE_GROUP_ID_TEST: ${{ secrets.LINE_GROUP_ID_TEST }}
-          TTS_PROVIDER: gemini
+          FLOOD_SOURCE_URL: https://chachoengsao-flood.vercel.app/phatthalung
+          WEATHER_PAGE_SOURCE_URL: https://chachoengsao-flood.vercel.app/phatthalung/weather
+          FLOOD_DEGRADED_MODE: unknown-weather
+          CONTENT_PROVIDER: gemini
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_TTS_MODEL: gemini-3.8-flash-tts
-          TTS_VOICE_NAME: Sulafat
-          TTS_STYLE: 'Thai male village loudspeaker announcer; warm, familiar, friendly and human; sounds like a real local community morning announcement, not a studio commercial; clear Thai pronunciation for older listeners; moderately slow and relaxed; natural breathing and short pauses between topics; slightly cheerful but calm; gentle emphasis on temperatures, rain chances, safety advice and local prices; do not sound like a television newsreader; do not rush or read every sentence with the same rhythm; keep the tone conversational and reassuring'
+          GEMINI_CONTENT_MODEL: ${{ secrets.GEMINI_CONTENT_MODEL }}
+          TTS_PROVIDER: gemini
+          GEMINI_TTS_MODEL: ${{ secrets.GEMINI_TTS_MODEL }}
+          TTS_PROFILE: male-friendly
+          TTS_VOICE_NAME_MALE: Achird
+          TTS_VOICE_NAME_FEMALE: Sulafat
           TTS_SPEAKING_RATE: '0.92'
-          TESSERACT_LANG: tha+eng
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
         run: node src/index.js

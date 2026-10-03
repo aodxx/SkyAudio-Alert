@@ -1,42 +1,19 @@
 // src/flex/builder.js
-// Phase 4: local-identity visual header using the village hall cutout.
-// Flex remains glanceable; market prices and local news stay in audio only.
+// Compact flood-first Flex payload.
 
-const { resolveThemeColors } = require('./themes');
-const { headerBlock, heroTempBlock, quickIndicatorsBox, hourlySection, rainProbabilityBox, footerBlock } = require('./components');
+const { headerBlock, floodStatusBlock, weatherBlock, actionButtons, footerBlock } = require('./components');
 
-function buildFlex(forecastData) {
-  const colors = resolveThemeColors(forecastData.theme, forecastData.current.isDay);
-  const range = forecastData.daily
-    ? `${forecastData.daily.tempMin ?? '--'}° / ${forecastData.daily.tempMax ?? '--'}°`
-    : '';
-  const current = { ...forecastData.current, todayRange: range };
-
+function buildFlex(reportData) {
+  const flood = reportData.flood || { severity: 'unknown', summary: 'ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้' };
   const bodyContents = [
-    headerBlock(forecastData.location),
-    heroTempBlock(current),
-    quickIndicatorsBox(current, colors.accent),
-    { type: 'separator', margin: 'md', color: '#31506F' },
-    { type: 'text', text: 'วันนี้', weight: 'bold', size: 'sm', color: '#F3F6FA', margin: 'md' },
-    hourlySection(forecastData.hourlySlots || [], colors.accent),
-    rainProbabilityBox(forecastData.daily || {}, colors.accent),
+    headerBlock(reportData.location, reportData.dateInfo),
+    floodStatusBlock(flood),
+    weatherBlock(reportData),
+    actionButtons(flood.severity),
     footerBlock(),
   ];
-
-  const bubble = {
-    type: 'bubble',
-    size: 'mega',
-    body: {
-      type: 'box',
-      layout: 'vertical',
-      paddingAll: 'md',
-      backgroundColor: colors.background,
-      contents: bodyContents,
-    },
-  };
-
-  const altText = `อากาศ ${forecastData.location.name} ${forecastData.current.temperature ?? '--'}° ${forecastData.current.conditionLabel}`;
+  const bubble = { type: 'bubble', size: 'kilo', body: { type: 'box', layout: 'vertical', paddingAll: 'md', backgroundColor: '#F8FAFC', contents: bodyContents } };
+  const altText = `สถานการณ์น้ำ${flood.severity === 'watch' ? 'เฝ้าระวัง' : flood.severity === 'affected' ? 'ได้รับผลกระทบ' : flood.severity === 'critical' ? 'วิกฤต' : ''} ${reportData.location?.province || 'พัทลุง'} · ${reportData.current?.conditionLabel || 'พยากรณ์อากาศ'}`;
   return { type: 'flex', altText: altText.slice(0, 400), contents: bubble };
 }
-
 module.exports = { buildFlex };

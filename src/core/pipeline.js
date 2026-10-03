@@ -1,11 +1,14 @@
 // src/core/pipeline.js
-// Orchestrates the full daily run: weather -> analysis -> forecast text ->
-// flex -> tts -> validate -> storage -> line. A failed required stage fails the run.
+// Flood-first daily pipeline: flood -> weather -> Gemini content -> Flex -> Gemini TTS -> LINE.
+// Market and news are intentionally not part of this runtime path.
 
+const { fetchPhatthalungFlood } = require('../flood/phatthalungCenter');
+const { createUnknownFloodSituation } = require('../flood/contract');
 const { fetchOpenMeteo } = require('../weather/openMeteo');
 const { normalizeWeather } = require('../weather/normalize');
 const { analyzeWeather } = require('../weather/analyzer');
 const { buildForecastData } = require('../forecast/formatter');
+const { generateGeminiReport } = require('../content/geminiReport');
 const { buildFlex } = require('../flex/builder');
 const { synthesizeSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
@@ -14,16 +17,11 @@ const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
 const { withRetry } = require('./retry');
 const { log } = require('./logger');
 const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statusReport');
-const { getMarketBrief } = require('../market');
-const { getLocalNews } = require('../news/phatthalungNews');
 
 async function runPipeline(config) {
   const { runId } = config;
   const result = { runId, stages: {} };
-  const mark = (stage, status, extra) => {
-    log(runId, stage, status, extra);
-    result.stages[stage] = status;
-  };
+  const mark = (stage, status, extra) => { log(runId, stage, status, extra); result.stages[stage] = status; };
 
   if (shouldSkipDuplicateProductionRun(config)) {
     mark('run', 'skipped', { reason: 'production announcement already delivered successfully today (Asia/Bangkok)' });
@@ -32,72 +30,84 @@ async function runPipeline(config) {
     return skippedResult;
   }
 
+  let floodSituation;
+  mark('flood.fetch', 'start');
+  try {
+    floodSituation = await withRetry(() => fetchPhatthalungFlood(config.location, {
+      url: config.flood.sourceUrl || undefined,
+      freshnessLimitMinutes: config.flood.freshnessLimitMinutes,
+    }), { onRetry: (err, attempt) => mark('flood.fetch', 'retry', { attempt, message: err.message }) });
+    mark('flood.fetch', 'success', { severity: floodSituation.severity, stations: floodSituation.stations.length, freshness: floodSituation.freshness.state });
+  } catch (error) {
+    if (config.flood.degradedMode !== 'unknown-weather') {
+      mark('flood.fetch', 'failure', { message: error.message });
+      result.lastError = { stage: error.stage || 'flood.fetch', message: error.message };
+      writeStatusReport(result, config);
+      throw error;
+    }
+    floodSituation = createUnknownFloodSituation({ location: config.location, source: { name: 'ศูนย์ข้อมูลน้ำพัทลุงใช้งานไม่ได้', url: config.flood.sourceUrl }, retrievedAt: new Date().toISOString() });
+    mark('flood.fetch', 'degraded', { reason: error.message, mode: config.flood.degradedMode });
+  }
+
   mark('weather.fetch', 'start');
-  const raw = await withRetry(() => fetchOpenMeteo(config.location), {
+  const rawWeather = await withRetry(() => fetchOpenMeteo(config.location), {
     onRetry: (err, attempt) => mark('weather.fetch', 'retry', { attempt, message: err.message }),
   });
   mark('weather.fetch', 'success');
   mark('weather.normalize', 'start');
-  const weatherData = normalizeWeather(raw);
+  const weatherData = normalizeWeather(rawWeather);
   mark('weather.normalize', 'success');
   mark('weather.analyze', 'start');
-  const analysis = analyzeWeather(weatherData, config.thresholds);
-  mark('weather.analyze', 'success', { theme: analysis.theme, adviceSignals: analysis.adviceSignals });
+  const weatherAnalysis = analyzeWeather(weatherData, config.thresholds);
+  mark('weather.analyze', 'success', { theme: weatherAnalysis.theme, adviceSignals: weatherAnalysis.adviceSignals });
 
-  mark('market.fetch', 'start');
-  const marketBrief = await getMarketBrief();
-  mark('market.fetch', 'success', { items: marketBrief.map((x) => ({ kind: x.kind, status: x.status, date: x.date })) });
+  const dateInfo = new Intl.DateTimeFormat('th-TH', { timeZone: config.location.timezone, dateStyle: 'long' }).format(new Date());
+  mark('content.generate', 'start');
+  const report = await withRetry(() => generateGeminiReport({ floodSituation, weatherAnalysis, location: config.location, date: dateInfo }, config), {
+    onRetry: (err, attempt) => mark('content.generate', 'retry', { attempt, message: err.message }),
+  });
+  mark('content.generate', 'success', { provider: report.provider, priority: report.priority, characters: report.spokenText.length });
 
-  mark('news.fetch', 'start');
-  const localNews = await getLocalNews(2);
-  mark('news.fetch', 'success', { count: localNews.length });
-
-  mark('forecast.render', 'start');
-  const forecastData = buildForecastData(analysis, config.location, marketBrief, localNews);
-  const flexMessage = buildFlex(forecastData);
-  mark('forecast.render', 'success');
+  mark('flex.render', 'start');
+  const reportData = buildForecastData(weatherAnalysis, floodSituation, config.location, report);
+  const flexMessage = buildFlex(reportData);
+  mark('flex.render', 'success', { severity: floodSituation.severity });
 
   const messages = [flexMessage];
   let audioInfo;
   try {
-    mark('audio.synthesize', 'start');
-    const audioBuffer = await withRetry(() => synthesizeSpeech(forecastData.thaiScript, config.tts), {
-      onRetry: (err, attempt) => mark('audio.synthesize', 'retry', { attempt, message: err.message }),
+    mark('tts.synthesize', 'start');
+    const audioBuffer = await withRetry(() => synthesizeSpeech(report.spokenText, config.tts), {
+      onRetry: (err, attempt) => mark('tts.synthesize', 'retry', { attempt, message: err.message }),
     });
-    mark('audio.synthesize', 'success', { provider: config.tts.provider, voice: config.tts.voiceName, scriptLength: forecastData.thaiScript.length, bytes: audioBuffer.length });
-
+    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, scriptLength: report.spokenText.length, bytes: audioBuffer.length });
     mark('audio.validate', 'start');
-    const validated = validateAudio(audioBuffer, forecastData.thaiScript, config.tts.speakingRate);
+    const validated = validateAudio(audioBuffer, report.spokenText, config.tts.speakingRate);
     mark('audio.validate', 'success', { durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, bitrateKbps: validated.bitrateKbps, sampleRate: validated.sampleRate });
-
     mark('audio.store', 'start');
     const stored = storeAudio(audioBuffer, config.storage, { dryRun: config.dryRun });
     mark('audio.store', 'success', { url: stored.url, committed: stored.committed, skipped: stored.skipped, path: stored.relPath });
     audioInfo = { url: stored.url, durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType };
     if (stored.url) messages.push(buildAudioMessage(stored.url, validated.durationMs));
-  } catch (err) {
-    const stage = err.stage || 'audio';
-    mark(stage, 'failure', { message: err.message, detail: err.detail });
-    result.lastError = { stage: err.stage, message: err.message, detail: err.detail };
+  } catch (error) {
+    const stage = error.stage || 'tts.synthesize';
+    mark(stage, 'failure', { message: error.message, detail: error.detail });
+    result.lastError = { stage, message: error.message, detail: error.detail };
     writeStatusReport(result, config);
-    throw err;
+    throw error;
   }
 
   if (config.dryRun) {
     mark('line.send', 'skipped', { dryRun: true, reason: 'DRY_RUN=true; LINE API was not called', messageCount: messages.length });
-    const dryResult = { ...result, dryRun: true, messages, audioInfo };
+    const dryResult = { ...result, dryRun: true, floodSituation, report, reportData, messages, audioInfo };
     writeStatusReport(dryResult, config);
     return dryResult;
   }
-
   mark('line.send', 'start');
-  await withRetry(() => pushMessages(messages, config.line), {
-    onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }),
-  });
+  await withRetry(() => pushMessages(messages, config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
   mark('line.send', 'success', { messageCount: messages.length });
-  const finalResult = { ...result, messages, audioInfo };
+  const finalResult = { ...result, floodSituation, report, reportData, messages, audioInfo };
   writeStatusReport(finalResult, config);
   return finalResult;
 }
-
 module.exports = { runPipeline };

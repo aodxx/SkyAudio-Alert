@@ -109,6 +109,63 @@ Any credential pasted into chat should be treated as exposed and replaced before
 
 **Note — unrelated but observed while investigating:** Decision 009 describes an always-present `announcementBoard()` reserved slot wired through `heroTempBlock(current, announcement)`. That function/board is not present in the current `src/flex/components.js` (`heroTempBlock(current)` takes one argument) — it appears to have been dropped during a later compact-redesign phase without updating Decision 009. Not touched by this change; flagging so it isn't mistaken for intentional.
 
+## Decision 014 — Flood-first report links and community identity
+
+**Date:** 2026-10-03
+
+**Decision:** The product direction changes from weather + market/news to a flood-first morning report with weather forecast as supporting information. The report remains branded and spoken by **น้องจุ่นจ้าน** and continues sending Flex + Audio to the บ้านลำพาย LINE group.
+
+The Flex must include two prominent URI buttons:
+
+1. **ดูสถานะน้ำ / CCTV** → `https://cctv.maholan.net/`
+2. **สถานการณ์น้ำพัทลุง / แหล่งข้อมูล** → `https://chachoengsao-flood.vercel.app/phatthalung`
+
+**Reason:** The first link provides a community-facing view of live/still cameras, flood watch points, and visual flood status. The second link provides the Phatthalung flood center view with water levels, rain forecast, maps, updates, and source attribution. These links give residents an immediate way to inspect the source context rather than relying only on a short generated summary.
+
+**Constraints:** The links are confirmed as user-facing source/navigation links, not automatically confirmed APIs. Until an approved and stable machine-readable contract is verified, the runtime must not scrape them as if they were guaranteed APIs. If the structured flood data is unavailable or stale, the report must say that the latest situation cannot be confirmed and must not infer actual flooding from weather forecast alone. The phrase “บ้านลำพาล” in the request is interpreted as the existing configured location “บ้านลำพาย”; change this only if the user explicitly identifies a different destination.
+
+## Decision 015 — Gemini generates adaptive daily narrative and Gemini TTS audio
+
+**Date:** 2026-10-03
+
+**Decision:** The daily report will not use a fixed script template or fixed duration. Gemini will generate and prioritize the Thai narrative from validated flood/weather facts for that specific day. Gemini TTS will synthesize the validated spoken text, with model and voice selected through configuration. Candidate TTS model names may include the current Gemini Flash TTS or Flash-Lite TTS family, but the implementation must verify actual model availability and endpoint compatibility before deployment.
+
+**Reason:** A flood report should be short on an ordinary day and expand only when there are meaningful changes, affected roads, critical warnings, or important safety actions. A rigid 2–3 minute format would encourage filler on quiet days and could bury urgent facts on serious days.
+
+**Safety boundary:** Gemini is a narrative layer, not the source of truth. Deterministic adapters, normalization, freshness checks, severity analysis, and no-fabrication validation remain authoritative. The content generator receives normalized facts only; it must return structured output, and the output must be validated before entering TTS. If Gemini content generation fails or produces unsupported claims, the system uses a short deterministic safety fallback rather than sending unverified text.
+
+**Relationship to earlier decisions:** This supersedes the fixed-template portion of Decision 002 for daily narrative generation, but retains deterministic analysis and fallback. Decision 001 remains valid: production does not depend on a Manus AI Agent; it may call the explicitly configured Gemini API as an external content/TTS provider.
+
+## Decision 016 — Scope Review Report is the pre-implementation gate
+
+**Date:** 2026-10-03
+
+**Decision:** Before changing production runtime, the team will use [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) as the consolidated scope gate. It records In Scope, Out of Scope, Deferred work, blockers, document conflicts, acceptance criteria, and implementation order for the flood-first pivot.
+
+**Reason:** The repository contains a proven legacy weather/market/news implementation and several documents that still describe it. A single report prevents the team from treating legacy acceptance evidence as approval for the new flood/Gemini runtime and reduces rework caused by unresolved source/model contracts.
+
+**Go condition:** Do not open the new production implementation until the report blockers B1–B4 are resolved or explicitly accepted and recorded in a later decision.
+
+## Decision 017 — Add dedicated Phatthalung weather route as a secondary Flex link
+
+**Date:** 2026-10-03
+
+**Decision:** Add `https://chachoengsao-flood.vercel.app/phatthalung/weather` as an optional third URI action labeled **“พยากรณ์อากาศ / เรดาร์ฝน”**. Keep the CCTV and Phatthalung flood-center links as the primary water-status actions.
+
+**Evidence:** The route identifies itself as “พยากรณ์อากาศ พัทลุง” and exposes daily rain forecast, wind/rain details, current rain radar, and a three-day forecast map, with Open-Meteo attribution. The parent `/phatthalung` route remains the water-situation/level source and links to this weather route.
+
+**Layout constraint:** The third action is secondary and must not make the compact Flex too tall. In affected/critical states, the two water actions remain visually primary; the weather action may be placed in the Weather group or omitted from the smallest compact variant if space/LINE client rendering requires it.
+
+## Decision 018 — Phase 3 flood-first runtime replaces legacy market/news pipeline
+
+**Date:** 2026-10-04
+
+**Decision:** Production runtime order is `flood → weather → Gemini content → Flex → Gemini TTS → LINE`. Market and news modules, fixed Thai market/news script, and their runtime tests are removed rather than retained as optional stages.
+
+**Safety:** Flood-source failure uses explicit `unknown-weather` degraded mode. Gemini content is validated as structured `ReportDraft`; test/dry-run may use deterministic fallback without a key, while production without `GEMINI_API_KEY` fails at content generation. The critical Flex variant prioritizes water actions and can omit the secondary weather button.
+
+**Verification:** Local dry-run against the live flood center and Open-Meteo completed the new stages through `line.send: skipped`; no LINE call was made.
+
 ## Decision 012 — Fixed pixel height + top gravity for the header photo; dropped the duplicate caption line
 
 **Date:** 2026-09-27

@@ -1,22 +1,27 @@
 # SkyAudio-Alert — น้องจุ่นจ้าน
 
-ระบบพยากรณ์อากาศประจำวันสำหรับกลุ่มไลน์บ้านลำพาย ต.โคกชะงาย อ.เมือง จ.พัทลุง
+ระบบรายงานสถานการณ์น้ำท่วมเป็นหลัก พร้อมพยากรณ์อากาศประจำวัน สำหรับกลุ่มไลน์บ้านลำพาย ต.โคกชะงาย อ.เมือง จ.พัทลุง โดยมีน้องจุ่นจ้านเป็นผู้ประกาศ
 
 ทุกเช้า 06:00 น. (เวลาไทย) ระบบจะ:
-1. ดึงข้อมูลจาก Open-Meteo
-2. วิเคราะห์อากาศด้วยกฎแบบ deterministic
-3. ดึงราคาปาล์มน้ำมันและยางพาราจากแหล่งข้อมูลจังหวัดแบบ conservative
-4. ดึงข่าวประชาสัมพันธ์ท้องถิ่นจากสำนักงานประชาสัมพันธ์จังหวัดพัทลุง
-5. สร้าง LINE Flex ที่เปลี่ยนธีมตามสภาพอากาศ
-6. สร้างเสียงภาษาไทยด้วย Gemini TTS โดยรวมอากาศ + ราคาผลผลิต + ข่าวสารไว้ในรายงานเสียงประมาณ 2–3 นาที สไตล์ผู้ประกาศเสียงตามสายของหมู่บ้าน
-7. ส่ง Flex แล้วตามด้วย LINE Audio Message
+1. รวบรวม/รายงานสถานการณ์น้ำท่วมและระดับน้ำของพัทลุงตามแหล่งข้อมูลที่กำหนด
+2. ดึงพยากรณ์อากาศจาก Open-Meteo และวิเคราะห์ด้วยกฎแบบ deterministic
+3. สร้าง LINE Flex แบบ flood-first พร้อมปุ่มใหญ่สำหรับดูสถานะน้ำ/CCTV ศูนย์ข้อมูลน้ำพัทลุง และพยากรณ์อากาศ
+4. ใช้ Gemini สร้างเนื้อหารายงานตามข้อมูลสำคัญของวันนั้นแบบไม่ใช้โครงตายตัว แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
+5. ส่ง Flex แล้วตามด้วย LINE Audio Message เข้า LINE กลุ่มบ้านลำพาย
+
+ลิงก์สำหรับผู้ใช้ใน Flex:
+- [ดูสถานะน้ำ / CCTV](https://cctv.maholan.net/)
+- [สถานการณ์น้ำพัทลุง / แหล่งข้อมูล](https://chachoengsao-flood.vercel.app/phatthalung)
+- [พยากรณ์อากาศ / เรดาร์ฝน](https://chachoengsao-flood.vercel.app/phatthalung/weather)
+
+> ราคาปาล์ม ราคายาง และข่าวสารทั่วไปถูกตัดออกจากรายงาน production ใหม่แล้ว
 
 ต้นทุนเป้าหมาย: **0 บาท/เดือน**
 
 ## GitHub Actions
 
 ### ทดสอบแบบ Dry Run
-Actions → **Manual weather test** → Run workflow → `dry_run=true`
+Actions → **Manual flood/weather test** → Run workflow → `dry_run=true`
 
 Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
 หาก TTS, การตรวจ MP3 หรือขั้นตอนที่จำเป็นล้มเหลว job จะล้มเหลว ไม่รายงานว่าสำเร็จแบบ Flex-only
@@ -27,7 +32,7 @@ Dry run จะดึงอากาศจริง สร้าง Flex แล�
 - `LINE_GROUP_ID_TEST`
 
 ### Production
-Workflow **Daily weather announcement** รันที่ 23:00 UTC ซึ่งตรงกับ 06:00 Asia/Bangkok
+Workflow **Daily flood and weather announcement** รันที่ 23:00 UTC ซึ่งตรงกับ 06:00 Asia/Bangkok
 Production ต้องมี:
 - `LINE_CHANNEL_ACCESS_TOKEN_PROD`
 - `LINE_GROUP_ID_PROD`
@@ -38,11 +43,11 @@ Production ต้องมี:
 
 ## TTS
 
-ค่าเริ่มต้นใช้ **Gemini TTS** รุ่น `gemini-3.8-flash-tts` และเสียง `Sulafat` โดยบทพูดถูกออกแบบให้ยาวประมาณ 2–3 นาทีและมีจังหวะเหมือนประกาศเสียงตามสายของหมู่บ้าน: อบอุ่น เป็นกันเอง ชัดเจน พูดไม่รีบ และเว้นจังหวะตามหัวข้อ เพื่อให้ผู้สูงอายุฟังได้ง่าย
+ใช้ **Gemini** สร้างเนื้อหาตามข้อมูลสำคัญของแต่ละวันแบบไม่ใช้โครงหรือตัวกำหนดความยาวตายตัว แล้วใช้ **Gemini TTS** สร้างเสียงตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เสียงต้องอบอุ่น เป็นกันเอง ชัดเจน และเหมาะกับผู้สูงอายุ
 
 Edge TTS และ Google TTS ยังรองรับเป็นตัวเลือกสำหรับการทดสอบ/ย้อนกลับ โดยกำหนด `TTS_PROVIDER` ตาม provider ที่ต้องการ
 
-หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ โดยรองรับรายงานเสียงยาวถึงประมาณ 3 นาที สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
+หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ โดยไม่มี target duration แบบตายตัว แต่ต้องผ่านข้อจำกัดทางเทคนิคของ LINE สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
 
 ## ทดสอบในเครื่อง
 
@@ -57,7 +62,13 @@ npm test
 - credential ที่เคยเผยแพร่ในแชทให้ถือว่า exposed และควร revoke/rotate ก่อนใช้งานจริง
 - ใช้ GitHub Actions Secrets สำหรับค่าลับ
 
+สถานะการรื้อ runtime อยู่ที่ [Phase 3 Status](docs/PHASE3_STATUS.md); ส่วน [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md) เป็นจุดอ้างอิงกลางของ In/Out/Deferred, blocker และ release gate
+
 รายละเอียดเพิ่มเติม: `PRD.md`, `ARCHITECTURE.md`, `API.md`, `DECISIONS.md` และ `CHANGELOG.md`
+
+แผนปรับผลิตภัณฑ์จากรายงานราคา/ข่าวสารเป็น **สถานการณ์น้ำท่วมเป็นหลัก + พยากรณ์อากาศ** อยู่ที่ [`docs/REFACTOR_PLAN_FLOOD_WEATHER.md`](docs/REFACTOR_PLAN_FLOOD_WEATHER.md) โดยยังคงช่องทาง LINE Flex และ Audio Message ไว้ แต่กำหนดให้รื้อเนื้อหาและ layout ใหม่
+
+รายละเอียดการออกแบบเสียงรายวัน (โปรไฟล์หญิง/ชาย) และ Flex แบบกะทัดรัดแบ่งกลุ่มด้วยไล่เฉดสีอยู่ที่ [`docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md`](docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md)
 
 ## 🌿 บริบทสถานที่จริงและ Design Reference
 
@@ -84,4 +95,3 @@ npm test
 5. สิ่งใดควรเป็นข้อมูลจริงจาก API และสิ่งใดเป็นเพียง Design reference
 
 **ข้อควรระวัง:** ห้ามนำรูปบุคคลหรือข้อมูลส่วนบุคคลจากโฟลเดอร์ไปใช้ใน production โดยอัตโนมัติ ต้องตรวจสิทธิ์การใช้งานและความเหมาะสมก่อนเสมอ
-

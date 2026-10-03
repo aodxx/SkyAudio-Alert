@@ -1,5 +1,7 @@
 # SkyAudio-Alert — Database
 
+> **Scope review notice — 2026-10-03:** รอบ flood-first ยังไม่เพิ่ม database โดยอัตโนมัติ; ต้องตัดสินใจเฉพาะว่าต้องเก็บ flood history/freshness หรือไม่หลัง source contract ชัดเจน รายละเอียดและขอบเขตอยู่ที่ [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md)
+
 V1 has no database (Decision 007 in DECISIONS.md).
 
 State that would normally need a database is avoided by design:

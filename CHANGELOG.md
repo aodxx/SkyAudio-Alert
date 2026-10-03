@@ -1,3 +1,19 @@
+> **Scope pivot notice — 2026-10-03:** รายการ Phase 1 audio expansion และรายการเก่าที่กล่าวถึง market/news/2–3 นาทีเป็น historical legacy changes; product direction ใหม่และรายการงานก่อนเขียนโค้ดอยู่ที่ [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md)
+
+## Unreleased — Phase 1 contract-first implementation
+- Added normalized `FloodSituation` contract with severity, trend, source, timestamps, freshness, and explicit `unknown` state.
+- Added Gemini `ReportDraft` structured-output parser/validator with forbidden market/news checks and freshness disclosure support.
+- Added flood fixtures for normal, watch, affected, critical, and unknown scenarios.
+- Added `FLOOD_*`, `GEMINI_CONTENT_MODEL`, `GEMINI_TTS_MODEL`, and male/female TTS profile configuration.
+- Contracts are intentionally not wired into the production pipeline until the flood source and Gemini model contracts are verified.
+
+## Unreleased — Phase 3 flood-first runtime
+- Replaced the runtime order with flood → weather → Gemini content → Flex → Gemini TTS → LINE.
+- Removed market/news imports, modules, fixed market/news Thai script, tests, and OCR workflow installation.
+- Added structured Gemini report generation with validation and test/dry-run safety fallback.
+- Rebuilt Flex as a compact flood-first card with the CCTV, flood-center, and weather actions.
+- Verified a live-source dry-run through `line.send: skipped` without sending LINE.
+
 ## Unreleased — Header photo swapped to the original full-resolution source
 - อ๊อด provided the original, uncropped photo (plain rectangle, blue sky, full roofline, full signboard, no transparent corners) and gave full creative freedom to re-crop/redesign.
 - Replaced `assets/flex/village-hall-cutout.jpg` with a crop from that original: 720×350 (~2.06:1), roof peak given a small sky margin, signboard measured (pixel-checked) to sit within the first ~160px so it stays safely inside the 200px `gravity:'top'` header. Sharper than before — no upscale blur, since the source is native resolution rather than an upscaled small cutout.

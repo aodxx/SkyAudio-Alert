@@ -1,0 +1,11 @@
+{
+  "severity": "normal",
+  "summary": "ระดับน้ำอยู่ในเกณฑ์ปกติ",
+  "trend": "stable",
+  "confidence": "high",
+  "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+  "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung", "publisher": "ศูนย์ข้อมูลน้ำ" },
+  "observedAt": "2026-10-03T13:40:00Z",
+  "retrievedAt": "2026-10-03T14:00:00Z",
+  "actions": ["ติดตามข้อมูลตามปกติ"]
+}
