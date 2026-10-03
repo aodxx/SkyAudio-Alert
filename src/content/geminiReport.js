@@ -6,6 +6,10 @@ const { buildGeminiReportInput, parseReportDraft } = require('./reportContract')
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
+function normalizeGeminiModelName(value) {
+  return String(value || '').trim().replace(/^models\//i, '');
+}
+
 function reportError(message, retryable = false, detail) {
   const error = new Error(message);
   error.stage = 'content.generate';
@@ -64,7 +68,8 @@ async function generateGeminiReport(context, config, opts = {}) {
     if (!result.ok) throw reportError('Fallback report failed validation', false, result.errors.join('; '));
     return { ...result.draft, provider: 'fallback' };
   }
-  if (!config.content.model) throw reportError('GEMINI_CONTENT_MODEL is not configured');
+  const model = normalizeGeminiModelName(config.content.model);
+  if (!model) throw reportError('GEMINI_CONTENT_MODEL is not configured');
   const doFetch = opts.fetchImpl || fetch;
   const input = buildGeminiReportInput({
     floodSituation: context.floodSituation,
@@ -98,7 +103,7 @@ async function generateGeminiReport(context, config, opts = {}) {
       },
     },
   };
-  const url = `${GEMINI_BASE_URL}/${encodeURIComponent(config.content.model)}:generateContent`;
+  const url = `${GEMINI_BASE_URL}/${encodeURIComponent(model)}:generateContent`;
   const res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   if (!res.ok) {
     const detail = (await res.text().catch(() => '')).slice(0, 500);

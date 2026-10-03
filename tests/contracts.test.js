@@ -37,3 +37,25 @@ test('Gemini content adapter uses a validated flood/weather fallback in test mod
   const report = await generateGeminiReport({ floodSituation: { severity: 'watch', summary: 'มีสถานีใกล้ล้นตลิ่ง', actions: [], freshness: { state: 'fresh' } }, weatherAnalysis: { current: { description: { label: 'มีเมฆมาก' }, temperature: 28 }, daily: { precipitationProbabilityMax: 80 } }, location: { name: 'บ้านลำพาย', province: 'พัทลุง' }, date: 'วันนี้' }, { mode: 'test', dryRun: true, content: { apiKey: '', model: '' } });
   assert.equal(report.provider, 'fallback'); assert.equal(report.priority, 'watch'); assert.match(report.spokenText, /สถานการณ์น้ำ/);
 });
+test('Gemini content adapter removes models/ prefix before making the GenerateContent request', async () => {
+  const { generateGeminiReport } = require('../src/content/geminiReport');
+  let requestedUrl;
+  const generatedDraft = {
+    spokenText: 'สวัสดีครับ วันนี้สถานการณ์น้ำพัทลุงปกติครับ',
+    shortSummary: 'สถานการณ์น้ำปกติ',
+    priority: 'normal',
+    actions: [],
+    factsUsed: ['flood.severity'],
+    warnings: [],
+  };
+  const report = await generateGeminiReport(
+    { floodSituation: { severity: 'normal', summary: 'สถานการณ์ปกติ', actions: [], freshness: { state: 'fresh' } }, weatherAnalysis: {}, location: { province: 'พัทลุง' }, date: '4 ต.ค.' },
+    { mode: 'test', dryRun: true, content: { apiKey: 'test-key', model: 'models/gemini-2.5-flash' } },
+    { fetchImpl: async (url) => {
+      requestedUrl = url;
+      return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(generatedDraft) }] } }] }) };
+    } },
+  );
+  assert.equal(requestedUrl, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
+  assert.equal(report.provider, 'gemini');
+});
