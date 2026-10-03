@@ -1,11 +1,28 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const { parseFloodCenterHtml } = require('../src/flood/phatthalungCenter');
 const { parseWeatherPageHtml } = require('../src/weather/phatthalungPage');
 
-const floodHtml = fs.readFileSync('/tmp/chachoengsao-flood_vercel_app_phatthalung.html', 'utf8');
-const weatherHtml = fs.readFileSync('/tmp/chachoengsao-flood_vercel_app_weather.html', 'utf8');
+// Keep representative source HTML with the tests so local and CI runs do not
+// depend on untracked files in /tmp or on a live website being available.
+const floodHtml = `
+  <html><body><ul>
+    <li>ใกล้ล้นตลิ่ง น้ำตกโตนแพรทอง · คลองลำสิน ต่ำกว่าตลิ่ง 0.42 ม. ทรงตัว วัดเมื่อ 3 ต.ค. 23:00 · ศูนย์ข้อมูลน้ำ</li>
+    <li>น้ำมาก สะพานข้ามคลองบางม่วง · ทะเลหลวง ต่ำกว่าตลิ่ง 0.94 ม. ทรงตัว วัดเมื่อ 3 ต.ค. 23:00 · ศูนย์ข้อมูลน้ำ</li>
+    <li>ปกติ สถานีบ้านควน · คลองบ้านควน ต่ำกว่าตลิ่ง 1.20 ม. กำลังลด วัดเมื่อ 3 ต.ค. 23:00 · ศูนย์ข้อมูลน้ำ</li>
+    <li>ปกติ สถานีบ้านนา · คลองบ้านนา ต่ำกว่าตลิ่ง 1.45 ม. ทรงตัว วัดเมื่อ 3 ต.ค. 23:00 · ศูนย์ข้อมูลน้ำ</li>
+    <li>ปกติ สถานีปากพะยูน · คลองปากพะยูน ต่ำกว่าตลิ่ง 1.70 ม. ทรงตัว วัดเมื่อ 3 ต.ค. 23:00 · ศูนย์ข้อมูลน้ำ</li>
+    <li>ปกติ สถานีควนขนุน · คลองควนขนุน ต่ำกว่าตลิ่ง 1.10 ม. ทรงตัว วัดเมื่อ 3 ต.ค. 23:00 · ศูนย์ข้อมูลน้ำ</li>
+  </ul></body></html>
+`;
+
+const weatherHtml = `
+  <html><body>
+    <section>วันนี้ ฝนฟ้าคะนอง 2 มม. · 100% ลมตะวันตก</section>
+    <section>พรุ่งนี้ มีเมฆบางส่วน 0 มม. · 10% ลมตะวันออก</section>
+    <section>มะรืนนี้ ฝนเล็กน้อย 1 มม. · 30% ลมใต้</section>
+  </body></html>
+`;
 
 test('Phatthalung flood adapter parses server-rendered station rows', () => {
   const situation = parseFloodCenterHtml(floodHtml, {
