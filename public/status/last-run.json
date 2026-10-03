@@ -2,12 +2,21 @@
   "runId": "2026-10-04-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {},
+  "stages": {
+    "flood.fetch": "success",
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "content.generate": "success",
+    "flex.render": "success",
+    "tts.synthesize": "start",
+    "audio.synthesize": "failure"
+  },
   "lastError": {
-    "stage": "content.generate",
-    "message": "Gemini content request failed: 503",
-    "detail": "{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"
+    "stage": "audio.synthesize",
+    "message": "Gemini TTS request failed: 400",
+    "detail": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"* GenerateContentRequest.model: unexpected model name format\\n\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n"
   },
   "audio": null,
-  "generatedAt": "2026-10-03T19:53:48.661Z"
+  "generatedAt": "2026-10-03T20:14:58.043Z"
 }
