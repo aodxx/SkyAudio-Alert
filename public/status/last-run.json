@@ -9,5 +9,5 @@
     "detail": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"* GenerateContentRequest.model: unexpected model name format\\n\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n"
   },
   "audio": null,
-  "generatedAt": "2026-10-03T19:07:33.267Z"
+  "generatedAt": "2026-10-03T19:10:49.684Z"
 }
