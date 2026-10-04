@@ -55,6 +55,7 @@ jobs:
           CONTENT_PROVIDER: gemini
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_CONTENT_MODEL: ${{ secrets.GEMINI_CONTENT_MODEL || 'gemini-3.8-flash' }}
+          GEMINI_CONTENT_FALLBACK_MODEL: ${{ secrets.GEMINI_CONTENT_FALLBACK_MODEL || 'gemini-3.7-flash' }}
           GEMINI_THINKING_LEVEL: low
           TTS_PROVIDER: gemini
           GEMINI_TTS_MODEL: ${{ secrets.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts' }}
