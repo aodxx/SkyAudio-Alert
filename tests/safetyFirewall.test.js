@@ -1,7 +1,7 @@
 const test=require('node:test');const assert=require('node:assert/strict');
 const{validateGeneratedFacts,extractNumbers}=require('../src/content/safetyFirewall');const{scorePresentationQuality}=require('../src/content/qualityScore');
 function plan(severity='watch',spoken='มีสถานการณ์น้ำที่ควรติดตาม'){return{severity,factsUsed:['flood.severity'],spokenText:spoken,actions:['ติดตามระดับน้ำล่าสุด'],cards:[{role:'hero',title:'สถานการณ์น้ำ: '+severity,body:spoken},{role:'source',title:'แหล่งข้อมูล',body:'ตรวจสอบข้อมูลล่าสุด'}]}}
-function facts(severity='watch'){return{date:'4 ตุลาคม 2569',floodSituation:{severity,stations:[{name:'สถานีคลองลำปำ',label:'ใกล้ล้นตลิ่ง',level:1.2}],affectedAreas:[],roads:[],freshness:{state:'fresh'},summary:'ควรเฝ้าระวัง'}}}
+function facts(severity='watch'){return{date:'4 ตุลาคม 2569',floodSituation:{severity,stations:[{name:'สถานีคลองลำปำ',label:'ใกล้ล้นตลิ่ง',level:1.2}],affectedAreas:[],roads:[],freshness:{state:'fresh'},summary:'ควรเฝ้าระวัง'}}}}
 test('rejects unsupported certainty',()=>assert.ok(validateGeneratedFacts(plan('watch','ปลอดภัยแน่นอนครับ'),facts()).some(e=>e.includes('certainty'))));
 test('rejects severity drift',()=>assert.ok(validateGeneratedFacts(plan('critical'),facts('watch')).some(e=>e.includes('severity'))));
 test('rejects generated numeric facts not in source',()=>assert.ok(validateGeneratedFacts(plan('watch','ระดับน้ำ 999 เมตร'),facts()).some(e=>e.includes('numeric'))));
