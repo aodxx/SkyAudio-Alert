@@ -95,3 +95,18 @@
 - [x] Runtime behavior unchanged
 
 **Phase 2: COMPLETE. Next: Phase 3 — Adaptive Flex Carousel.**
+
+
+## V1.5 — Phase 5 Safety + Quality Firewall — 2026-10-04
+- [x] Deterministic safety firewall before TTS/LINE
+- [x] Unsupported certainty and forbidden topic rejection
+- [x] Forecast-only flood-claim protection
+- [x] Generated numeric fact leakage detection
+- [x] Severity consistency gate
+- [x] factsUsed trace requirement
+- [x] Internal quality score separated from safety authorization
+- [x] Phase 5 regression tests
+- [x] PR #17 merged to main
+
+**Phase 5: COMPLETE. Next: Phase 6 — End-to-End LINE Acceptance.**
+**Production remains NO-GO.**
