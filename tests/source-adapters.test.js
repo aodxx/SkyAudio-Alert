@@ -1,11 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const path = require('node:path');
 const { parseFloodCenterHtml } = require('../src/flood/phatthalungCenter');
 const { parseWeatherPageHtml } = require('../src/weather/phatthalungPage');
 
-const floodHtml = fs.readFileSync('/tmp/chachoengsao-flood_vercel_app_phatthalung.html', 'utf8');
-const weatherHtml = fs.readFileSync('/tmp/chachoengsao-flood_vercel_app_weather.html', 'utf8');
+const floodHtml = fs.readFileSync(path.join(__dirname, '..', 'fixtures/source/chachoengsao-flood_phatthalung.html'), 'utf8');
+const weatherHtml = fs.readFileSync(path.join(__dirname, '..', 'fixtures/source/chachoengsao-flood_phatthalung_weather.html'), 'utf8');
 
 test('Phatthalung flood adapter parses server-rendered station rows', () => {
   const situation = parseFloodCenterHtml(floodHtml, {

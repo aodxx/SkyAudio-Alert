@@ -97,8 +97,8 @@ function validateFloodSituation(situation) {
   if (!Array.isArray(situation.roads)) errors.push('roads must be an array');
   if (!Array.isArray(situation.actions) || situation.actions.length > 3) errors.push('actions must be an array of at most 3 items');
   if (situation.severity === 'unknown' && !situation.summary) errors.push('unknown situation needs an explicit summary');
-  if (situation.freshness.state === 'stale' && situation.freshness.ageMinutes !== null && situation.freshness.ageMinutes <= 0) errors.push('stale freshness must have positive ageMinutes');
-  if (situation.freshness.state === 'fresh' && situation.freshness.ageMinutes !== null && situation.freshness.ageMinutes < 0) errors.push('fresh freshness ageMinutes cannot be negative');
+  if (situation.freshness && situation.freshness.state === 'stale' && situation.freshness.ageMinutes !== null && situation.freshness.ageMinutes <= 0) errors.push('stale freshness must have positive ageMinutes');
+  if (situation.freshness && situation.freshness.state === 'fresh' && situation.freshness.ageMinutes !== null && situation.freshness.ageMinutes < 0) errors.push('fresh freshness ageMinutes cannot be negative');
   return errors;
 }
 module.exports = { FLOOD_SEVERITIES, FLOOD_TRENDS, FRESHNESS_STATES, freshnessState, normalizeFloodSituation, createUnknownFloodSituation, validateFloodSituation };
