@@ -140,6 +140,44 @@ function narrationSchema() {
   };
 }
 
+function buildQuotaSafeLongFormNarration(context, plan) {
+  const flood = context?.floodSituation || {};
+  const base = String(plan?.spokenText || context?.report?.spokenText || flood.summary || 'รายงานสถานการณ์น้ำบ้านลำพายวันนี้').trim();
+  const actions = Array.isArray(flood.actions) ? flood.actions.filter(Boolean).join(' ') : '';
+  const freshness = flood.freshness?.state === 'stale'
+    ? 'ข้อมูลสถานการณ์น้ำที่ใช้ในรอบนี้มีความสดใหม่ไม่เพียงพอ จึงควรอ่านผลด้วยความระมัดระวังและตรวจสอบแหล่งข้อมูลล่าสุดเพิ่มเติม'
+    : flood.freshness?.state === 'fresh'
+      ? 'ข้อมูลสถานการณ์น้ำในรอบนี้อยู่ในสถานะสดตามเกณฑ์ของระบบ'
+      : 'สถานะความสดใหม่ของข้อมูลน้ำยังไม่สามารถยืนยันได้';
+  const severityText = ({
+    normal: 'สถานการณ์น้ำอยู่ในระดับปกติ',
+    watch: 'สถานการณ์น้ำอยู่ในระดับเฝ้าระวัง',
+    affected: 'สถานการณ์น้ำอยู่ในระดับได้รับผลกระทบ',
+    critical: 'สถานการณ์น้ำอยู่ในระดับวิกฤต',
+    unknown: 'สถานการณ์น้ำยังยืนยันไม่ได้',
+  })[flood.severity] || 'สถานการณ์น้ำยังยืนยันไม่ได้';
+  const sectionsText = [
+    `สวัสดีครับพี่น้องบ้านลำพาย วันนี้น้องจุ่นจ้านขอมาเล่าสถานการณ์ให้ฟังแบบค่อย ๆ ทำความเข้าใจไปด้วยกันนะครับ จุดสำคัญของรายงานนี้คือเราจะยึดข้อมูลที่ระบบตรวจสอบมาแล้วเป็นหลัก และจะไม่รีบสรุปสิ่งที่ข้อมูลยังไม่ได้ยืนยัน ${severityText} ${base}`,
+    `เริ่มจากเรื่องน้ำก่อนนะครับ เพราะนี่คือประเด็นหลักของรายงานเช้าวันนี้ สิ่งที่เราเห็นในข้อมูลที่ตรวจสอบแล้วควรอ่านตามสถานะที่ระบบระบุ ไม่ควรเติมความหมายจากการคาดเดาเอง ${base} ถ้ามีคำแนะนำจากข้อมูลที่ยืนยันแล้ว เราจะยึดคำแนะนำเหล่านั้นเป็นหลัก ${actions}`,
+    `ต่อมาลองทำความเข้าใจข้อมูลสำคัญให้ช้าลงอีกนิดครับ รายงานสถานการณ์น้ำไม่ได้มีความหมายเพียงคำว่าเฝ้าระวังหรือปกติ แต่ยังต้องดูว่าข้อมูลนั้นมาจากไหน อัปเดตเมื่อไร และมีข้อจำกัดอะไรบ้าง การฟังรายงานแบบนี้จึงควรแยกข้อเท็จจริงออกจากการคาดการณ์ให้ชัดเจน และใช้ข้อความที่ยืนยันแล้วเป็นฐานในการตัดสินใจ`,
+    `เรื่องแนวโน้มก็เช่นกันครับ แนวโน้มมีไว้ช่วยให้เราเห็นทิศทางของสถานการณ์จากข้อมูลที่มี แต่ไม่ได้หมายความว่าเราสามารถทำนายเหตุการณ์ถัดไปได้อย่างแน่นอน เพราะสถานการณ์น้ำเปลี่ยนได้ตามเวลาและตามข้อมูลใหม่ที่เข้ามา ${freshness} ดังนั้นถ้าจะตัดสินใจเรื่องสำคัญ ควรตรวจสอบข้อมูลล่าสุดประกอบเสมอ`,
+    `สำหรับพื้นที่และการใช้ชีวิตประจำวัน สิ่งที่สำคัญคืออย่าให้คำอธิบายที่ฟังดูมั่นใจเกินข้อมูลทำให้เราเข้าใจสถานการณ์ผิด รายงานนี้จึงจะพูดเฉพาะสิ่งที่ตรวจสอบได้ หากข้อมูลบางส่วนยังไม่มี เราจะบอกตรง ๆ ว่ายังไม่มี แทนการเติมรายละเอียดที่ระบบไม่ได้รับมา วิธีนี้อาจฟังดูระมัดระวัง แต่ช่วยให้การตัดสินใจของชาวบ้านตั้งอยู่บนข้อมูลจริงมากกว่า`,
+    `มาดูเรื่องอากาศกันครับ ข้อมูลพยากรณ์อากาศมีประโยชน์สำหรับการวางแผนชีวิตประจำวันและการเตรียมตัว แต่พยากรณ์ฝนไม่ใช่หลักฐานยืนยันว่าพื้นที่กำลังเกิดน้ำท่วม เราจึงใช้ข้อมูลอากาศเป็นข้อมูลประกอบ และยังคงแยกออกจากสถานการณ์น้ำที่ตรวจวัดจริงอย่างชัดเจน ถ้าฝนมีแนวโน้มมากขึ้น สิ่งที่ควรทำคือรับรู้ไว้เป็นบริบทและติดตามข้อมูลน้ำที่ยืนยันได้ต่อไป`,
+    `เวลาฟังคำพยากรณ์ อยากให้จำหลักง่าย ๆ ข้อนี้ครับ ฝนกับน้ำท่วมเป็นคนละเรื่องกัน พยากรณ์ช่วยบอกสภาพอากาศที่คาดว่าจะเกิดขึ้น ส่วนสถานการณ์น้ำต้องอาศัยข้อมูลสถานีหรือแหล่งข้อมูลน้ำที่ตรวจสอบได้ เพราะฉะนั้นเราจะไม่เอาความน่าจะเป็นของฝนมาแปลงเป็นคำยืนยันเรื่องน้ำท่วมโดยอัตโนมัติ วิธีคิดแบบนี้ช่วยลดความสับสนและช่วยให้เราไม่ตื่นตระหนกจากข้อมูลเพียงด้านเดียว`,
+    `สิ่งที่ควรทำในเช้าวันนี้จึงเป็นการติดตามข้อมูลตามระดับสถานการณ์ที่ยืนยันแล้วครับ ถ้ามีคำแนะนำจากแหล่งข้อมูล เราจะให้ความสำคัญกับคำแนะนำนั้นก่อน ${actions} และถ้าข้อมูลยังมีข้อจำกัด ให้ใช้ช่องทางแหล่งข้อมูลที่ระบบเตรียมไว้เพื่อตรวจสอบเพิ่มเติม หลักการง่าย ๆ คือรู้ว่าอะไรยืนยันแล้ว รู้ว่าอะไรยังไม่ยืนยัน และอย่าเติมคำตอบให้กับช่องว่างของข้อมูลด้วยการคาดเดา`,
+    `ก่อนจบรายการ ขอทบทวนอีกครั้งครับ ${severityText} ${base} ประเด็นที่อยากให้จำคือสถานการณ์น้ำต้องอ่านจากข้อมูลที่ยืนยันแล้ว ส่วนสภาพอากาศเป็นข้อมูลประกอบและไม่ควรนำมาใช้ยืนยันน้ำท่วมเพียงลำพัง ${freshness} ถ้ามีข้อมูลใหม่เข้ามา ควรใช้ข้อมูลใหม่ที่ตรวจสอบได้แทนการยึดติดกับข้อสรุปเดิม`,
+    `และนี่คือช่วงปิดรายการครับ ขอบคุณพี่น้องบ้านลำพายที่ติดตามน้องจุ่นจ้านในเช้าวันนี้ เราจะยึดหลักเดิมเสมอ คือเล่าตามข้อมูลที่ตรวจสอบได้ อธิบายสิ่งที่ข้อมูลหมายถึง และบอกข้อจำกัดตรง ๆ เมื่อยังไม่มีคำตอบที่ยืนยันได้ หากต้องติดตามต่อ ให้ดูแหล่งข้อมูลล่าสุดจากช่องทางที่ระบบจัดเตรียมไว้ และค่อย ๆ ตัดสินใจตามสถานการณ์จริงนะครับ`,
+  ];
+  const sections = sectionsText.map((text, index) => ({
+    id: 'section-' + (index + 1),
+    title: ['เปิดรายการ', 'สถานการณ์น้ำ', 'ข้อมูลสำคัญ', 'แนวโน้ม', 'ข้อจำกัดข้อมูล', 'อากาศวันนี้', 'ทำความเข้าใจพยากรณ์', 'สิ่งที่ควรทำ', 'สรุป', 'ปิดรายการ'][index],
+    text,
+    factsUsed: plan?.factsUsed || [],
+  }));
+  const spokenText = sections.map((section) => section.text).join('\\n');
+  return { sections, spokenText, totalCharacters: spokenText.length, provider: 'quota-safe-fallback' };
+}
+
 async function generateLongFormNarration(context, plan, config, opts = {}) {
   if (!config?.content?.apiKey) {
     if (config?.mode === 'production' && !config.dryRun) throw Object.assign(new Error('GEMINI_API_KEY is not configured for long-form narration'), { stage: 'content.narration' });
@@ -214,11 +252,15 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
         text: String(section?.text || '').trim(),
         factsUsed: Array.isArray(section?.factsUsed) ? section.factsUsed.filter(Boolean).map(String) : [],
       })).filter((section) => section.text) : [];
-      const combined = sections.map((section) => section.text).join('\n');
-      if (sections.length < 10) throw Object.assign(new Error('Long-form narration fallback must contain 10 sections; received ' + sections.length), { stage: 'content.narration' });
-      if (combined.length < 7000) throw Object.assign(new Error('Long-form narration fallback is too short: ' + combined.length + ' characters; minimum 7000'), { stage: 'content.narration' });
+      const combined = sections.map((section) => section.text).join('\\n');
+      if (sections.length < 10) throw Object.assign(new Error('Long-form narration fallback must contain 10 sections; received ' + sections.length), { stage: 'content.narration', retryable: false });
+      if (combined.length < 7000) throw Object.assign(new Error('Long-form narration fallback is too short: ' + combined.length + ' characters; minimum 7000'), { stage: 'content.narration', retryable: false });
       return { sections, spokenText: combined, totalCharacters: combined.length, provider: 'gemini-fallback' };
     }
+    // If both content models are quota-limited, do not loop the same 429 again.
+    // Use a deterministic fact-safe narration so TTS can still be validated and
+    // the pipeline can report/deliver a truthful announcement.
+    if (fallbackResponse.status === 429) return buildQuotaSafeLongFormNarration(context, plan);
   }
 
   if (!response.ok && response.status === 503) {
