@@ -11,6 +11,6 @@
 - Marked legacy acceptance evidence as historical rather than current product approval.
 - Updated environment configuration and workflow wording to match the flood-first runtime.
 
-## Historical changes
+## Phase 3 — Fixtures/Test Acceptance (2026-10-04)\n\n- Added normal/watch/affected/critical/unknown/stale flood fixtures.\n- Replaced machine-local `/tmp` source fixtures with committed deterministic HTML fixtures.\n- Fixed FloodSituation validation to fail closed instead of crashing when freshness is missing.\n- Added GitHub Actions unit-test acceptance; final Phase 3 run passed 35/35 tests.\n- Set documented Gemini content model to `gemini-3.8-flash` and TTS model to `gemini-3.8-flash-tts`.\n- Applied the configured TTS pacing preference through Gemini speech style.\n\n## Historical changes
 
 Entries below this section are retained for audit/history only. They must not be interpreted as current production requirements.
