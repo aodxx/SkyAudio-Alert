@@ -54,3 +54,21 @@
 **Gemini live diagnostic:** minimal requests returned 200 for both comparison models; shaped JSON requests returned 503 `UNAVAILABLE` during high demand. The runtime now keeps structured output as the primary path and has a lightweight JSON recovery path after 503 retries.
 
 **Current release state: NO-GO**
+
+## Milestone 4A — Live Acceptance Update — 2026-10-04
+
+- [x] Real Gemini content generation verified
+- [x] Real Gemini TTS generation verified
+- [x] Real generated audio passed MP3/duration validation
+- [x] Gemini content → TTS live path verified
+- [x] Gemini 503 resilience remains covered by deterministic tests
+- [ ] TEST LINE acceptance — next: Milestone 4B
+- [ ] Human review of Flex + Audio
+
+### Current gates
+- **Gemini live gate: PASS ✅**
+- **Milestone 4A: PASS ✅**
+- **Milestone 4B LINE Test: PENDING 🟡**
+- **Production: NO-GO 🔴**
+
+B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 documentation/test migration is being updated by this documentation milestone.
