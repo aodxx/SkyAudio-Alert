@@ -429,3 +429,27 @@ Weather facts      ──┘                                      ↓
 ### Handoff to Step 2
 
 ขั้นถัดไปคือ **Contracts + Fixtures Lock**: ตรวจ contract ที่ runtime ใช้จริง, เติม/แก้ fixtures และ tests ให้ครอบคลุม normal/watch/affected/critical/unknown/stale/timeout และกำหนด acceptance contract สำหรับ Gemini ก่อนเชื่อม production API จริง.
+
+
+---
+
+## 11. Milestone 4A — Gemini Content Resilience (2026-10-04)
+
+**สถานะ:** ✅ code/test gate PASS; 🔴 real Gemini end-to-end acceptance still pending.
+
+### Evidence
+- Gemini 3.8 Flash minimal request: HTTP 200.
+- Gemini 3.8 Flash shaped JSON request: HTTP 503 UNAVAILABLE during high demand.
+- Gemini 3.7 Flash minimal request: HTTP 200.
+- Gemini 3.7 Flash shaped JSON request: HTTP 503 UNAVAILABLE during high demand.
+
+### Decision
+The failure is treated as a request-capacity/resilience problem rather than an API-key or model-reachability problem. The runtime keeps structured output as the preferred path, retries transient failures, and after a 503 exhaustion attempts a lightweight JSON-only recovery request without response schema, response MIME enforcement, or thinking configuration. The recovered output still passes the same ReportDraft validator.
+
+### Verification
+- PR #5 merged into `main`.
+- GitHub Actions unit suite: **40/40 passed**.
+- New deterministic tests cover structured 503 recovery, JSON code-fence parsing, and non-503 fail-fast behavior.
+
+### Remaining gate
+Run the existing **Gemini live acceptance** workflow again. It must verify real Gemini content generation, then Gemini TTS, then audio validation. This does not authorize production LINE delivery yet.
