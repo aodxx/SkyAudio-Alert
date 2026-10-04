@@ -46,4 +46,13 @@
 - [ ] TEST LINE acceptance — Milestone 4B
 - [ ] Human Flex + Audio review
 
-**Current release state: NO-GO**. Gemini live acceptance is complete; delivery-channel and remaining flood/release gates are still open.
+**Current release state: NO-GO**. Gemini live acceptance and real TEST LINE delivery are complete; human Flex/audio review and remaining flood/release gates are still open.
+
+
+## Milestone 4B Delivery Update — 2026-10-04
+
+- Real Flood-first pipeline reached the LINE TEST send stage.
+- Flex Message was delivered to the TEST group.
+- Audio Message was delivered to the TEST group.
+- **Delivery gate: PASS ✅**
+- Audio playback, mobile rendering/content review, and human acceptance remain pending.
