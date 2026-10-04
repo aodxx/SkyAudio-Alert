@@ -1,3 +1,4 @@
+# 🔒 FLOOD-FIRST WORKFLOW — production remains gated by B1–B4
 name: Daily Flood-first announcement (TEST target)
 
 on:
