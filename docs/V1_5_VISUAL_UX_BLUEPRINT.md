@@ -1088,7 +1088,7 @@ V1.5 ไม่ได้วัดความสำเร็จจาก “ห�
 - [x] Gemini live acceptance passed
 - [x] LINE TEST delivery passed
 - [x] V1.5 Phase 0 — Baseline & Design Lock complete
-- [ ] V1.5 Phase 1
+- [x] V1.5 Phase 1 — Visual Design System complete
 - [ ] V1.5 Phase 2
 - [ ] V1.5 Phase 3
 - [ ] V1.5 Phase 4
@@ -1096,5 +1096,7 @@ V1.5 ไม่ได้วัดความสำเร็จจาก “ห�
 - [ ] V1.5 Phase 6
 - [ ] V1.5 Phase 7
 - [ ] Production GO
+
+**Phase 1 update — 2026-10-04:** Visual tokens, five severity themes, carousel/card hierarchy, mobile/accessibility rules, CTA scope, and stale/unknown treatment are locked in `docs/V1_5_PHASE1_VISUAL_SYSTEM.md`. Phase 1 is complete. Production remains NO-GO.
 
 **สถานะ production ปัจจุบัน: NO-GO จนกว่า release gates จะผ่านครบ**
