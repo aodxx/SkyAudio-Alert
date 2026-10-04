@@ -2,21 +2,12 @@
   "runId": "2026-10-04-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {
-    "flood.fetch": "success",
-    "weather.fetch": "success",
-    "weather.normalize": "success",
-    "weather.analyze": "success",
-    "content.generate": "success",
-    "flex.render": "success",
-    "tts.synthesize": "start",
-    "audio.synthesize": "failure"
-  },
+  "stages": {},
   "lastError": {
     "stage": "audio.synthesize",
     "message": "Gemini TTS request failed: 400",
     "detail": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"* GenerateContentRequest.model: unexpected model name format\\n\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n"
   },
   "audio": null,
-  "generatedAt": "2026-10-04T02:15:43.696Z"
+  "generatedAt": "2026-10-04T02:15:45.056Z"
 }
