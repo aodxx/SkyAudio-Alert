@@ -82,6 +82,21 @@ test('planner uses fallback model when primary returns 429', async () => {
   assert.match(calls[1], /gemini-fallback-test/);
 });
 
+test('planner uses deterministic fallback when primary is quota-limited and fallback model is unavailable', async () => {
+  const calls = [];
+  const result = await generatePresentationPlan(context(), config(), {
+    fetchImpl: async (url) => {
+      calls.push(url);
+      return response({ error: calls.length === 1 ? 'quota' : 'temporarily unavailable' }, calls.length === 1 ? 429 : 503);
+    },
+    maxAttempts: 1,
+    fallbackMaxAttempts: 1,
+  });
+  assert.equal(result.provider, 'fallback');
+  assert.equal(calls.length, 2);
+  assert.equal(result.severity, 'watch');
+});
+
 test('planner rejects model output with an invalid presentation contract', async () => {
   await assert.rejects(() => generatePresentationPlan(context(), config(), {
     fetchImpl: async () => response({ spokenText: '', cards: [], audioStyle: {} }),
