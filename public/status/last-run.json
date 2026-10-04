@@ -2,11 +2,23 @@
   "runId": "2026-10-05-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {},
+  "stages": {
+    "flood.fetch": "success",
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "content.generate": "success",
+    "content.presentation": "success",
+    "content.safety": "success",
+    "flex.render": "success",
+    "flex.lint": "success",
+    "content.narration": "failure"
+  },
   "lastError": {
-    "stage": "content.presentation",
-    "message": "Gemini presentation plan request failed: 429"
+    "stage": "content.narration",
+    "message": "Gemini long-form narration request failed: 429",
+    "errors": []
   },
   "audio": null,
-  "generatedAt": "2026-10-04T17:46:07.288Z"
+  "generatedAt": "2026-10-04T17:58:47.754Z"
 }
