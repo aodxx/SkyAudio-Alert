@@ -40,6 +40,14 @@
 - [x] TEST LINE delivery verified
 - [ ] human review of Flex + Audio
 
+## V1.5 — Phase 0 Baseline & Design Lock
+- [x] Runtime inventory locked
+- [x] Flood/Weather/Gemini/Flex/TTS/LINE invariants locked
+- [x] normal/watch/affected/critical/unknown/stale baseline fixtures identified
+- [x] V1.5 acceptance matrix committed
+- [x] V1.5 change boundary committed
+- [x] Production remains NO-GO
+
 ## Stage 5 — Production gate
 - [ ] B1 flood source resolved/accepted
 - [ ] B2 degraded mode explicitly accepted
