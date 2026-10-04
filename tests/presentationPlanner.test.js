@@ -120,6 +120,23 @@ test('long-form narration uses fallback model when primary returns 429', async (
   assert.ok(result.totalCharacters >= 7000);
 });
 
+test('long-form narration uses fact-safe deterministic fallback when both Gemini models return 429', async () => {
+  const calls = [];
+  const result = await generateLongFormNarration(context(), modelPlan(), config(), {
+    fetchImpl: async (url) => {
+      calls.push(url);
+      return response({ error: 'quota' }, 429);
+    },
+    maxAttempts: 1,
+    fallbackMaxAttempts: 1,
+  });
+  assert.equal(result.provider, 'quota-safe-fallback');
+  assert.equal(calls.length, 2);
+  assert.equal(result.sections.length, 10);
+  assert.ok(result.totalCharacters >= 7000);
+  assert.match(result.spokenText, /สถานการณ์น้ำ/);
+});
+
 test('long-form narration accepts 10 sufficiently detailed sections', async () => {
   const text = 'วันนี้เราจะค่อย ๆ เล่าและอธิบายสถานการณ์จากข้อมูลที่ตรวจสอบแล้ว เพื่อให้ฟังเข้าใจง่ายและไม่รีบสรุปเกินข้อเท็จจริง '.repeat(80);
   const sections = Array.from({ length: 10 }, (_, i) => ({ id: 's' + i, title: 'ช่วง ' + i, text, factsUsed: ['flood.severity'] }));
