@@ -84,3 +84,14 @@
 **Reference:** `docs/V1_5_PHASE1_VISUAL_SYSTEM.md`
 
 **Production: NO-GO.** Phase 2 requires review of this visual system before presentation-contract implementation.
+
+
+## V1.5 — Phase 2 Presentation Contract — 2026-10-04
+- [x] PresentationPlan 1.0 documented
+- [x] Gemini presentation-only boundary locked
+- [x] Adaptive audio freedom preserved
+- [x] Flex Card 1 and carousel safety rules encoded
+- [x] Severity/stale/unknown validation rules encoded
+- [x] Runtime behavior unchanged
+
+**Phase 2: COMPLETE. Next: Phase 3 — Adaptive Flex Carousel.**
