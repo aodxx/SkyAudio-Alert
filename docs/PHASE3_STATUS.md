@@ -46,3 +46,17 @@ The test suite passes **17/17** tests. A read-only end-to-end dry-run against th
 | Flex JSON and local tests | Passed |
 | LINE test-group delivery | Pending real credentials and human review |
 | Production schedule | Must remain gated until Gemini + LINE acceptance passes |
+
+
+## Milestone 4A Live Acceptance Update — 2026-10-04
+
+The project has progressed beyond the previous pending Gemini gate.
+
+- Real Gemini Content: **PASS**
+- Real Gemini TTS: **PASS**
+- Generated audio validation: **PASS**
+- Unit regression suite: **40/40 PASS**
+- LINE TEST delivery: **PENDING — Milestone 4B**
+- Production schedule: **NO-GO**
+
+The current HTML flood source remains an operational risk because it is not a guaranteed machine-readable API. This remains a release gate and is not changed by Gemini acceptance.
