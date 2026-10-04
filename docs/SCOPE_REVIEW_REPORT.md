@@ -391,3 +391,41 @@ Weather facts      ──┘                                      ↓
 6. เอกสาร historical/legacy อื่น ๆ จนกว่าจะอัปเดตเสร็จ
 
 **ข้อสรุป:** ยังไม่ควรรีบเขียนโค้ดจริงเพื่อหลีกเลี่ยงการรื้อซ้ำ ให้ปิด contract ของ flood source และ Gemini ก่อน จากนั้นอัปเดตเอกสารหลักให้เป็นชุดเดียว แล้วจึงเริ่ม implementation ตามลำดับในรายงานนี้
+
+
+---
+
+## 9. Document Lock Completion — 2026-10-04
+
+**สถานะ:** ✅ ขั้นที่ 1 เสร็จแล้ว — repository documentation is locked to Flood-first.
+
+เอกสาร/ไฟล์หลักที่ถูกปรับให้สอดคล้องกับ scope ปัจจุบัน:
+- README.md
+- PRD.md
+- ARCHITECTURE.md
+- API.md
+- REPOSITORY_STRUCTURE.md
+- CHECKLIST.md
+- CONTEXT.md
+- DECISIONS.md
+- CHANGELOG.md
+- PHASE1_STATUS.md
+- .env.example
+- .github/workflows/weather-daily.yml
+- .github/workflows/weather-test.yml
+
+### Rules หลัง Document Lock
+
+1. **Flood = primary source of situation.**
+2. **Weather = supporting forecast only.**
+3. **Gemini = narrative layer, never source of truth.**
+4. **Gemini TTS = adaptive audio; no fixed duration.**
+5. **Market/news = historical/out of production scope.**
+6. **Forecast rain cannot prove actual flooding.**
+7. **Unknown/stale flood data must remain explicitly unknown.**
+8. **Production schedule remains NO-GO until B1–B4 acceptance.**
+9. Legacy documents or tests may be retained for audit, but they must be clearly treated as historical and cannot define current implementation.
+
+### Handoff to Step 2
+
+ขั้นถัดไปคือ **Contracts + Fixtures Lock**: ตรวจ contract ที่ runtime ใช้จริง, เติม/แก้ fixtures และ tests ให้ครอบคลุม normal/watch/affected/critical/unknown/stale/timeout และกำหนด acceptance contract สำหรับ Gemini ก่อนเชื่อม production API จริง.
