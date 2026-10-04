@@ -116,3 +116,10 @@ npm test
 **Milestone 4B — LINE Test Acceptance**: ทดสอบสายงานจริง Flood → Weather → Gemini → Flex → Gemini TTS → LINE Test และตรวจ Flex บนมือถือ + การเล่น Audio จริง
 
 **Production: ยังเป็น NO-GO** จนกว่าจะผ่าน LINE Test, human review และ B1/B2/B4 release gates
+
+
+## 🧪 Milestone 4B — LINE Test Acceptance
+
+ใช้ GitHub Actions workflow **Milestone 4B — LINE Test Acceptance** สำหรับส่งรายงานจริงเข้า LINE TEST เท่านั้น โดย workflow จะรัน `DRY_RUN=false` และใช้ `LINE_CHANNEL_ACCESS_TOKEN_TEST` / `LINE_GROUP_ID_TEST` แยกจาก production
+
+ก่อนกด Run ต้องตรวจว่า TEST group เป็นกลุ่มทดสอบ ไม่ใช่กลุ่ม production จริง หลังส่งแล้วต้องตรวจ Flex บนมือถือและฟัง Audio จริงก่อนบันทึกผลเป็น PASS
