@@ -10,6 +10,8 @@ const { analyzeWeather } = require('../weather/analyzer');
 const { buildForecastData } = require('../forecast/formatter');
 const { generateGeminiReport } = require('../content/geminiReport');
 const { generatePresentationPlan } = require('../content/presentationPlanner');
+const { validateGeneratedFacts } = require('../content/safetyFirewall');
+const { scorePresentationQuality } = require('../content/qualityScore');
 const { buildFlex } = require('../flex/builder');
 const { synthesizeSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
@@ -87,6 +89,25 @@ async function runPipeline(config) {
     audioDetail: presentationPlan.audioStyle.detailLevel,
     characters: presentationPlan.spokenText.length,
   });
+
+  // Phase 5: deterministic firewall. Never allow unsafe presentation to reach TTS or LINE.
+  mark('content.safety', 'start');
+  const safetyErrors = validateGeneratedFacts(presentationPlan, { floodSituation, weatherAnalysis }, {
+    forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
+  });
+  if (safetyErrors.length) {
+    mark('content.safety', 'failure', { errors: safetyErrors });
+    result.lastError = { stage: 'content.safety', message: safetyErrors.join('; ') };
+    writeStatusReport(result, config);
+    const error = new Error('Presentation safety firewall rejected output: ' + safetyErrors.join('; '));
+    error.stage = 'content.safety';
+    throw error;
+  }
+  mark('content.safety', 'success');
+
+  const qualityScore = scorePresentationQuality(presentationPlan, floodSituation, weatherAnalysis);
+  result.qualityScore = qualityScore;
+  mark('content.quality', 'success', { score: qualityScore.score, passed: qualityScore.passed, total: qualityScore.total });
 
   mark('flex.render', 'start');
   const reportData = buildForecastData(weatherAnalysis, floodSituation, config.location, {
