@@ -120,3 +120,18 @@ Production schedule remains closed until B1–B4 from docs/SCOPE_REVIEW_REPORT.m
 6. Legacy/historical documents only as historical evidence
 
 Any document that conflicts with this order is stale and must not drive implementation.
+
+
+## Current Implementation Status — 2026-10-04
+
+### Milestone 4A — Gemini Live Acceptance
+
+**Status: PASS ✅**
+
+The current implementation has completed the real Gemini Content + Gemini TTS acceptance path. Generated audio also passes the repository audio validation layer. Gemini remains a narrative layer only; source facts remain authoritative.
+
+### Next milestone — 4B LINE Test Acceptance
+
+The next acceptance is the real delivery chain into the TEST LINE destination: Flood → Weather → Gemini → Flex → Gemini TTS → LINE. This stage must verify message ordering, Flex rendering, audio playback/accessibility, and no reintroduction of historical market/news content.
+
+**Production remains NO-GO until 4B and the remaining release gates pass.**
