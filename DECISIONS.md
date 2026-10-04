@@ -198,3 +198,14 @@ The Flex must include two prominent URI buttons:
 **Reason:** The repository contained multiple legacy documents that could cause future implementation to reintroduce removed runtime behavior. Historical acceptance evidence remains preserved as history but cannot be used as current product requirements.
 
 **Gate:** Production schedule remains NO-GO until B1–B4 in docs/SCOPE_REVIEW_REPORT.md are resolved or explicitly accepted.
+
+
+## Decision 020 — Gemini Live Acceptance Passed; LINE Remains the Next Gate
+
+**Date:** 2026-10-04
+
+**Decision:** Milestone 4A real Gemini acceptance is considered passed. The repository has verified the live Gemini Content → Gemini TTS path and audio validation. The next acceptance stage is Milestone 4B, which must send the flood-first report to the LINE TEST destination and verify Flex + Audio behavior in the real LINE client.
+
+**Reason:** The Gemini runtime risk has been reduced enough to proceed to delivery-channel validation, but successful Gemini/TTS generation does not prove that LINE delivery, Flex rendering, public audio URL accessibility, or human playback are correct.
+
+**Release consequence:** Production remains **NO-GO** until LINE Test Acceptance and the remaining release gates are explicitly passed.
