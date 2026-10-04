@@ -9,7 +9,7 @@
 const { buildConfig } = require('./config');
 const { runPipeline } = require('./core/pipeline');
 const { log } = require('./core/logger');
-const { writeStatusReport } = require('./core/statusReport');
+const { writeStatusReport, readLastRunReport } = require('./core/statusReport');
 
 async function main() {
   let config;
@@ -30,10 +30,15 @@ async function main() {
     log(config.runId, err.stage || 'run', 'failure', { message: err.message, detail: err.detail });
     // runPipeline writes the structured stage report before rethrowing;
     // keep this fallback for failures that occur outside the pipeline.
-    writeStatusReport(
-      { runId: config.runId, stages: {}, lastError: { stage: err.stage, message: err.message, detail: err.detail } },
-      config
-    );
+    // Do not overwrite a richer report (with per-stage results) the pipeline already wrote for this run.
+    const existing = readLastRunReport();
+    const alreadyReported = existing && existing.runId === config.runId && existing.lastError;
+    if (!alreadyReported) {
+      writeStatusReport(
+        { runId: config.runId, stages: {}, lastError: { stage: err.stage, message: err.message, detail: err.detail } },
+        config
+      );
+    }
     process.exit(1);
   }
 }

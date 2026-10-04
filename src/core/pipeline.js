@@ -9,7 +9,7 @@ const { normalizeWeather } = require('../weather/normalize');
 const { analyzeWeather } = require('../weather/analyzer');
 const { buildForecastData } = require('../forecast/formatter');
 const { generateGeminiReport } = require('../content/geminiReport');
-const { generatePresentationPlan, generateLongFormNarration } = require('../content/presentationPlanner');
+const { generatePresentationPlan, generateLongFormNarration, buildQuotaSafeLongFormNarration } = require('../content/presentationPlanner');
 const { validateGeneratedFacts } = require('../content/safetyFirewall');
 const { buildFactsSnapshot } = require('../presentation/facts');
 const { buildVisualPlan } = require('../presentation/visualPlan');
@@ -161,28 +161,52 @@ async function runPipeline(config) {
   let audioInfo;
   try {
     mark('content.narration', 'start');
-    const narration = await withRetry(() => generateLongFormNarration({
-      floodSituation, weatherAnalysis, location: config.location, date: dateInfo,
-    }, presentationPlan, config), {
-      onRetry: (err, attempt) => mark('content.narration', 'retry', { attempt, message: err.message }),
-    });
-    const narrationPlan = {
-      ...presentationPlan,
-      spokenText: narration.spokenText,
-      spokenSections: narration.sections.map((section) => section.text),
-      factsUsed: [...new Set([
-        ...(presentationPlan.factsUsed || []),
-        ...narration.sections.flatMap((section) => section.factsUsed || []),
-      ])],
+    const narrationContext = { floodSituation, weatherAnalysis, location: config.location, date: dateInfo };
+    const narrationFirewall = (candidate) => {
+      const candidatePlan = {
+        ...presentationPlan,
+        spokenText: candidate.spokenText,
+        spokenSections: candidate.sections.map((section) => section.text),
+        factsUsed: [...new Set([
+          ...(presentationPlan.factsUsed || []),
+          ...candidate.sections.flatMap((section) => section.factsUsed || []),
+        ])],
+      };
+      return validateGeneratedFacts(candidatePlan, { floodSituation, weatherAnalysis, date: dateInfo }, {
+        forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
+      });
     };
-    const narrationSafetyErrors = validateGeneratedFacts(narrationPlan, { floodSituation, weatherAnalysis, date: dateInfo }, {
-      forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
-    });
-    if (narrationSafetyErrors.length) {
-      const error = new Error('Long-form narration safety firewall rejected output: ' + narrationSafetyErrors.join('; '));
-      error.stage = 'content.narration';
-      error.errors = narrationSafetyErrors;
-      throw error;
+    // A firewall rejection is a content problem, not a fatal one: regenerate
+    // (retryable) and, if Gemini keeps failing the firewall, use the deterministic
+    // fact-safe narration instead of aborting the whole daily report.
+    let narration;
+    try {
+      narration = await withRetry(async () => {
+        const candidate = await generateLongFormNarration(narrationContext, presentationPlan, config);
+        const errors = narrationFirewall(candidate);
+        if (errors.length) {
+          const error = new Error('Long-form narration safety firewall rejected output: ' + errors.join('; '));
+          error.stage = 'content.narration';
+          error.errors = errors;
+          error.retryable = true;
+          error.firewall = true;
+          throw error;
+        }
+        return candidate;
+      }, {
+        onRetry: (err, attempt) => mark('content.narration', 'retry', { attempt, message: err.message }),
+      });
+    } catch (error) {
+      if (!error.firewall) throw error;
+      mark('content.narration', 'degraded', { reason: error.message, fallback: 'quota-safe-fallback' });
+      narration = buildQuotaSafeLongFormNarration(narrationContext, presentationPlan);
+      const fallbackErrors = narrationFirewall(narration);
+      if (fallbackErrors.length) {
+        const fatal = new Error('Fallback narration safety firewall rejected output: ' + fallbackErrors.join('; '));
+        fatal.stage = 'content.narration';
+        fatal.errors = fallbackErrors;
+        throw fatal;
+      }
     }
     mark('content.narration', 'success', { provider: narration.provider, sections: narration.sections.length, characters: narration.totalCharacters });
 
