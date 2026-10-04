@@ -113,3 +113,16 @@ B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 docum
 - [x] No production runtime changed
 
 **Phase 1: COMPLETE. Next: Phase 2 — Presentation Contract.**
+
+
+## V1.5 — Phase 2 Presentation Contract — 2026-10-04
+- [x] PresentationPlan contract locked
+- [x] Gemini cannot change verified facts/severity
+- [x] Card 1 self-contained rule locked
+- [x] Critical action placement locked
+- [x] Adaptive audio selection policy locked
+- [x] Spoken-text safety gate defined before TTS
+- [x] Deterministic fallback policy defined
+- [x] No production runtime changed
+
+**Phase 2: COMPLETE. Next: Phase 3 — Adaptive Flex Carousel.**
