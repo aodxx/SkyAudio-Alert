@@ -41,3 +41,11 @@ The implementation is not production-ready.
 - production schedule stays closed until acceptance
 
 Future PWA/community-platform ideas remain deferred and are not part of this milestone.
+
+## Current Project Status — 2026-10-04
+
+The project has now passed **Milestone 4A — Gemini Live Acceptance**. Real Gemini Content generation, Gemini TTS generation, and generated-audio validation have been verified. This closes the current Gemini live gate.
+
+The immediate next work is **Milestone 4B — LINE Test Acceptance**. Do not treat Gemini live success as production approval: LINE delivery, Flex rendering, public audio accessibility, and human playback still require real-world verification.
+
+Current release state: **NO-GO for production**.
