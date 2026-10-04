@@ -10,7 +10,7 @@ function normalizeNumberToken(v){
 }
 const outputText=plan=>[plan?.spokenText,...(plan?.spokenSections||[]),...(plan?.actions||[]),...(plan?.warnings||[]),...(plan?.cards||[]).flatMap(c=>[c?.title,c?.body,...(c?.items||[])])].map(normalize).filter(Boolean).join('\n');
 function collectStrings(v,out=[]){if(v==null)return out;if(typeof v==='string'){if(v.trim())out.push(v.trim());return out}if(typeof v==='number'){out.push(String(v));return out}if(Array.isArray(v)){v.forEach(x=>collectStrings(x,out));return out}if(typeof v==='object')Object.values(v).forEach(x=>collectStrings(x,out));return out}
-function extractNumbers(t){return[...new Set((normalize(t).match(/(?:\d+(?:\.\d+)?|[๐-๙]+(?:[.,][๐-๙]+)?)/g)||[]).map(normalizeNumberToken)]}
+function extractNumbers(t){return[...new Set((normalize(t).match(/(?:\d+(?:\.\d+)?|[๐-๙]+(?:[.,][๐-๙]+)?)/g)||[]).map(normalizeNumberToken))]}
 function sourceNumbers(f){return new Set(extractNumbers(collectStrings(f).join(' ')))}
 function validateGeneratedFacts(plan,verifiedFacts,options={}){
  const e=[];if(!plan||typeof plan!=='object')return['presentation plan is required'];const t=outputText(plan);
