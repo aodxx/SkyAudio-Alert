@@ -24,3 +24,13 @@
 ## Historical changes
 
 Entries below this section are retained for audit/history only. They must not be interpreted as current production requirements.
+
+
+## Milestone 4A — Live Gemini Acceptance — 2026-10-04
+
+- Confirmed real Gemini Content generation successfully completes the live acceptance path.
+- Confirmed real Gemini TTS successfully synthesizes Thai speech.
+- Confirmed generated audio passes the repository's MP3/duration validation.
+- Closed the real Gemini content + TTS acceptance gate for Milestone 4A.
+- Kept production status **NO-GO** because LINE Test Acceptance, human Flex/audio review, and flood-source/release gates are still pending.
+- Next planned milestone: **Milestone 4B — LINE Test Acceptance**.

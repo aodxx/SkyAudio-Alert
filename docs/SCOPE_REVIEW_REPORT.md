@@ -453,3 +453,36 @@ The failure is treated as a request-capacity/resilience problem rather than an A
 
 ### Remaining gate
 Run the existing **Gemini live acceptance** workflow again. It must verify real Gemini content generation, then Gemini TTS, then audio validation. This does not authorize production LINE delivery yet.
+
+
+---
+
+## 12. Milestone 4A Live Acceptance — 2026-10-04
+
+**Status: ✅ PASS**
+
+Milestone 4A has completed the real Gemini acceptance path:
+
+- Gemini Content live generation: **PASS**
+- Gemini TTS live synthesis: **PASS**
+- Generated MP3/audio validation: **PASS**
+- Gemini Content → TTS integration path: **PASS**
+- Unit-test regression suite: **40/40 PASS**
+
+This closes the Gemini live acceptance gate but does **not** authorize production delivery.
+
+### Next gate: Milestone 4B — LINE Test Acceptance
+
+Required verification:
+1. Send the complete flood-first pipeline to the LINE TEST destination.
+2. Verify Flex rendering on a real mobile LINE client.
+3. Verify Audio Message delivery and playback.
+4. Verify ordering: Flex first, Audio second.
+5. Verify no historical market/rubber/news content appears.
+6. Verify degraded/unknown flood wording remains explicit and non-overclaiming.
+
+### Release status
+
+**Production: NO-GO**
+
+Open release gates remain B1 stable flood source, B2 degraded-mode acceptance, B4 documentation/test migration completion, plus real LINE/human acceptance.
