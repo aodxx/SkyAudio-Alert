@@ -1,0 +1,12 @@
+const test=require('node:test');const assert=require('node:assert/strict');
+const{validateGeneratedFacts}=require('../src/content/safetyFirewall');const{scorePresentationQuality}=require('../src/content/qualityScore');
+function plan(severity='watch',spoken='มีสถานการณ์น้ำที่ควรติดตาม'){return{severity,factsUsed:['flood.severity'],spokenText:spoken,actions:['ติดตามระดับน้ำล่าสุด'],cards:[{role:'hero',title:'สถานการณ์น้ำ: '+severity,body:spoken},{role:'source',title:'แหล่งข้อมูล',body:'ตรวจสอบข้อมูลล่าสุด'}]}}
+function facts(severity='watch'){return{floodSituation:{severity,stations:[{name:'สถานีคลองลำปำ',label:'ใกล้ล้นตลิ่ง'}],affectedAreas:[],roads:[],freshness:{state:'fresh'},summary:'ควรเฝ้าระวัง'}}}
+test('rejects unsupported certainty',()=>assert.ok(validateGeneratedFacts(plan('watch','ปลอดภัยแน่นอนครับ'),facts()).some(e=>e.includes('certainty'))));
+test('rejects severity drift',()=>assert.ok(validateGeneratedFacts(plan('critical'),facts('watch')).some(e=>e.includes('severity'))));
+test('rejects generated numeric facts not in source',()=>assert.ok(validateGeneratedFacts(plan('watch','ระดับน้ำ 999 เมตร'),facts()).some(e=>e.includes('numeric'))));
+test('rejects market/news leakage',()=>assert.ok(validateGeneratedFacts(plan('watch','ราคาปาล์มวันนี้สูงขึ้น'),facts()).some(e=>e.includes('market/news'))));
+test('rejects forecast-only flood claim',()=>{const f=facts('unknown');f.floodSituation.stations=[];assert.ok(validateGeneratedFacts(plan('unknown','ฝนจะทำให้น้ำท่วมบ้านลำพาย'),f,{forecastOnly:true}).some(e=>e.includes('forecast-only')))});
+test('requires factsUsed',()=>{const p=plan();p.factsUsed=[];assert.ok(validateGeneratedFacts(p,facts()).some(e=>e.includes('factsUsed')))});
+test('quality score is diagnostic and bounded',()=>{const r=scorePresentationQuality(plan('watch','มีสถานการณ์น้ำที่ควรติดตามและควรตรวจสอบข้อมูลล่าสุดจากแหล่งข้อมูล'),facts('watch'),{});assert.ok(r.score>=0&&r.score<=100);assert.equal(r.safetyOverride,false)});
+for(const s of ['normal','watch','affected','critical','unknown'])test('regression: '+s,()=>{const p=plan(s,'รายงานสถานการณ์น้ำ '+s+' '.repeat(30));const f=facts(s);if(s==='unknown'){f.floodSituation.freshness={state:'unknown'};f.floodSituation.stations=[]}assert.equal(validateGeneratedFacts(p,f,{forecastOnly:s==='unknown'}).length,0)});
