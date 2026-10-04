@@ -1,12 +1,21 @@
 // src/audio/validate.js
 // Validates the generated audio before it is sent to LINE.
+// Duration is always the measured MP3 duration. Long-form delivery can require >10 minutes.
 const MIN_DURATION_MS = 10_000;
-const MAX_DURATION_MS = 190_000;
-const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const DEFAULT_MAX_DURATION_MS = 18 * 60 * 1000;
+const DEFAULT_MAX_FILE_BYTES = 16 * 1024 * 1024;
+const LONGFORM_MIN_DURATION_MS = 10 * 60 * 1000;
 
 const MPEG1_L3_BITRATES = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
 const MPEG2_L3_BITRATES = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
 const SAMPLE_RATES = { 1: [44100, 48000, 32000], 2: [22050, 24000, 16000], 25: [11025, 12000, 8000] };
+
+function makeAudioError(message) {
+  const err = new Error(message);
+  err.stage = 'audio.validate';
+  err.retryable = false;
+  return err;
+}
 
 function parseMp3(buffer) {
   for (let i = 0; i + 4 <= buffer.length; i += 1) {
@@ -29,17 +38,25 @@ function parseMp3(buffer) {
   }
   return null;
 }
+
 function estimateDurationMs(script, speakingRate) {
   const charCount = String(script || '').replace(/\s/g, '').length;
   const rate = speakingRate > 0 ? speakingRate : 1;
-  const seconds = charCount / (9 * rate);
-  return Math.min(MAX_DURATION_MS, Math.max(MIN_DURATION_MS, Math.round(seconds * 1000)));
+  return Math.round((charCount / (9 * rate)) * 1000);
 }
-function validateAudio(buffer) {
-  if (!buffer || buffer.length === 0) { const err = new Error('Synthesized audio buffer is empty'); err.stage = 'audio.validate'; err.retryable = false; throw err; }
-  if (buffer.length > MAX_FILE_BYTES) { const err = new Error('Audio file too large: ' + buffer.length + ' bytes'); err.stage = 'audio.validate'; err.retryable = false; throw err; }
+
+function validateAudio(buffer, script, speakingRate, options = {}) {
+  if (!buffer || buffer.length === 0) throw makeAudioError('Synthesized audio buffer is empty');
+  const maxFileBytes = Number.isFinite(options.maxFileBytes) ? options.maxFileBytes : DEFAULT_MAX_FILE_BYTES;
+  const minDurationMs = Number.isFinite(options.minDurationMs) ? options.minDurationMs : MIN_DURATION_MS;
+  const maxDurationMs = Number.isFinite(options.maxDurationMs) ? options.maxDurationMs : DEFAULT_MAX_DURATION_MS;
+  if (buffer.length > maxFileBytes) throw makeAudioError('Audio file too large: ' + buffer.length + ' bytes (max ' + maxFileBytes + ')');
   const parsed = parseMp3(buffer);
-  if (!parsed || parsed.durationMs <= 0) { const err = new Error('Audio is not a valid MP3 or has no readable duration'); err.stage = 'audio.validate'; err.retryable = false; throw err; }
-  return { durationMs: Math.min(MAX_DURATION_MS, Math.max(MIN_DURATION_MS, parsed.durationMs)), byteLength: buffer.length, mimeType: 'audio/mpeg', bitrateKbps: parsed.bitrateKbps, sampleRate: parsed.sampleRate };
+  if (!parsed || parsed.durationMs <= 0) throw makeAudioError('Audio is not a valid MP3 or has no readable duration');
+  if (parsed.durationMs < minDurationMs) throw makeAudioError('Audio duration is too short: ' + parsed.durationMs + 'ms (minimum ' + minDurationMs + 'ms)');
+  if (parsed.durationMs > maxDurationMs) throw makeAudioError('Audio duration is too long: ' + parsed.durationMs + 'ms (maximum ' + maxDurationMs + 'ms)');
+  return { durationMs: parsed.durationMs, byteLength: buffer.length, mimeType: 'audio/mpeg', bitrateKbps: parsed.bitrateKbps, sampleRate: parsed.sampleRate,
+    ...(options.longForm ? { longForm: true, minDurationMs } : {}) };
 }
-module.exports = { validateAudio, parseMp3, estimateDurationMs };
+
+module.exports = { validateAudio, parseMp3, estimateDurationMs, MIN_DURATION_MS, LONGFORM_MIN_DURATION_MS };

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { generatePresentationPlan, plannerSchema } = require('../src/content/presentationPlanner');
+const { generatePresentationPlan, generateLongFormNarration, plannerSchema, narrationSchema } = require('../src/content/presentationPlanner');
 
 function response(value, status = 200) {
   return {
@@ -71,4 +71,28 @@ test('planner rejects model output with an invalid presentation contract', async
   await assert.rejects(() => generatePresentationPlan(context(), config(), {
     fetchImpl: async () => response({ spokenText: '', cards: [], audioStyle: {} }),
   }), /validation failed/);
+});
+
+
+test('long-form narration schema requires sectioned storyteller output', () => {
+  const schema = narrationSchema();
+  assert.ok(schema.properties.sections);
+  assert.deepEqual(schema.properties.sections.items.required, ['id', 'title', 'text', 'factsUsed']);
+});
+
+test('long-form narration rejects fewer than 10 sections or insufficient length', async () => {
+  const shortSections = { sections: Array.from({ length: 10 }, (_, i) => ({ id: 's' + i, title: 'x', text: 'สั้น', factsUsed: ['flood.severity'] })) };
+  await assert.rejects(() => generateLongFormNarration(context(), modelPlan(), config(), {
+    fetchImpl: async () => response(shortSections),
+  }), /Long-form narration is too short|must contain 10 sections/);
+});
+
+test('long-form narration accepts 10 sufficiently detailed sections', async () => {
+  const text = 'วันนี้เราจะค่อย ๆ เล่าและอธิบายสถานการณ์จากข้อมูลที่ตรวจสอบแล้ว เพื่อให้ฟังเข้าใจง่ายและไม่รีบสรุปเกินข้อเท็จจริง '.repeat(80);
+  const sections = Array.from({ length: 10 }, (_, i) => ({ id: 's' + i, title: 'ช่วง ' + i, text, factsUsed: ['flood.severity'] }));
+  const result = await generateLongFormNarration(context(), modelPlan(), config(), {
+    fetchImpl: async () => response({ sections }),
+  });
+  assert.equal(result.sections.length, 10);
+  assert.ok(result.totalCharacters >= 7000);
 });

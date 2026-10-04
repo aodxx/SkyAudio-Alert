@@ -9,13 +9,13 @@ const { normalizeWeather } = require('../weather/normalize');
 const { analyzeWeather } = require('../weather/analyzer');
 const { buildForecastData } = require('../forecast/formatter');
 const { generateGeminiReport } = require('../content/geminiReport');
-const { generatePresentationPlan } = require('../content/presentationPlanner');
+const { generatePresentationPlan, generateLongFormNarration } = require('../content/presentationPlanner');
 const { validateGeneratedFacts } = require('../content/safetyFirewall');
 const { buildFactsSnapshot } = require('../presentation/facts');
 const { buildVisualPlan } = require('../presentation/visualPlan');
 const { buildFlexV2 } = require('../flex/builder');
 const { lintFlexMessage } = require('../flex/lint');
-const { synthesizeSpeech } = require('../audio/tts');
+const { synthesizeLongFormSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
 const { storeAudio } = require('../audio/storage');
 const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
@@ -160,29 +160,62 @@ async function runPipeline(config) {
   const messages = [flexMessage];
   let audioInfo;
   try {
+    mark('content.narration', 'start');
+    const narration = await withRetry(() => generateLongFormNarration({
+      floodSituation, weatherAnalysis, location: config.location, date: dateInfo,
+    }, presentationPlan, config), {
+      onRetry: (err, attempt) => mark('content.narration', 'retry', { attempt, message: err.message }),
+    });
+    const narrationPlan = {
+      ...presentationPlan,
+      spokenText: narration.spokenText,
+      spokenSections: narration.sections.map((section) => section.text),
+      factsUsed: [...new Set([
+        ...(presentationPlan.factsUsed || []),
+        ...narration.sections.flatMap((section) => section.factsUsed || []),
+      ])],
+    };
+    const narrationSafetyErrors = validateGeneratedFacts(narrationPlan, { floodSituation, weatherAnalysis, date: dateInfo }, {
+      forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
+    });
+    if (narrationSafetyErrors.length) {
+      const error = new Error('Long-form narration safety firewall rejected output: ' + narrationSafetyErrors.join('; '));
+      error.stage = 'content.narration';
+      error.errors = narrationSafetyErrors;
+      throw error;
+    }
+    mark('content.narration', 'success', { provider: narration.provider, sections: narration.sections.length, characters: narration.totalCharacters });
+
     mark('tts.synthesize', 'start');
     const ttsConfig = { ...config.tts, style: [
-      presentationPlan.audioStyle.tone + ' tone',
+      'Thai male/female village news storyteller, conversational and warm',
+      'not a television newsreader, not a text reader',
+      'natural pauses, varied rhythm, explanatory and friendly',
       presentationPlan.audioStyle.pacing,
-      presentationPlan.audioStyle.detailLevel + ' detail',
+      'detailed long-form narration',
       ...(presentationPlan.audioStyle.emphasis || []).map((x) => 'emphasize ' + x),
     ].join('; ') };
-    const audioBuffer = await withRetry(() => synthesizeSpeech(presentationPlan.spokenText, ttsConfig), {
+    const audioBuffer = await withRetry(() => synthesizeLongFormSpeech(narration.sections.map((section) => section.text), ttsConfig), {
       onRetry: (err, attempt) => mark('tts.synthesize', 'retry', { attempt, message: err.message }),
     });
-    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, scriptLength: presentationPlan.spokenText.length, bytes: audioBuffer.length });
+    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, sections: narration.sections.length, scriptLength: narration.totalCharacters, bytes: audioBuffer.length });
     mark('audio.validate', 'start');
-    const validated = validateAudio(audioBuffer, presentationPlan.spokenText, config.tts.speakingRate);
-    mark('audio.validate', 'success', { durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, bitrateKbps: validated.bitrateKbps, sampleRate: validated.sampleRate });
+    const validated = validateAudio(audioBuffer, narration.spokenText, config.tts.speakingRate, {
+      longForm: true,
+      minDurationMs: 600000,
+      maxDurationMs: 18 * 60 * 1000,
+      maxFileBytes: 16 * 1024 * 1024,
+    });
+    mark('audio.validate', 'success', { durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, bitrateKbps: validated.bitrateKbps, sampleRate: validated.sampleRate, longForm: true });
     mark('audio.store', 'start');
     const stored = storeAudio(audioBuffer, config.storage, { dryRun: config.dryRun });
     mark('audio.store', 'success', { url: stored.url, committed: stored.committed, skipped: stored.skipped, path: stored.relPath });
-    audioInfo = { url: stored.url, durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType };
+    audioInfo = { url: stored.url, durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, sections: narration.sections.length };
     if (stored.url) messages.push(buildAudioMessage(stored.url, validated.durationMs));
   } catch (error) {
     const stage = error.stage || 'tts.synthesize';
-    mark(stage, 'failure', { message: error.message, detail: error.detail });
-    result.lastError = { stage, message: error.message, detail: error.detail };
+    mark(stage, 'failure', { message: error.message, detail: error.detail, errors: error.errors || [] });
+    result.lastError = { stage, message: error.message, detail: error.detail, errors: error.errors || [] };
     writeStatusReport(result, config);
     throw error;
   }
