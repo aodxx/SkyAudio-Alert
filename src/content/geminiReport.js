@@ -56,6 +56,25 @@ function extractText(json) {
   return json?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim() || '';
 }
 
+async function fetchGeminiContent(doFetch, url, options, maxAttempts = 3) {
+  let lastResponse;
+  let lastDetail = '';
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const res = await doFetch(url, options);
+    if (res.ok) return res;
+    lastResponse = res;
+    lastDetail = (await res.text().catch(() => '')).slice(0, 500);
+    const retryable = res.status === 429 || res.status === 500 || res.status === 502 || res.status === 503 || res.status === 504;
+    if (!retryable || attempt === maxAttempts) break;
+    const retryAfter = Number(res.headers?.get?.('retry-after'));
+    const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(retryAfter * 1000, 10000)
+      : attempt * 1500;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  return { response: lastResponse, detail: lastDetail };
+}
+
 async function generateGeminiReport(context, config, opts = {}) {
   const fallback = () => parseReportDraft(buildFallbackReport(context));
   if (!config?.content?.apiKey) {
@@ -99,10 +118,11 @@ async function generateGeminiReport(context, config, opts = {}) {
     },
   };
   const url = `${GEMINI_BASE_URL}/${encodeURIComponent(config.content.model)}:generateContent`;
-  const res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const result = await fetchGeminiContent(doFetch, url, { method: 'POST', headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const res = result?.response || result;
   if (!res.ok) {
-    const detail = (await res.text().catch(() => '')).slice(0, 500);
-    throw reportError(`Gemini content request failed: ${res.status}`, res.status >= 500 || res.status === 429, detail);
+    const detail = result?.detail || '';
+    throw reportError(`Gemini content request failed after retry: ${res.status}`, res.status >= 500 || res.status === 429, detail);
   }
   const text = extractText(await res.json());
   const parsed = parseReportDraft(text);
@@ -110,4 +130,4 @@ async function generateGeminiReport(context, config, opts = {}) {
   return { ...parsed.draft, provider: 'gemini' };
 }
 
-module.exports = { GEMINI_BASE_URL, buildFallbackReport, generateGeminiReport };
+module.exports = { GEMINI_BASE_URL, buildFallbackReport, generateGeminiReport, fetchGeminiContent };
