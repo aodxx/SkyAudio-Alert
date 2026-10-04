@@ -9,6 +9,7 @@ const { normalizeWeather } = require('../weather/normalize');
 const { analyzeWeather } = require('../weather/analyzer');
 const { buildForecastData } = require('../forecast/formatter');
 const { generateGeminiReport } = require('../content/geminiReport');
+const { generatePresentationPlan } = require('../content/presentationPlanner');
 const { buildFlex } = require('../flex/builder');
 const { synthesizeSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
@@ -68,8 +69,33 @@ async function runPipeline(config) {
   });
   mark('content.generate', 'success', { provider: report.provider, priority: report.priority, characters: report.spokenText.length });
 
+  mark('content.presentation', 'start');
+  const presentationPlan = await withRetry(() => generatePresentationPlan({
+    floodSituation, weatherAnalysis, location: config.location, date: dateInfo, report,
+  }, config), {
+    onRetry: (err, attempt) => mark('content.presentation', 'retry', { attempt, message: err.message }),
+  });
+  if (presentationPlan.severity !== floodSituation.severity) {
+    const error = new Error('Presentation planner changed verified flood severity');
+    error.stage = 'content.presentation';
+    throw error;
+  }
+  mark('content.presentation', 'success', {
+    provider: presentationPlan.provider,
+    severity: presentationPlan.severity,
+    cards: presentationPlan.cards.length,
+    audioDetail: presentationPlan.audioStyle.detailLevel,
+    characters: presentationPlan.spokenText.length,
+  });
+
   mark('flex.render', 'start');
-  const reportData = buildForecastData(weatherAnalysis, floodSituation, config.location, report);
+  const reportData = buildForecastData(weatherAnalysis, floodSituation, config.location, {
+    ...report,
+    spokenText: presentationPlan.spokenText,
+    shortSummary: report.shortSummary,
+    priority: presentationPlan.priority,
+  });
+  reportData.presentationPlan = presentationPlan;
   const flexMessage = buildFlex(reportData);
   mark('flex.render', 'success', { severity: floodSituation.severity });
 
@@ -77,12 +103,18 @@ async function runPipeline(config) {
   let audioInfo;
   try {
     mark('tts.synthesize', 'start');
-    const audioBuffer = await withRetry(() => synthesizeSpeech(report.spokenText, config.tts), {
+    const ttsConfig = { ...config.tts, style: [
+      presentationPlan.audioStyle.tone + ' tone',
+      presentationPlan.audioStyle.pacing,
+      presentationPlan.audioStyle.detailLevel + ' detail',
+      ...(presentationPlan.audioStyle.emphasis || []).map((x) => 'emphasize ' + x),
+    ].join('; ') };
+    const audioBuffer = await withRetry(() => synthesizeSpeech(presentationPlan.spokenText, ttsConfig), {
       onRetry: (err, attempt) => mark('tts.synthesize', 'retry', { attempt, message: err.message }),
     });
-    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, scriptLength: report.spokenText.length, bytes: audioBuffer.length });
+    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, scriptLength: presentationPlan.spokenText.length, bytes: audioBuffer.length });
     mark('audio.validate', 'start');
-    const validated = validateAudio(audioBuffer, report.spokenText, config.tts.speakingRate);
+    const validated = validateAudio(audioBuffer, presentationPlan.spokenText, config.tts.speakingRate);
     mark('audio.validate', 'success', { durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, bitrateKbps: validated.bitrateKbps, sampleRate: validated.sampleRate });
     mark('audio.store', 'start');
     const stored = storeAudio(audioBuffer, config.storage, { dryRun: config.dryRun });
@@ -99,14 +131,14 @@ async function runPipeline(config) {
 
   if (config.dryRun) {
     mark('line.send', 'skipped', { dryRun: true, reason: 'DRY_RUN=true; LINE API was not called', messageCount: messages.length });
-    const dryResult = { ...result, dryRun: true, floodSituation, report, reportData, messages, audioInfo };
+    const dryResult = { ...result, dryRun: true, floodSituation, report, presentationPlan, reportData, messages, audioInfo };
     writeStatusReport(dryResult, config);
     return dryResult;
   }
   mark('line.send', 'start');
   await withRetry(() => pushMessages(messages, config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
   mark('line.send', 'success', { messageCount: messages.length });
-  const finalResult = { ...result, floodSituation, report, reportData, messages, audioInfo };
+  const finalResult = { ...result, floodSituation, report, presentationPlan, reportData, messages, audioInfo };
   writeStatusReport(finalResult, config);
   return finalResult;
 }
