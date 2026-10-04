@@ -99,3 +99,20 @@ npm test
 5. สิ่งใดควรเป็นข้อมูลจริงจาก API และสิ่งใดเป็นเพียง Design reference
 
 **ข้อควรระวัง:** ห้ามนำรูปบุคคลหรือข้อมูลส่วนบุคคลจากโฟลเดอร์ไปใช้ใน production โดยอัตโนมัติ ต้องตรวจสิทธิ์การใช้งานและความเหมาะสมก่อนเสมอ
+
+
+## 📌 Project Status — Milestone 4A Live Acceptance — 2026-10-04
+
+**สถานะล่าสุด: Milestone 4A — Gemini Live Acceptance ผ่านแล้ว ✅**
+
+ยืนยันจากการทดสอบจริงว่า:
+- Gemini Content สามารถสร้างรายงานจาก facts ที่กำหนดได้
+- Gemini TTS สร้างเสียงภาษาไทยได้จริง
+- Audio ที่ได้ผ่านการตรวจสอบ MP3/duration ของระบบ
+- เส้นทาง Gemini Content → Gemini TTS ทำงานครบใน live acceptance
+- Unit tests ล่าสุดผ่าน **40/40**
+
+### ขั้นถัดไป
+**Milestone 4B — LINE Test Acceptance**: ทดสอบสายงานจริง Flood → Weather → Gemini → Flex → Gemini TTS → LINE Test และตรวจ Flex บนมือถือ + การเล่น Audio จริง
+
+**Production: ยังเป็น NO-GO** จนกว่าจะผ่าน LINE Test, human review และ B1/B2/B4 release gates
