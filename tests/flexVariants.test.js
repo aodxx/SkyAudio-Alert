@@ -57,3 +57,16 @@ test('missing stations/weather omit their cards and do not add placeholder tiles
   const serialized = JSON.stringify(message.contents.contents);
   assert.doesNotMatch(serialized, /จุดเฝ้าระวัง|อากาศวันนี้|--|ไม่ทราบสภาพอากาศ/);
 });
+
+
+test('visual brief is not a text dump: cards stay within visual text budgets and weather uses metric/icon blocks', () => {
+  const message = buildFlexV2(createFlexInput({ severity: 'watch' }));
+  const serialized = JSON.stringify(message);
+  assert.doesNotMatch(serialized, /สรุปสถานการณ์น้ำ.*สรุปสถานการณ์น้ำ.*สรุปสถานการณ์น้ำ/);
+  assert.match(serialized, /🌡️|🌧️|💧|💨/);
+  assert.match(serialized, /↗|→|↘/);
+  for (const bubble of message.contents.contents) {
+    const cardText = texts(bubble).join('');
+    assert.ok(Array.from(cardText).length <= 1200);
+  }
+});
