@@ -17,7 +17,7 @@ const THRESHOLDS = { hotApparent: 35, coolMorning: 23, rainProbNotable: 40, rain
 const LOCATION = { name: 'บ้านลำพาย', district: 'ต.โคกชะงาย', province: 'พัทลุง' };
 function loadFixture(name) {
   const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', name), 'utf8'));
-  return normalizeWeather(raw, `${raw.daily.time[0]}T00:00:00Z`);
+  return normalizeWeather(raw, raw.daily.time[0] + 'T00:00:00Z');
 }
 function flood(severity = 'watch') {
   return { severity, summary: severity === 'watch' ? 'มีสถานีใกล้ล้นตลิ่ง ควรติดตาม' : 'ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้', trend: 'stable', freshness: { state: severity === 'unknown' ? 'unknown' : 'fresh' }, stations: [{ name: 'น้ำตกโตนแพรทอง', label: severity === 'watch' ? 'ใกล้ล้นตลิ่ง' : '' }], actions: ['ติดตามระดับน้ำล่าสุด'] };
@@ -32,11 +32,11 @@ test('Phase 3 Flex is compact and flood-first', () => {
   const flex = buildFlex(data);
   const json = JSON.stringify(flex);
   assert.equal(flex.type, 'flex');
-  assert.equal(flex.contents.size, 'kilo');
+  assert.equal(flex.contents.type, 'carousel');
+  assert.ok(flex.contents.contents.length >= 2);
   assert.match(json, /สถานการณ์น้ำ/);
   assert.match(json, /cctv\.maholan\.net/);
   assert.match(json, /phatthalung\/weather/);
-  assert.match(json, /น้องจุ่นจ้าน/);
   assert.doesNotMatch(json, /ราคาปาล์ม|ราคายาง|ข่าวสารทั่วไป/);
   assert.equal(json.includes('alignItems'), false);
 });
@@ -46,11 +46,14 @@ test('critical compact Flex keeps water actions and omits secondary weather butt
   assert.match(json, /cctv\.maholan\.net/);
   assert.match(json, /chachoengsao-flood\.vercel\.app\/phatthalung/);
   assert.doesNotMatch(json, /phatthalung\/weather/);
+  const first = buildFlex(buildForecastData(analysis, flood('critical'), LOCATION)).contents.contents[0];
+  assert.match(JSON.stringify(first), /ติดตามประกาศ/);
 });
 test('unknown flood status is explicit in Flex', () => {
   const analysis = analyzeWeather(loadFixture('sunny.json'), THRESHOLDS);
   const json = JSON.stringify(buildFlex(buildForecastData(analysis, flood('unknown'), LOCATION)));
   assert.match(json, /ยังยืนยันไม่ได้/);
+  assert.match(json, /ยังสรุปเหตุการณ์น้ำจริงไม่ได้/);
 });
 test('missing optional weather fields do not crash normalize/analyze', () => {
   const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'weather', 'sunny.json'), 'utf8'));
