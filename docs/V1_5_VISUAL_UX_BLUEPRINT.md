@@ -1,0 +1,1054 @@
+# SkyAudio-Alert V1.5 — Visual & UX Blueprint + Phase Execution Plan
+
+**วันที่ออกแบบ:** 2026-10-04  
+**สถานะ:** DESIGN / IMPLEMENTATION PLAN — ยังไม่ใช่ production authorization  
+**ฐาน:** Flood-first + supporting weather + Gemini narrative + Gemini TTS + LINE Flex/Audio  
+**เป้าหมาย:** ทำให้รายงานตอนเช้า “เห็นแล้วเข้าใจสถานการณ์น้ำทันที” และ “ฟังแล้วรู้ว่าควรติดตาม/เตรียมตัวอย่างไร” โดยไม่เพิ่มข้อมูลที่แหล่งจริงไม่ได้ยืนยัน
+
+> 🔒 **Production remains NO-GO.**
+>
+> เอกสารนี้กำหนดลำดับงานของ V1.5 ตั้งแต่ design → contract → implementation → QA → LINE acceptance → release gate เพื่อป้องกันการแก้ UI แล้วต้องรื้อ pipeline ซ้ำ
+
+---
+
+## 1. V1.5 จะปรับอะไร
+
+V1.5 ไม่ใช่การเปลี่ยนระบบให้เป็น dashboard และไม่ใช่การเพิ่ม feature ใหม่จำนวนมาก แต่เป็นการยกระดับ **การนำเสนอข้อมูลที่ระบบมีอยู่แล้ว** ให้ชัดขึ้น ปลอดภัยขึ้น และเหมาะกับการใช้งานจริงใน LINE บนมือถือ
+
+### สิ่งที่ต้องดีขึ้น
+
+1. ผู้ใช้เห็น **สถานะน้ำ** ก่อนข้อมูลอื่นเสมอ
+2. เห็น **แนวโน้ม** และ **เวลาอัปเดต** ได้ทันที
+3. หน้าตาเปลี่ยนตาม 5 สถานการณ์:
+   - normal
+   - watch
+   - affected
+   - critical
+   - unknown
+4. ข้อมูล weather ช่วยให้ตัดสินใจเตรียมตัว แต่ไม่ถูกใช้เป็นหลักฐานว่าน้ำท่วม
+5. มี action ที่อ่านแล้วรู้ว่า “ตอนนี้ควรทำอะไร”
+6. Gemini ช่วยจัดลำดับและเขียนภาษาธรรมชาติ แต่ **ไม่มีสิทธิ์สร้าง fact**
+7. Audio มีบุคลิกผู้ประกาศที่เหมาะกับชุมชน และความยาวปรับตามความสำคัญ
+8. Flex อ่านง่ายบนมือถือและรองรับผู้สูงอายุ
+9. ข้อมูลสำคัญไม่พึ่งสีอย่างเดียว
+10. ทุกการเปลี่ยนแปลงมี fixture/test และสามารถตรวจ visual/audio ได้ก่อน production
+
+### สิ่งที่ V1.5 จะไม่ทำ
+
+- ไม่เพิ่ม PWA/chatbot
+- ไม่เพิ่ม multi-village/multi-group
+- ไม่ทำ minute-by-minute monitoring
+- ไม่เพิ่ม market/news/OCR
+- ไม่เพิ่มฐานข้อมูลประวัติขนาดใหญ่ในรอบนี้
+- ไม่ scrape CCTV มาเป็น source
+- ไม่ให้ Gemini browse เพื่อหา fact
+- ไม่ให้ forecast ฝนกลายเป็นคำยืนยันน้ำท่วม
+- ไม่ใช้ fixed 2–3 minute audio
+- ไม่เปิด production schedule เพียงเพราะ UI ใหม่ดูดี
+
+---
+
+# 2. ภาพรวม Phases
+
+| Phase | ชื่อ | เป้าหมาย | ผลที่ต้องเห็นเมื่อเสร็จ |
+|---|---|---|---|
+| 0 | Baseline & Design Lock | ล็อกสิ่งที่จะเปลี่ยนและสิ่งที่ห้ามเปลี่ยน | มี blueprint และ acceptance matrix ที่ทีมใช้เป็น checklist เดียวกัน |
+| 1 | Visual Design System | สร้างภาษา visual กลาง | มี tokens, severity themes, component rules และ mockup ครบ 5 states |
+| 2 | Presentation Contract | กำหนดข้อมูลที่ UI/Audio ต้องใช้ | มี contract สำหรับ presentation plan, action, source, freshness และ audio style |
+| 3 | Adaptive Flex | นำ design ไปใช้จริง | ทั้ง 5 states render ได้จริงใน fixture และ mobile-safe |
+| 4 | Adaptive Audio | ทำเสียงให้สอดคล้องกับสถานการณ์ | เสียงแต่ละ state มี tone/priority/duration เหมาะสมและผ่าน audio QA |
+| 5 | Safety + Quality Firewall | กันข้อมูลเกินจริงและ regression | test ตรวจ no-fabrication, certainty, layout, audio และ source transparency |
+| 6 | End-to-End LINE Acceptance | ทดสอบสายงานจริง | LINE TEST ได้ Flex → Audio ตามลำดับและตรวจมือถือ/เสียงจริง |
+| 7 | Release Readiness | ปิด gate ก่อน production | checklist ครบ, docs ตรงกัน, rollback/monitoring พร้อม และจึงค่อยพิจารณา GO |
+
+> **กติกา:** ห้ามข้าม Phase 1–2 แล้วรีบแก้ builder โดยตรง เพราะจะทำให้ component, prompt และ tests ขัดกันภายหลัง
+
+---
+
+# 3. PHASE 0 — Baseline & Design Lock
+
+## 3.1 วัตถุประสงค์
+
+สร้าง baseline จาก runtime ปัจจุบันก่อนแก้ เพื่อให้เรารู้ว่า “อะไรทำงานอยู่แล้ว” และ “อะไรคือสิ่งที่ V1.5 เปลี่ยน”
+
+## 3.2 งานที่ต้องทำ
+
+### A. Inventory runtime
+
+ตรวจและบันทึก:
+
+- Flood adapter / normalize / analyzer
+- Weather adapter / analyzer
+- Report contract
+- Gemini Content
+- Flex builder/components
+- Gemini TTS
+- Audio validation/storage
+- LINE messaging
+- Pipeline
+- GitHub Actions
+- existing fixtures/tests
+
+### B. ล็อก invariants
+
+สิ่งที่ห้ามเสียระหว่าง V1.5:
+
+- Flood เป็น primary
+- Weather เป็น supporting
+- Gemini ไม่ใช่ source of truth
+- forecast ไม่ยืนยัน actual flood
+- unknown/stale ต้องยังคง unknown
+- Flex มาก่อน Audio
+- dry-run ไม่ส่ง LINE
+- production duplicate guard คงอยู่
+- market/rubber/news ไม่กลับมา
+
+### C. ทำ before snapshot
+
+สร้าง test/snapshot สำหรับ:
+
+- normal
+- watch
+- affected
+- critical
+- unknown
+- stale
+
+## 3.3 ไฟล์/พื้นที่ที่เกี่ยวข้อง
+
+- `docs/V1_5_VISUAL_UX_BLUEPRINT.md`
+- `src/flood/*`
+- `src/content/*`
+- `src/flex/*`
+- `src/audio/*`
+- `src/core/pipeline.js`
+- `tests/*`
+- `fixtures/*`
+
+## 3.4 เมื่อเสร็จต้องเห็นอะไร
+
+ต้องตอบได้ชัดเจนว่า:
+
+> “ถ้าเราไม่แก้ข้อมูลต้นทาง ระบบปัจจุบันสร้างข้อมูลอะไรให้ UI และ Audio ได้บ้าง และ V1.5 ต้องเพิ่ม presentation information อะไรเท่านั้น”
+
+### Exit criteria
+
+- [ ] baseline tests ผ่าน
+- [ ] 5 severity + stale fixture ถูกระบุ
+- [ ] invariants ถูกบันทึก
+- [ ] ไม่มี requirement ใหม่ที่หลุด scope
+
+---
+
+# 4. PHASE 1 — Visual Design System
+
+## 4.1 เป้าหมาย
+
+สร้าง “ภาษากลาง” ของ Flex เพื่อไม่ให้แต่ละ state ถูกออกแบบแยกกันจนดูเหมือนคนละแอป
+
+## 4.2 Design hierarchy
+
+ทุก Flex ใช้ hierarchy นี้เป็นแกน แต่สามารถย่อ/ขยายตาม severity:
+
+1. Identity — น้องจุ่นจ้าน / รายงานเช้า
+2. Flood Status Hero — สถานะน้ำ
+3. Trend + Freshness — แนวโน้ม + เวลาอัปเดต
+4. Key facts — จุดวัด/พื้นที่ที่เกี่ยวข้อง
+5. Action — สิ่งที่ควรทำ/ติดตาม
+6. Weather context — เฉพาะสิ่งที่จำเป็น
+7. Sources — แหล่งข้อมูล
+8. CTA — ปุ่มที่เกี่ยวข้อง
+
+## 4.3 สร้าง design tokens
+
+กำหนดเป็น code/config ไม่กระจาย hard-code:
+
+- spacing
+- padding
+- corner radius
+- font size
+- font weight
+- line height
+- severity label
+- icon
+- gradient
+- solid fallback
+- button hierarchy
+- maximum text length
+- compact/expanded mode
+
+ตัวอย่างแนวคิด:
+
+`severity.normal`, `severity.watch`, `severity.affected`, `severity.critical`, `severity.unknown`
+
+## 4.4 กฎสี
+
+สีเป็น **semantic signal** ไม่ใช่ข้อมูลเพียงอย่างเดียว
+
+ทุก state ต้องมี:
+
+- สี
+- label
+- icon
+- ข้อความ
+
+ตัวอย่าง:
+
+- normal → “ปกติ”
+- watch → “เฝ้าระวัง”
+- affected → “ได้รับผลกระทบ”
+- critical → “วิกฤต”
+- unknown → “ยังยืนยันไม่ได้”
+
+ต้องมี solid fallback หาก gradient/rendering มีปัญหา
+
+## 4.5 ออกแบบ 5 Flex variants
+
+### Variant A — NORMAL
+
+ต้องสื่อ:
+
+> สถานการณ์ปัจจุบันไม่มีสัญญาณผิดปกติที่ source ยืนยัน
+
+UI:
+
+- hero ขนาดกะทัดรัด
+- trend
+- update time
+- weather สั้น
+- action แบบ “ติดตามตามปกติ”
+- source
+
+### Variant B — WATCH
+
+ต้องสื่อ:
+
+> มีสัญญาณที่ควรติดตาม แต่ยังไม่ควรใช้ภาษาวิกฤต
+
+UI เพิ่ม:
+
+- จุด/สถานีสำคัญ
+- trend เด่นขึ้น
+- weather context ถ้ามี
+- action “ติดตาม/เตรียมตัว”
+
+### Variant C — AFFECTED
+
+ต้องสื่อ:
+
+> source มีข้อมูลพื้นที่/จุดที่ได้รับผลกระทบ
+
+UI:
+
+- affected area/road เฉพาะที่มี fact
+- action ชัดเจน
+- weather เป็น supporting
+- source เด่น
+
+### Variant D — CRITICAL
+
+ต้องสื่อ:
+
+> ข้อมูลยืนยันสถานการณ์รุนแรง/วิกฤต
+
+UI:
+
+- status hero ใหญ่ที่สุด
+- ลดข้อมูลรอง
+- action เด่นที่สุด
+- ปุ่มน้ำ/CCTV เด่น
+- weather ย่อ
+- หลีกเลี่ยงข้อมูลตกแต่งที่ทำให้ผู้ใช้ต้องอ่านนาน
+
+### Variant E — UNKNOWN
+
+ต้องสื่อ:
+
+> ระบบยังยืนยันสถานการณ์น้ำไม่ได้
+
+UI:
+
+- ห้ามใช้ visual ที่ทำให้ดูเหมือน normal
+- แสดง “ข้อมูลน้ำยังยืนยันไม่ได้”
+- ระบุ source unavailable/stale ตามข้อเท็จจริง
+- weather แสดงได้ถ้ามี
+- action เป็น “ติดตามจากแหล่งข้อมูล”
+- source button ต้องยังเข้าถึงได้
+
+## 4.6 Accessibility
+
+ต้องออกแบบให้:
+
+- อ่านบนจอมือถือเล็กได้
+- ข้อความสำคัญไม่ยาวเกิน
+- contrast เพียงพอ
+- ไม่ใช้สีเป็นตัวบอก state เพียงอย่างเดียว
+- altText อธิบายสถานะสำคัญ
+- พิจารณา LINE Flex scaling/accessibility ที่เหมาะสม
+
+## 4.7 เมื่อเสร็จต้องเห็นอะไร
+
+ต้องมีภาพ/ตัวอย่างหรือ specification ที่มองแล้วแยกได้ทันทีว่า:
+
+- NORMAL หน้าตาอย่างไร
+- WATCH หน้าตาอย่างไร
+- AFFECTED หน้าตาอย่างไร
+- CRITICAL หน้าตาอย่างไร
+- UNKNOWN หน้าตาอย่างไร
+
+และเมื่อปิดสี/มองด้วยข้อความอย่างเดียว ยังรู้ severity ได้
+
+### Exit criteria
+
+- [ ] 5 variants approved
+- [ ] token set ชัดเจน
+- [ ] component hierarchy ชัดเจน
+- [ ] mobile compact rule ชัดเจน
+- [ ] accessibility rule ชัดเจน
+
+---
+
+# 5. PHASE 2 — Presentation Contract
+
+## 5.1 เป้าหมาย
+
+แยก “ข้อมูลจริง” ออกจาก “วิธีนำเสนอ”
+
+Flood/Weather facts ต้องไม่ถูกแก้เพื่อให้ UI สวย
+
+สร้างชั้นกลาง:
+
+**Verified Facts → Presentation Plan → Flex + Audio**
+
+## 5.2 Presentation Plan ที่ควรมี
+
+แนวคิดข้อมูล:
+
+```json
+{
+  "severity": "watch",
+  "headline": "...",
+  "statusLabel": "...",
+  "trendLabel": "...",
+  "freshnessLabel": "...",
+  "priorityFacts": [],
+  "actions": [],
+  "weatherContext": {},
+  "sourceNotes": [],
+  "visualVariant": "watch",
+  "audioStyle": "calm-alert",
+  "spokenText": "..."
+}
+```
+
+ข้อสำคัญ:
+
+- `severity` มาจาก deterministic flood analysis
+- `priorityFacts` ต้อง trace กลับไปยัง facts
+- `actions` ต้องมาจาก allowed facts/rules
+- Gemini ช่วยเรียบเรียงได้ แต่ไม่สามารถยกระดับ severity เอง
+- `visualVariant` ต้องไม่ขัดกับ severity
+
+## 5.3 Gemini ทำอะไร / ไม่ทำอะไร
+
+### Gemini ทำได้
+
+- เรียงความสำคัญ
+- เขียน headline
+- เขียน spokenText
+- ย่อ/ขยายตามสถานการณ์
+- ทำภาษาชุมชนให้อ่านง่าย
+- เลือก emphasis จาก facts ที่มี
+
+### Gemini ทำไม่ได้
+
+- สร้างตัวเลข
+- สร้างสถานี
+- สร้างถนน
+- สร้างเวลา
+- เปลี่ยน unknown เป็น normal/critical
+- อ้างว่าปลอดภัยแน่นอน
+- สร้างเหตุการณ์จากฝน forecast
+
+## 5.4 Source transparency
+
+ทุก fact สำคัญควร trace ได้:
+
+`fact → normalized source → presentation → output`
+
+สำหรับ debug ให้เก็บ `factsUsed` และ `warnings` ต่อไป
+
+## 5.5 เมื่อเสร็จต้องเห็นอะไร
+
+Developer ต้องสามารถเอา fixture เดียวกันไปสร้าง:
+
+- Flex
+- Audio
+
+แล้วตรวจได้ว่า **ทั้งสองพูดเรื่องเดียวกันและ severity เดียวกัน**
+
+### Exit criteria
+
+- [ ] Presentation contract มี schema
+- [ ] validator ตรวจ severity mismatch
+- [ ] factsUsed traceable
+- [ ] Gemini ไม่มีสิทธิ์เปลี่ยน source facts
+- [ ] มี mock fixtures สำหรับทุก state
+
+---
+
+# 6. PHASE 3 — Adaptive Flex Implementation
+
+## 6.1 เป้าหมาย
+
+นำ design system + presentation contract ไปลงใน `src/flex`
+
+## 6.2 งาน
+
+### A. Refactor components
+
+แยก component:
+
+- `identityStrip`
+- `floodHero`
+- `trendBadge`
+- `freshnessRow`
+- `stationFact`
+- `affectedArea`
+- `actionGroup`
+- `weatherSummary`
+- `sourceFooter`
+- `ctaButtons`
+
+### B. Variant renderer
+
+แนวคิด:
+
+```text
+renderFlex(presentationPlan)
+  → selectVariant(severity)
+  → buildHero()
+  → buildFacts()
+  → buildActions()
+  → buildWeather()
+  → buildSources()
+  → buildCTA()
+  → validateFlex()
+```
+
+### C. Smart station selection
+
+ไม่ใช้ `stations.slice(0, 2)` แบบตายตัว
+
+ให้คะแนนจาก:
+
+- relevance ต่อพื้นที่
+- severity
+- trend
+- freshness
+- มีการเปลี่ยนแปลงหรือไม่
+- ความสำคัญต่อผู้ใช้
+
+แต่ต้อง **ไม่สร้าง station ใหม่**
+
+### D. Action hierarchy
+
+Normal:
+- ข้อมูล/แหล่งข้อมูลเป็นหลัก
+
+Watch:
+- ติดตามสถานการณ์
+- ตรวจข้อมูลน้ำ
+
+Affected:
+- ดูสถานการณ์/เส้นทาง
+- ติดตามจุดที่เกี่ยวข้อง
+
+Critical:
+- ปุ่มน้ำ/CCTV เด่นที่สุด
+- ลด CTA รอง
+
+Unknown:
+- แหล่งข้อมูล + weather
+- ไม่ทำให้ดูเหมือนสถานการณ์ปกติ
+
+### E. AltText
+
+altText ต้องเป็น flood-first เช่น:
+
+`รายงานสถานการณ์น้ำบ้านลำพาย: เฝ้าระวัง — มีข้อมูลควรติดตาม`
+
+และ unknown ต้องพูดตรงว่า:
+
+`รายงานสถานการณ์น้ำบ้านลำพาย: ยังยืนยันสถานการณ์น้ำไม่ได้`
+
+## 6.3 Visual QA
+
+สร้าง fixture snapshots:
+
+- short text
+- long text
+- many stations
+- no stations
+- affected area
+- critical
+- unknown
+- stale
+
+ตรวจ:
+
+- overflow
+- nesting
+- button count
+- text truncation
+- visual hierarchy
+- mobile height
+
+## 6.4 เมื่อเสร็จต้องเห็นอะไร
+
+เมื่อส่ง fixture 5 states เข้า renderer ต้องได้ Flex 5 แบบที่:
+
+- severity ต่างกันเห็นได้ทันที
+- flood อยู่ด้านบน
+- weather ไม่แย่งความเด่น
+- critical ไม่รก
+- unknown ไม่ถูกตีความว่า normal
+- ปุ่มยังใช้งานได้
+- altText ถูกต้อง
+
+### Exit criteria
+
+- [ ] Flex tests ผ่าน
+- [ ] 5 variants render
+- [ ] gradient + solid fallback ผ่าน
+- [ ] CTA URL contract ผ่าน
+- [ ] altText tests ผ่าน
+- [ ] long-text fixtures ผ่าน
+- [ ] mobile visual review ผ่าน
+
+---
+
+# 7. PHASE 4 — Adaptive Audio
+
+## 7.1 เป้าหมาย
+
+ทำให้ Audio เป็น “ผู้ประกาศสถานการณ์” ไม่ใช่แค่เอาข้อความ Flex ไปอ่านออกเสียง
+
+## 7.2 Audio structure
+
+แนวคิด:
+
+1. ทักทายสั้น
+2. บอกสถานะน้ำก่อน
+3. บอก fact สำคัญ
+4. บอก trend/freshness เมื่อมีประโยชน์
+5. weather เฉพาะเมื่อช่วยตัดสินใจ
+6. action
+7. ปิดท้ายสั้น
+
+ลำดับนี้เป็น **priority rule** ไม่ใช่ fixed script ที่บังคับทุกวัน
+
+## 7.3 Adaptive duration
+
+ไม่กำหนด 2–3 นาที
+
+- normal → สั้น
+- watch → เพิ่มรายละเอียด
+- affected → เน้นผลกระทบ/action
+- critical → กระชับแต่ชัดและเร่งความสำคัญ
+- unknown → สั้น ชัด และย้ำข้อจำกัดข้อมูล
+
+## 7.4 Voice profile
+
+ยังคง:
+
+- male-friendly = default
+- female-friendly = optional
+
+Style ต้องแยกจาก spoken text
+
+ตัวอย่าง style concept:
+
+- normal → warm / calm
+- watch → calm alert
+- affected → clear / concerned
+- critical → urgent but controlled
+- unknown → calm / transparent
+
+ไม่ใช้โทนตื่นตระหนก
+
+## 7.5 Audio QA
+
+ตรวจอย่างน้อย:
+
+- MP3 parse
+- duration
+- file size
+- MIME
+- public HTTPS
+- playback
+- ไม่มี silence ยาวผิดปกติ
+- ไม่มี clipping ที่ฟังได้ชัด
+- ไม่มีข้อความ/ตัวเลขที่ไม่อยู่ใน facts
+
+## 7.6 เมื่อเสร็จต้องเห็นอะไร
+
+สำหรับ fixture เดียวกัน:
+
+- Flex บอก severity อะไร
+- Audio ต้องบอก severity เดียวกัน
+- Audio ต้องไม่พูด fact ที่ Flex/verified facts ไม่มี
+- critical ฟังแล้วรู้ความเร่งด่วน
+- unknown ฟังแล้วรู้ว่า “ยังยืนยันไม่ได้”
+- normal ไม่ยืดเยื้อ
+
+### Exit criteria
+
+- [ ] male live test ผ่าน
+- [ ] female live test ผ่านหรือมี approved fixture ตาม gate
+- [ ] audio validator ผ่าน
+- [ ] duration adaptive
+- [ ] safety text validation ผ่าน
+- [ ] human listening review ผ่าน
+
+---
+
+# 8. PHASE 5 — Safety + Quality Firewall
+
+## 8.1 เป้าหมาย
+
+ก่อนส่ง LINE ต้องมี firewall สองชั้น:
+
+**Content safety + Presentation quality**
+
+## 8.2 Safety tests
+
+ตรวจ:
+
+### Forbidden certainty
+
+ต้อง reject:
+
+- “ปลอดภัยแน่นอน”
+- “น้ำท่วมแน่นอน” เมื่อ facts ไม่ยืนยัน
+- “ยืนยันว่าเกิดน้ำท่วม” เมื่อ facts ไม่รองรับ
+
+### Forecast-only claim
+
+ถ้ามีแต่ forecast ฝน:
+
+ห้าม output:
+
+> “ฝนจะทำให้น้ำท่วม”
+
+แต่อนุญาตแนว:
+
+> “มีฝนที่ควรติดตาม และควรตรวจสถานการณ์น้ำจากแหล่งข้อมูล”
+
+### Fact leakage
+
+ตรวจว่า:
+
+- station names
+- numbers
+- times
+- roads
+- affected areas
+
+อยู่ใน source facts จริง
+
+## 8.3 Presentation quality score
+
+สร้าง internal score เช่น:
+
+- flood visibility
+- freshness visibility
+- action clarity
+- source visibility
+- text compactness
+- accessibility
+- audio consistency
+
+คะแนนนี้ใช้ **ตรวจคุณภาพภายใน ไม่ใช่ส่งให้ผู้ใช้เป็น fact**
+
+## 8.4 Regression matrix
+
+ต้องรัน matrix:
+
+| State | Fresh | Stale | Weather | No Weather | Long Text |
+|---|---|---|---|---|---|
+| normal | ✓ | ✓ | ✓ | ✓ | ✓ |
+| watch | ✓ | ✓ | ✓ | ✓ | ✓ |
+| affected | ✓ | ✓ | ✓ | ✓ | ✓ |
+| critical | ✓ | ✓ | ✓ | ✓ | ✓ |
+| unknown | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+## 8.5 เมื่อเสร็จต้องเห็นอะไร
+
+ถ้ามี bug เช่น Gemini เขียน “ปลอดภัยแน่นอน”:
+
+> pipeline ต้องหยุดก่อน TTS/LINE
+
+ถ้า Flex แสดง critical แต่ report บอก watch:
+
+> pipeline ต้อง fail validation
+
+ถ้า source stale:
+
+> output ต้องยังแสดง stale/unknown ตาม policy
+
+### Exit criteria
+
+- [ ] no-fabrication tests ผ่าน
+- [ ] severity consistency ผ่าน
+- [ ] stale/unknown ผ่าน
+- [ ] regression matrix ผ่าน
+- [ ] quality score ไม่ใช้แทน safety gate
+
+---
+
+# 9. PHASE 6 — End-to-End LINE Test Acceptance
+
+## 9.1 เป้าหมาย
+
+ทดสอบของจริงตั้งแต่ source ถึงมือถือ ไม่ใช่แค่ unit test
+
+## 9.2 Test scenarios
+
+อย่างน้อย:
+
+1. normal day
+2. watch day
+3. affected fixture
+4. critical fixture
+5. unknown flood source
+6. stale flood source
+7. Gemini content retry/fallback
+8. TTS male
+9. TTS female
+10. LINE delivery
+
+## 9.3 ตรวจใน LINE จริง
+
+ผู้ทดสอบต้องดู:
+
+- Flex มาก่อน Audio
+- flood status เห็นทันที
+- อ่านบนมือถือได้
+- ปุ่มกดได้
+- ไม่มีข้อความล้น
+- สีไม่ทำให้เข้าใจผิด
+- altText ถูก
+- Audio เล่นได้
+- เสียงไม่เบา/ดัง/เร็วผิดปกติ
+- เนื้อหาไม่กล่าวเกิน facts
+
+## 9.4 Acceptance record
+
+ทุก test run ต้องบันทึก:
+
+- date/time
+- fixture/source mode
+- severity
+- content model
+- TTS model
+- voice
+- Flex result
+- Audio result
+- human reviewer result
+- defects
+- final PASS/FAIL
+
+## 9.5 เมื่อเสร็จต้องเห็นอะไร
+
+ผู้ใช้เปิด LINE TEST แล้วสามารถบอกได้ภายในไม่กี่วินาที:
+
+> “วันนี้สถานการณ์น้ำเป็นอย่างไร”
+
+และถ้ากดฟังเสียง:
+
+> “เสียงพูดเรื่องเดียวกับ Flex และไม่พูดเกินข้อมูลจริง”
+
+### Exit criteria
+
+- [ ] LINE TEST delivery PASS
+- [ ] mobile visual PASS
+- [ ] audio playback PASS
+- [ ] Flex → Audio ordering PASS
+- [ ] safety/human content PASS
+- [ ] degraded-mode PASS
+- [ ] acceptance record committed
+
+---
+
+# 10. PHASE 7 — Release Readiness
+
+## 10.1 เป้าหมาย
+
+ปิดทุก release gate ก่อนเปิด schedule production
+
+## 10.2 งาน
+
+### Documentation consistency
+
+ตรวจว่าเอกสารเหล่านี้ไม่ขัดกัน:
+
+- README
+- PRD
+- ARCHITECTURE
+- API
+- REPOSITORY_STRUCTURE
+- CHECKLIST
+- CONTEXT
+- DECISIONS
+- CHANGELOG
+- Phase status
+- workflows
+
+### Workflow
+
+ตรวจ:
+
+- schedule 06:00 Asia/Bangkok
+- production secrets แยก TEST
+- dry-run behavior
+- retry
+- duplicate guard
+- status report
+- audio public URL
+- GitHub permissions
+
+### Rollback
+
+ต้องตอบได้:
+
+- ถ้า Gemini ใช้ไม่ได้ทำอย่างไร
+- ถ้า flood source ใช้ไม่ได้ทำอย่างไร
+- ถ้า TTS ใช้ไม่ได้ทำอย่างไร
+- ถ้า LINE ส่งไม่ได้ทำอย่างไร
+- จะปิด production schedule อย่างไร
+
+## 10.3 Production GO criteria
+
+ต้องผ่านทั้งหมด:
+
+- [ ] B1 flood source gate
+- [ ] B2 degraded-mode gate
+- [ ] B3 Gemini/model gate
+- [ ] B4 documentation/test migration
+- [ ] LINE TEST acceptance
+- [ ] human visual acceptance
+- [ ] human audio acceptance
+- [ ] safety regression
+- [ ] operational workflow review
+
+ถ้ามีข้อใด FAIL → **NO-GO**
+
+## 10.4 เมื่อเสร็จต้องเห็นอะไร
+
+ก่อน production ต้องมีหลักฐานชุดเดียวที่ตอบได้ว่า:
+
+> source ถูกต้อง → facts ถูกต้อง → presentation ถูกต้อง → audio ถูกต้อง → LINE ถูกต้อง → rollback ทำได้
+
+---
+
+# 11. สิ่งที่จะสร้าง/แก้ใน Repository
+
+## Phase 0–2: Design / Contract
+
+อาจเพิ่ม:
+
+```text
+docs/
+  V1_5_VISUAL_UX_BLUEPRINT.md
+  V1_5_ACCEPTANCE_MATRIX.md
+
+src/
+  content/
+    presentationPlan.js
+    presentationValidator.js
+  flex/
+    tokens.js
+    variants/
+      normal.js
+      watch.js
+      affected.js
+      critical.js
+      unknown.js
+  audio/
+    styles.js
+
+tests/
+  presentationPlan.test.js
+  presentationValidator.test.js
+  flexVariants.test.js
+```
+
+> ชื่อไฟล์เป็น design target; ก่อนสร้างจริงต้องตรวจโครงสร้างปัจจุบันและ reuse ของเดิมก่อน เพื่อไม่สร้าง module ซ้ำ
+
+## Phase 3–4: Runtime
+
+เป้าหมายหลัก:
+
+- `src/flex/builder.js`
+- `src/flex/components.js`
+- `src/flex/themes.js` หรือ token module ที่เหมาะสม
+- `src/content/geminiReport.js`
+- `src/audio/tts.js`
+- `src/audio/validate.js`
+
+## Phase 5–7: QA / Ops
+
+เพิ่มตามความจำเป็น:
+
+- fixtures
+- validators
+- visual QA tests
+- audio QA tests
+- LINE acceptance workflow
+- acceptance records
+- phase status docs
+
+---
+
+# 12. Definition of Done ของ V1.5
+
+V1.5 ถือว่า “เสร็จ” เมื่อผู้ใช้ไม่ต้องอ่านข้อความยาวเพื่อเข้าใจ 3 เรื่องนี้:
+
+### 1. สถานการณ์น้ำคืออะไร?
+
+เห็นจาก Hero + label + trend
+
+### 2. ข้อมูลสดแค่ไหน?
+
+เห็นจาก update/freshness
+
+### 3. ตอนนี้ควรทำอะไร?
+
+เห็นจาก action
+
+และเมื่อกดฟังเสียง:
+
+- เสียงสอดคล้องกับ Flex
+- เสียงไม่ยาวเกินความจำเป็น
+- เสียงไม่สร้าง fact
+- น้ำเป็นเรื่องแรก
+- weather เป็นเรื่องประกอบ
+- unknown/stale พูดอย่างโปร่งใส
+
+---
+
+# 13. ลำดับการทำงานจริงหลัง Blueprint
+
+เพื่อไม่ให้รื้อซ้ำ ให้ทำตามนี้:
+
+```text
+Phase 0
+  ↓
+Phase 1 — Visual System
+  ↓
+Phase 2 — Presentation Contract
+  ↓
+Review / Approve
+  ↓
+Phase 3 — Flex Implementation
+  ↓
+Phase 4 — Audio
+  ↓
+Phase 5 — Safety + QA
+  ↓
+Phase 6 — LINE TEST
+  ↓
+Phase 7 — Release Readiness
+  ↓
+GO / NO-GO
+```
+
+### กฎสำคัญ
+
+**ทุก Phase ต้องหยุดตรวจผลก่อนเริ่ม Phase ถัดไป**
+
+ไม่ใช่ทำโค้ดรวดเดียวแล้วค่อยตรวจท้ายสุด
+
+---
+
+# 14. สิ่งที่ผู้ใช้ควรเห็นในแต่ละ Phase
+
+| Phase | สิ่งที่ควรเห็นจริง |
+|---|---|
+| 0 | เอกสาร + baseline ว่าของเดิมทำอะไรได้ |
+| 1 | แบบ Flex 5 states ที่แตกต่างชัดเจน |
+| 2 | ตัวอย่าง verified facts → presentation plan |
+| 3 | Flex 5 states render จาก fixtures |
+| 4 | Audio 5 states ที่มีบุคลิกและความยาวต่างกัน |
+| 5 | Test report ว่าข้อมูลผิด/เกินจะถูกบล็อก |
+| 6 | ข้อความ Flex + Audio จริงใน LINE TEST |
+| 7 | Release checklist และหลักฐาน GO/NO-GO |
+
+---
+
+# 15. Recommended execution policy
+
+### P0 — ต้องทำก่อน
+
+1. Phase 0 baseline
+2. Phase 1 visual system
+3. Phase 2 presentation contract
+4. Phase 3 adaptive Flex
+5. Phase 5 safety firewall
+
+### P1 — ทำต่อทันที
+
+6. Phase 4 adaptive audio
+7. smart station selection
+8. weather risk context
+9. source transparency
+10. audio QA
+
+### P2 — หลัง V1.5 stable
+
+11. daily history
+12. change-from-yesterday
+13. operational quality dashboard
+14. community announcement layer
+
+สิ่งเหล่านี้ไม่ควรแทรกเข้ามาระหว่าง P0 เพราะจะทำให้ scope แตก
+
+---
+
+# 16. Final acceptance statement
+
+V1.5 ไม่ได้วัดความสำเร็จจาก “หน้าตาสวยขึ้น” เพียงอย่างเดียว
+
+ต้องวัดจาก:
+
+**เร็วขึ้นในการเข้าใจ + ชัดขึ้นในการตัดสินใจ + ปลอดภัยขึ้นในการสื่อสาร + ตรวจสอบย้อนกลับได้ + ไม่ทำลาย runtime เดิม**
+
+ดังนั้นทุก feature ใหม่ต้องผ่านคำถาม 5 ข้อ:
+
+1. ข้อมูลนี้มาจาก fact ไหน?
+2. ผู้ใช้เข้าใจเร็วขึ้นหรือไม่?
+3. ถ้าข้อมูล source หาย/stale จะยังพูดอย่างถูกต้องหรือไม่?
+4. Flex กับ Audio สอดคล้องกันหรือไม่?
+5. ถ้าคำตอบไม่แน่นอน ระบบยอมบอกว่า “ยังยืนยันไม่ได้” หรือไม่?
+
+ถ้าตอบไม่ได้ → **ยังไม่ควรนำเข้า production**
+
+---
+
+## Current status
+
+- [x] V1.0 Flood-first scope locked
+- [x] Gemini live acceptance passed
+- [x] LINE TEST delivery passed
+- [ ] V1.5 Phase 0
+- [ ] V1.5 Phase 1
+- [ ] V1.5 Phase 2
+- [ ] V1.5 Phase 3
+- [ ] V1.5 Phase 4
+- [ ] V1.5 Phase 5
+- [ ] V1.5 Phase 6
+- [ ] V1.5 Phase 7
+- [ ] Production GO
+
+**สถานะ production ปัจจุบัน: NO-GO จนกว่า release gates จะผ่านครบ**

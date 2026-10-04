@@ -139,3 +139,17 @@ npm test
 - บันทึก human acceptance
 
 **Production: ยังเป็น NO-GO**
+
+## 🎨 V1.5 Visual & UX Execution Plan — 2026-10-04
+
+เอกสาร `docs/V1_5_VISUAL_UX_BLUEPRINT.md` เป็นแผนลงมือทำแบบเป็นเฟส ตั้งแต่ baseline, visual design, presentation contract, adaptive Flex, adaptive Audio, safety/QA, LINE TEST จนถึง production release gate
+
+ในแต่ละเฟสกำหนดไว้ 4 เรื่อง:
+- งานที่ต้องทำ
+- ไฟล์/พื้นที่ที่เกี่ยวข้อง
+- สิ่งที่ต้องเห็นเมื่อเสร็จ
+- Exit criteria ก่อนอนุญาตให้ไปเฟสถัดไป
+
+**หลักการ:** ทำทีละเฟสและหยุดตรวจผลทุกครั้ง เพื่อไม่ให้ UI, Gemini prompt, Audio และ pipeline ต้องรื้อซ้ำ
+
+**Production ยัง NO-GO** จนกว่า release gates และ human acceptance จะผ่านครบ
