@@ -32,11 +32,23 @@ function metricSlots(snapshot) {
     ['temperature', 'weather.current.temperature'],
     ['temperature-low', 'weather.daily.tempMin'],
     ['temperature-high', 'weather.daily.tempMax'],
-    ['rain-probability', 'weather.daily.rainProbabilityMax'],
     ['humidity', 'weather.current.humidity'],
     ['wind-speed', 'weather.current.windSpeed'],
   ];
-  return candidates.filter(([, factId]) => getFact(snapshot, factId)).map(([id, factId]) => ({ id, valueFactId: factId }));
+  const periods = ['morning', 'afternoon', 'evening'].map((period) => ({
+    period,
+    valueFactId: `weather.rainWindows.${period}.maxProbability`,
+    detailFactId: `weather.rainWindows.${period}.label`,
+  })).filter((period) => getFact(snapshot, period.valueFactId) && getFact(snapshot, period.detailFactId));
+  if (periods.length) {
+    periods.sort((left, right) => getFact(snapshot, right.valueFactId).value - getFact(snapshot, left.valueFactId).value);
+    candidates.push(['rain-probability', periods[0].valueFactId, periods[0].detailFactId]);
+  } else {
+    candidates.push(['rain-probability', 'weather.daily.rainProbabilityMax']);
+  }
+  return candidates.filter(([, factId]) => getFact(snapshot, factId)).map(([id, valueFactId, detailFactId]) => ({
+    id, valueFactId, ...(detailFactId ? { detailFactId } : {}),
+  }));
 }
 function makeCard(id, role, heading, slots = {}, microcopy = '') {
   return { id, role, heading, slots, microcopy };
@@ -168,7 +180,8 @@ function validateSlotShape(card) {
   if (slots?.metrics !== undefined) {
     if (!Array.isArray(slots.metrics)) errors.push(`card ${card.id || '?'} metrics slot must be an array`);
     else for (const metric of slots.metrics) {
-      if (!hasOnlyKeys(metric, ['id', 'valueFactId']) || !METRIC_SLOT_IDS.includes(metric.id)) errors.push(`card ${card.id || '?'} metric slot is not typed`);
+      if (!hasOnlyKeys(metric, ['id', 'valueFactId', 'detailFactId']) || !METRIC_SLOT_IDS.includes(metric.id)) errors.push(`card ${card.id || '?'} metric slot is not typed`);
+      if (metric?.detailFactId !== undefined && typeof metric.detailFactId !== 'string') errors.push(`card ${card.id || '?'} metric detailFactId must be a fact ID`);
     }
   }
   if (slots?.actionFactIds !== undefined && (!Array.isArray(slots.actionFactIds) || slots.actionFactIds.some((id) => typeof id !== 'string'))) {

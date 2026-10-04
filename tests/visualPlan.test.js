@@ -102,3 +102,22 @@ test('validator rejects unknown fact references, duplicates, wrong severity, and
   unsourcedText.cards[0].slots.forgedStationName = 'สถานีที่ไม่มีในข้อมูล';
   assert.ok(validateVisualPlan(unsourcedText, facts).some((error) => error.includes('unknown slot')));
 });
+
+test('rain metric selects the highest analyzed source window and references its period label', () => {
+  const facts = snapshot('watch', {
+    weatherAnalysis: {
+      current: { temperature: 28, humidity: 80, windSpeed: 9, description: { label: 'มีเมฆ' } },
+      daily: { tempMin: 24, tempMax: 32, precipitationProbabilityMax: 70 },
+      rainWindows: { periods: {
+        morning: { label: 'ช่วงเช้า', maxProb: 20, maxMm: 0 },
+        afternoon: { label: 'ช่วงบ่าย', maxProb: 70, maxMm: 2.2 },
+        evening: { label: 'ช่วงเย็น/ค่ำ', maxProb: 35, maxMm: 0.4 },
+      } },
+    },
+  });
+  const plan = buildVisualPlan(facts);
+  const metric = plan.cards.find((card) => card.role === 'weather').slots.metrics.find((item) => item.id === 'rain-probability');
+  assert.equal(metric.valueFactId, 'weather.rainWindows.afternoon.maxProbability');
+  assert.equal(metric.detailFactId, 'weather.rainWindows.afternoon.label');
+  assert.deepEqual(validateVisualPlan(plan, facts), []);
+});

@@ -1,0 +1,664 @@
+{
+  "type": "flex",
+  "altText": "น้ำบ้านลำพาย · ปกติ · ↗ เพิ่มขึ้น · ข้อมูลใหม่",
+  "contents": {
+    "type": "carousel",
+    "contents": [
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "paddingAll": "md",
+          "backgroundColor": "#F0FDFA",
+          "contents": [
+            {
+              "type": "text",
+              "text": "น้องจุ่นจ้าน · บ้านลำพาย · ต.โคกชะงาย · 4 ตุลาคม 2569",
+              "size": "xs",
+              "color": "#334155",
+              "wrap": true
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "width": "32px",
+                  "height": "32px",
+                  "cornerRadius": "16px",
+                  "backgroundColor": "#CCFBF1",
+                  "justifyContent": "center",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "✅",
+                      "size": "md",
+                      "color": "#0F172A",
+                      "wrap": true,
+                      "align": "center"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "ปกติ",
+                  "size": "lg",
+                  "weight": "bold",
+                  "color": "#115E59",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "xs",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "paddingAll": "xs",
+                  "cornerRadius": "md",
+                  "backgroundColor": "#CCFBF1",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "↗ เพิ่มขึ้น",
+                      "size": "xs",
+                      "weight": "bold",
+                      "color": "#115E59",
+                      "wrap": true
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "paddingAll": "xs",
+                  "cornerRadius": "md",
+                  "backgroundColor": "#F1F5F9",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "อัปเดต 4 ต.ค. 19:30",
+                      "size": "xs",
+                      "weight": "bold",
+                      "color": "#334155",
+                      "wrap": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "สถานการณ์น้ำ normal จากข้อมูลที่ยืนยันได้",
+              "size": "sm",
+              "weight": "bold",
+              "color": "#0F172A",
+              "wrap": true
+            }
+          ]
+        }
+      },
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "paddingAll": "md",
+          "backgroundColor": "#F0FDFA",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "พื้นที่และเส้นทาง",
+                  "size": "md",
+                  "weight": "bold",
+                  "color": "#115E59",
+                  "wrap": true,
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "พื้นที่และเส้นทาง",
+                  "size": "xs",
+                  "color": "#475569",
+                  "wrap": true,
+                  "align": "end"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "margin": "md",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "horizontal",
+                  "spacing": "sm",
+                  "contents": [
+                    {
+                      "type": "box",
+                      "layout": "vertical",
+                      "flex": 1,
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "📍 สถานี",
+                          "size": "sm",
+                          "weight": "bold",
+                          "color": "#0F172A",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "คลอง1",
+                          "size": "xs",
+                          "color": "#475569",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "ปกติ",
+                          "size": "xs",
+                          "color": "#334155",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "↗ เพิ่มขึ้น",
+                          "size": "xs",
+                          "color": "#475569",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "box",
+                      "layout": "vertical",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "ต่ำกว่าตลิ่ง 0.42 เมตร",
+                          "size": "sm",
+                          "weight": "bold",
+                          "color": "#0F172A",
+                          "wrap": true,
+                          "align": "end"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "horizontal",
+                  "spacing": "xs",
+                  "margin": "sm",
+                  "contents": [
+                    {
+                      "type": "box",
+                      "layout": "vertical",
+                      "paddingAll": "xs",
+                      "cornerRadius": "md",
+                      "backgroundColor": "#CCFBF1",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "ปกติ",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#115E59",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "box",
+                      "layout": "vertical",
+                      "paddingAll": "xs",
+                      "cornerRadius": "md",
+                      "backgroundColor": "#F1F5F9",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "น้ำมาก",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#475569",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "box",
+                      "layout": "vertical",
+                      "paddingAll": "xs",
+                      "cornerRadius": "md",
+                      "backgroundColor": "#F1F5F9",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "ใกล้ล้นตลิ่ง",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#475569",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "box",
+                      "layout": "vertical",
+                      "paddingAll": "xs",
+                      "cornerRadius": "md",
+                      "backgroundColor": "#F1F5F9",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "ล้นตลิ่ง",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#475569",
+                          "wrap": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "paddingAll": "sm",
+              "cornerRadius": "sm",
+              "backgroundColor": "#F8FAFC",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "📍 พื้นที่ · ชุมชนริมน้ำ",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#0F172A",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "paddingAll": "sm",
+              "cornerRadius": "sm",
+              "backgroundColor": "#EFF6FF",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "🛣️ ถนน · ถนนตัวอย่าง",
+                  "size": "sm",
+                  "weight": "bold",
+                  "color": "#0F172A",
+                  "wrap": true
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "paddingAll": "md",
+          "backgroundColor": "#F0FDFA",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "อากาศวันนี้",
+                  "size": "md",
+                  "weight": "bold",
+                  "color": "#115E59",
+                  "wrap": true,
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "อากาศ",
+                  "size": "xs",
+                  "color": "#475569",
+                  "wrap": true,
+                  "align": "end"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "flex": 1,
+                  "paddingAll": "sm",
+                  "cornerRadius": "md",
+                  "backgroundColor": "#F8FAFC",
+                  "contents": [
+                    {
+                      "type": "box",
+                      "layout": "horizontal",
+                      "spacing": "xs",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "🌡️",
+                          "size": "sm",
+                          "color": "#0F172A",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "อุณหภูมิ",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#334155",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": "28°C",
+                      "size": "md",
+                      "weight": "bold",
+                      "color": "#0F172A",
+                      "wrap": true
+                    },
+                    {
+                      "type": "text",
+                      "text": "ต่ำ 24° · สูง 32°",
+                      "size": "xs",
+                      "color": "#475569",
+                      "wrap": true
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "flex": 1,
+                  "paddingAll": "sm",
+                  "cornerRadius": "md",
+                  "backgroundColor": "#F8FAFC",
+                  "contents": [
+                    {
+                      "type": "box",
+                      "layout": "horizontal",
+                      "spacing": "xs",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "🌧️",
+                          "size": "sm",
+                          "color": "#0F172A",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "โอกาสฝนสูงสุด",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#334155",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": "70%",
+                      "size": "md",
+                      "weight": "bold",
+                      "color": "#0F172A",
+                      "wrap": true
+                    },
+                    {
+                      "type": "text",
+                      "text": "ช่วงบ่าย",
+                      "size": "xs",
+                      "color": "#475569",
+                      "wrap": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "flex": 1,
+                  "paddingAll": "sm",
+                  "cornerRadius": "md",
+                  "backgroundColor": "#F8FAFC",
+                  "contents": [
+                    {
+                      "type": "box",
+                      "layout": "horizontal",
+                      "spacing": "xs",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "💧",
+                          "size": "sm",
+                          "color": "#0F172A",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "ความชื้น",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#334155",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": "72%",
+                      "size": "md",
+                      "weight": "bold",
+                      "color": "#0F172A",
+                      "wrap": true
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "vertical",
+                  "flex": 1,
+                  "paddingAll": "sm",
+                  "cornerRadius": "md",
+                  "backgroundColor": "#F8FAFC",
+                  "contents": [
+                    {
+                      "type": "box",
+                      "layout": "horizontal",
+                      "spacing": "xs",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "💨",
+                          "size": "sm",
+                          "color": "#0F172A",
+                          "wrap": true
+                        },
+                        {
+                          "type": "text",
+                          "text": "ลม",
+                          "size": "xs",
+                          "weight": "bold",
+                          "color": "#334155",
+                          "wrap": true
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": "11 กม./ชม.",
+                      "size": "md",
+                      "weight": "bold",
+                      "color": "#0F172A",
+                      "wrap": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "พยากรณ์อากาศไม่ใช่หลักฐานยืนยันน้ำท่วม",
+              "size": "xs",
+              "color": "#334155",
+              "wrap": true
+            }
+          ]
+        }
+      },
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "paddingAll": "md",
+          "backgroundColor": "#F0FDFA",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "แหล่งข้อมูลและเวลาอัปเดต",
+                  "size": "md",
+                  "weight": "bold",
+                  "color": "#115E59",
+                  "wrap": true,
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "แหล่งข้อมูล",
+                  "size": "xs",
+                  "color": "#475569",
+                  "wrap": true,
+                  "align": "end"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "paddingAll": "sm",
+              "cornerRadius": "md",
+              "backgroundColor": "#FFFFFF",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "แหล่ง · ศูนย์ข้อมูลน้ำพัทลุง",
+                  "size": "xs",
+                  "color": "#334155",
+                  "wrap": true
+                },
+                {
+                  "type": "text",
+                  "text": "ผู้เผยแพร่ · ศูนย์ข้อมูลน้ำ",
+                  "size": "xs",
+                  "color": "#334155",
+                  "wrap": true
+                },
+                {
+                  "type": "text",
+                  "text": "เวลาสังเกต · 4 ต.ค. 19:30",
+                  "size": "xs",
+                  "color": "#334155",
+                  "wrap": true
+                },
+                {
+                  "type": "text",
+                  "text": "เวลาดึงข้อมูล · 4 ต.ค. 19:30",
+                  "size": "xs",
+                  "color": "#334155",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "spacing": "sm",
+              "margin": "md",
+              "contents": [
+                {
+                  "type": "button",
+                  "style": "secondary",
+                  "height": "sm",
+                  "action": {
+                    "type": "uri",
+                    "label": "ดูสถานการณ์น้ำ",
+                    "uri": "https://chachoengsao-flood.vercel.app/phatthalung"
+                  }
+                },
+                {
+                  "type": "button",
+                  "style": "secondary",
+                  "height": "sm",
+                  "action": {
+                    "type": "uri",
+                    "label": "เปิด CCTV",
+                    "uri": "https://cctv.maholan.net/"
+                  }
+                },
+                {
+                  "type": "button",
+                  "style": "secondary",
+                  "height": "sm",
+                  "action": {
+                    "type": "uri",
+                    "label": "ดูเรดาร์ฝน",
+                    "uri": "https://chachoengsao-flood.vercel.app/phatthalung/weather"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

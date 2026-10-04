@@ -1,56 +1,59 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildFlex } = require('../src/flex/builder');
+const { buildFlexV2 } = require('../src/flex/builder');
+const { SEVERITY_TOKENS } = require('../src/flex/tokens');
+const { createFlexInput } = require('./helpers/flexV2Fixtures');
 
-function data(severity) {
-  return {
-    location: { name: 'บ้านลำพาย', district: 'ต.โคกชะงาย', province: 'พัทลุง' },
-    flood: {
-      severity,
-      summary: severity === 'unknown' ? 'ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้' : 'สถานการณ์น้ำ: ' + severity,
-      freshness: { state: severity === 'unknown' ? 'unknown' : 'fresh' },
-      stations: [{ name: 'สถานีตัวอย่าง', label: 'ปกติ' }],
-      affectedAreas: [{ name: 'พื้นที่ตัวอย่าง' }],
-      roads: [{ name: 'ถนนตัวอย่าง' }],
-    },
-    current: { icon: '🌦️', conditionLabel: 'มีเมฆบางส่วน', temperature: 28, windSpeed: 10 },
-    daily: { precipitationProbabilityMax: 40 },
-    report: { shortSummary: 'สรุปสถานการณ์น้ำจากข้อมูลที่ยืนยันได้' },
-  };
+function texts(node) {
+  const output = [];
+  if (Array.isArray(node)) node.forEach((child) => output.push(...texts(child)));
+  else if (node && typeof node === 'object') {
+    if (node.type === 'text') output.push(node.text);
+    if (node.contents) output.push(...texts(node.contents));
+    if (node.body) output.push(...texts(node.body));
+  }
+  return output;
 }
 
 for (const severity of ['normal', 'watch', 'affected', 'critical', 'unknown']) {
-  test('renders ' + severity + ' as a carousel', () => {
-    const flex = buildFlex(data(severity));
-    assert.equal(flex.contents.type, 'carousel');
-    assert.ok(flex.contents.contents.length >= 2);
-    assert.match(flex.altText, /รายงานสถานการณ์น้ำ/);
+  test('Flex v2 renders ' + severity + ' as a fact-backed carousel', () => {
+    const input = createFlexInput({ severity });
+    const message = buildFlexV2(input);
+    assert.equal(message.type, 'flex');
+    assert.equal(message.contents.type, 'carousel');
+    assert.ok(message.contents.contents.length >= 2);
+    assert.ok(texts(message.contents.contents[0]).some((text) => text.includes(SEVERITY_TOKENS[severity].label)));
+    assert.match(message.altText, /น้ำบ้านลำพาย/);
   });
 }
 
-test('critical card exposes action immediately', () => {
-  const flex = buildFlex(data('critical'));
-  const text = JSON.stringify(flex.contents.contents[0]);
-  assert.match(text, /ติดตามประกาศ/);
+test('critical has immediate action and CCTV in hero, then action detail before station/impact', () => {
+  const message = buildFlexV2(createFlexInput({ severity: 'critical' }));
+  const cards = message.contents.contents;
+  assert.match(JSON.stringify(cards[0]), /ทำทันที/);
+  assert.match(JSON.stringify(cards[0]), /cctv\.maholan\.net/);
+  assert.match(texts(cards[1]).join(' '), /ติดตามข้อมูลจากศูนย์ข้อมูลน้ำ/);
+  assert.equal(cards[0].size, cards[1].size);
 });
 
-test('unknown card makes uncertainty explicit', () => {
-  const flex = buildFlex(data('unknown'));
-  const text = JSON.stringify(flex.contents.contents[0]);
-  assert.match(text, /ยังสรุปเหตุการณ์น้ำจริงไม่ได้/);
+test('unknown stays explicitly uncertain and never receives NORMAL visual tokens', () => {
+  const message = buildFlexV2(createFlexInput({ severity: 'unknown', weather: false }));
+  const hero = message.contents.contents[0];
+  const serialized = JSON.stringify(hero);
+  assert.match(serialized, /ยังยืนยันไม่ได้/);
+  assert.doesNotMatch(serialized, /✅|#CCFBF1/);
 });
 
-test('planner cards are supported without changing verified severity', () => {
-  const d = data('watch');
-  d.presentationPlan = {
-    schemaVersion: '1.0',
-    severity: 'watch',
-    cards: [
-      { id: 'hero', role: 'hero', title: 'เฝ้าระวัง', body: 'ติดตามสถานการณ์น้ำต่อเนื่อง', items: [] },
-      { id: 'weather', role: 'weather', title: 'อากาศ', body: 'มีฝนได้', items: [] },
-    ],
-  };
-  const flex = buildFlex(d);
-  assert.equal(flex.contents.contents.length, 2);
-  assert.match(JSON.stringify(flex.contents.contents[0]), /เฝ้าระวัง/);
+test('stale freshness is visible without changing source severity', () => {
+  const input = createFlexInput({ severity: 'watch', stale: true });
+  const message = buildFlexV2(input);
+  assert.equal(input.factsSnapshot.severity, 'watch');
+  assert.match(JSON.stringify(message.contents.contents[0]), /ข้อมูลล่าสุด/);
+  assert.match(JSON.stringify(message.contents.contents[0]), /อาจไม่เป็นปัจจุบัน/);
+});
+
+test('missing stations/weather omit their cards and do not add placeholder tiles', () => {
+  const message = buildFlexV2(createFlexInput({ severity: 'watch', stationVariant: 'none', weather: false }));
+  const serialized = JSON.stringify(message.contents.contents);
+  assert.doesNotMatch(serialized, /จุดเฝ้าระวัง|อากาศวันนี้|--|ไม่ทราบสภาพอากาศ/);
 });
