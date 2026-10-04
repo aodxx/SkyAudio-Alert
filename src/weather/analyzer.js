@@ -91,9 +91,8 @@ function analyzeWeather(weatherData, thresholds) {
   }
   if (maxSeverityToday >= 4) adviceSignals.push('OUTDOOR_ACTIVITY_CAUTION');
 
-  // --- Theme priority: storm > heavy_rain > rain > hot/cool > cloudy >
-  //     partly_cloudy > clear. Day/night is applied as a modifier, not a
-  //     replacement, downstream in src/flex/themes.js.
+  // --- Weather category retained for deterministic diagnostics/context.
+  //     It does not control flood severity or the Flex v2 state palette.
   let theme = 'clear';
   if (maxSeverityToday === 5 || currentDesc.key === 'storm') theme = 'storm';
   else if (currentDesc.key === 'heavy_rain' || rain.notable.some((w) => w.maxMm >= thresholds.heavyRainMm)) theme = 'heavy_rain';

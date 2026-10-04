@@ -104,3 +104,30 @@ test('date and timestamp spoken forms are stable for ISO timestamps', () => {
   });
   assert.ok(getFact(snapshot, 'flood.observedAt').spokenForms.includes('ตีห้าสี่สิบนาที'));
 });
+
+test('adds district, stable hourly weather facts, and analyzed rain-window facts', () => {
+  const snapshot = buildFactsSnapshot({
+    floodSituation: floodFixture('watch'),
+    location: { name: 'บ้านลำพาย', district: 'ต.โคกชะงาย', province: 'พัทลุง' },
+    dateInfo: { date: '4 ตุลาคม 2569' },
+    weatherAnalysis: {
+      current: {}, daily: {},
+      hourlyToday: [{ time: '2026-10-04T06:00', temperature: 25.5, precipitationProbability: 35, precipitation: 0 }],
+      rainWindows: { periods: { morning: { label: 'ช่วงเช้า', maxProb: 65, maxMm: 2.4 } } },
+    },
+  });
+  assert.equal(getFact(snapshot, 'location.district').value, 'ต.โคกชะงาย');
+  assert.equal(getFact(snapshot, 'weather.hourly.0.time').displayValue, '06:00');
+  assert.ok(getFact(snapshot, 'weather.hourly.0.time').spokenForms.includes('06:00'));
+  assert.equal(getFact(snapshot, 'weather.hourly.0.rainProbability').value, 35);
+  assert.equal(getFact(snapshot, 'weather.rainWindows.morning.label').value, 'ช่วงเช้า');
+  assert.equal(getFact(snapshot, 'weather.rainWindows.morning.maxProbability').value, 65);
+  assert.equal(getFact(snapshot, 'weather.rainWindows.morning.maxPrecipitation').value, 2.4);
+});
+
+test('omits district and weather window facts when source values are absent', () => {
+  const snapshot = buildFactsSnapshot({ floodSituation: floodFixture('watch'), weatherAnalysis: { current: {}, daily: {} } });
+  assert.equal(getFact(snapshot, 'location.district'), undefined);
+  assert.equal(getFact(snapshot, 'weather.hourly.0.time'), undefined);
+  assert.equal(getFact(snapshot, 'weather.rainWindows.morning.maxProbability'), undefined);
+});

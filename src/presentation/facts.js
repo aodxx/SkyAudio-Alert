@@ -158,6 +158,7 @@ function buildFactsSnapshot({ floodSituation = {}, weatherAnalysis = {}, locatio
   const floodLocation = flood.location || {};
   addFact(facts, 'flood.location.name', 'name', floodLocation.name || location.name);
   addFact(facts, 'flood.location.province', 'name', floodLocation.province || location.province);
+  addFact(facts, 'location.district', 'name', location.district || floodLocation.district);
   addFact(facts, 'flood.source.name', 'name', flood.source?.name);
   addFact(facts, 'flood.source.publisher', 'name', flood.source?.publisher);
   addFact(facts, 'flood.source.url', 'uri', flood.source?.url);
@@ -202,6 +203,29 @@ function buildFactsSnapshot({ floodSituation = {}, weatherAnalysis = {}, locatio
   addNumber(facts, 'weather.daily.tempMin', daily.tempMin, 'องศาเซลเซียส');
   addNumber(facts, 'weather.daily.tempMax', daily.tempMax, 'องศาเซลเซียส');
   addNumber(facts, 'weather.daily.rainProbabilityMax', daily.precipitationProbabilityMax, 'เปอร์เซ็นต์');
+
+  for (const [index, hour] of (Array.isArray(weather.hourlyToday) ? weather.hourlyToday : []).entries()) {
+    const root = `weather.hourly.${index}`;
+    const rawTime = String(hour?.time || '');
+    if (rawTime) {
+      const clock = rawTime.match(/T(\d{2}:\d{2})/)?.[1] || rawTime;
+      addFact(facts, `${root}.time`, 'time', rawTime, { displayValue: clock, spokenForms: [rawTime, clock] });
+    }
+    addNumber(facts, `${root}.temperature`, hour?.temperature, 'องศาเซลเซียส');
+    addNumber(facts, `${root}.rainProbability`, hour?.precipitationProbability, 'เปอร์เซ็นต์');
+    addNumber(facts, `${root}.precipitation`, hour?.precipitation, 'มิลลิเมตร');
+  }
+
+  const rainPeriods = weather.rainWindows?.periods;
+  if (rainPeriods && typeof rainPeriods === 'object') {
+    for (const [period, values] of Object.entries(rainPeriods)) {
+      if (!['morning', 'afternoon', 'evening'].includes(period) || !values || typeof values !== 'object') continue;
+      const root = `weather.rainWindows.${period}`;
+      addFact(facts, `${root}.label`, 'text', values.label);
+      addNumber(facts, `${root}.maxProbability`, values.maxProb, 'เปอร์เซ็นต์');
+      addNumber(facts, `${root}.maxPrecipitation`, values.maxMm, 'มิลลิเมตร');
+    }
+  }
 
   addFact(facts, 'date.label', 'text', dateInfo.date || dateInfo.label);
   addFact(facts, 'date.iso', 'time', dateInfo.iso || dateInfo.dateIso);

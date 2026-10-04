@@ -1,6 +1,74 @@
-const test=require('node:test');const assert=require('node:assert/strict');
-const {generatePresentationPlan}=require('../src/content/presentationPlanner');
-function response(obj,status=200){return{ok:status>=200&&status<300,status,headers:{get:()=>null},json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify(obj)}]}}]}),text:async()=>JSON.stringify(obj)}}
-test('Gemini planner accepts verified facts and returns presentation plan',async()=>{const obj={severity:'watch',priority:'watch',visualVariant:'watch',cards:[{id:'hero',role:'hero',title:'เฝ้าระวัง',body:'ติดตามสถานการณ์น้ำต่อเนื่อง',items:[],cta:[]}],spokenText:'รายงานสถานการณ์น้ำครับ',spokenSections:[],audioStyle:{tone:'friendly',pacing:'natural',detailLevel:'detailed',emphasis:['สถานการณ์น้ำ']},actions:['ติดตามระดับน้ำ'],warnings:[],factsUsed:['flood.severity']};let calls=0;const r=await generatePresentationPlan({floodSituation:{severity:'watch',summary:'ควรติดตาม',actions:['ติดตามระดับน้ำ']},weatherAnalysis:{},location:{name:'บ้านลำพาย'},date:'วันนี้',report:{spokenText:'เดิม',shortSummary:'เฝ้าระวัง'}},{mode:'test',dryRun:true,content:{apiKey:'x',model:'gemini-test',thinkingLevel:'low'}},{fetchImpl:async()=>{calls++;return response(obj)}});assert.equal(r.provider,'gemini');assert.equal(r.severity,'watch');assert.equal(calls,1);});
-test('planner preserves verified facts trace when Gemini omits factsUsed',async()=>{const obj={severity:'watch',priority:'watch',visualVariant:'watch',cards:[{id:'hero',role:'hero',title:'เฝ้าระวัง',body:'ติดตามสถานการณ์น้ำต่อเนื่อง',items:[],cta:[]}],spokenText:'รายงานสถานการณ์น้ำครับ',spokenSections:[],audioStyle:{tone:'friendly',pacing:'natural',detailLevel:'standard',emphasis:[]},actions:['ติดตามระดับน้ำ'],warnings:[],factsUsed:[]};const r=await generatePresentationPlan({floodSituation:{severity:'watch'},weatherAnalysis:{},location:{},date:'วันนี้',report:{factsUsed:['flood.severity','weather.current']}},{mode:'test',dryRun:true,content:{apiKey:'x',model:'gemini-test',thinkingLevel:'low'}},{fetchImpl:async()=>response(obj)});assert.deepEqual(r.factsUsed,['flood.severity','weather.current']);});
-test('planner rejects model changing verified severity',async()=>{const obj={severity:'critical',priority:'critical',visualVariant:'critical',cards:[{id:'hero',role:'action',title:'วิกฤต',body:'ติดตามทันที',items:[],cta:[]}],spokenText:'รายงาน',spokenSections:[],audioStyle:{tone:'urgent',pacing:'natural',detailLevel:'high',emphasis:[]},actions:[],warnings:[],factsUsed:[]};await assert.rejects(()=>generatePresentationPlan({floodSituation:{severity:'watch'},weatherAnalysis:{},location:{},date:'',report:{}},{mode:'test',dryRun:true,content:{apiKey:'x',model:'gemini-test',thinkingLevel:'low'}},{fetchImpl:async()=>response(obj)}),/changed verified flood severity/);});
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { generatePresentationPlan, plannerSchema } = require('../src/content/presentationPlanner');
+
+function response(value, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => null },
+    json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(value) }] } }] }),
+    text: async () => JSON.stringify(value),
+  };
+}
+
+function modelPlan(overrides = {}) {
+  return {
+    cards: [{ id: 'hero', role: 'hero', title: 'เฝ้าระวัง', body: 'ติดตามสถานการณ์น้ำต่อเนื่อง', items: [], cta: [] }],
+    spokenText: 'รายงานสถานการณ์น้ำครับ',
+    spokenSections: [],
+    audioStyle: { tone: 'friendly', pacing: 'natural', detailLevel: 'detailed', emphasis: ['สถานการณ์น้ำ'] },
+    actions: ['ติดตามระดับน้ำ'],
+    warnings: [],
+    factsUsed: ['flood.severity'],
+    ...overrides,
+  };
+}
+
+function context(report = {}) {
+  return {
+    floodSituation: { severity: 'watch', summary: 'ควรติดตาม', actions: ['ติดตามระดับน้ำ'] },
+    weatherAnalysis: {},
+    location: { name: 'บ้านลำพาย' },
+    date: 'วันนี้',
+    report: { shortSummary: 'เฝ้าระวัง', spokenText: 'รายงานเดิม', factsUsed: ['flood.severity'], ...report },
+  };
+}
+
+function config() {
+  return { mode: 'test', dryRun: true, content: { apiKey: 'test-only', model: 'gemini-test', thinkingLevel: 'low' } };
+}
+
+test('Gemini schema does not ask for severity, priority, or visualVariant', () => {
+  const schema = plannerSchema();
+  for (const key of ['severity', 'priority', 'visualVariant']) {
+    assert.equal(Object.hasOwn(schema.properties, key), false);
+    assert.equal(schema.required.includes(key), false);
+  }
+});
+
+test('planner assigns severity from adapter even if model omits or contradicts it', async () => {
+  const contradictory = modelPlan({ severity: 'critical', priority: 'critical', visualVariant: 'critical' });
+  let calls = 0;
+  const result = await generatePresentationPlan(context(), config(), {
+    fetchImpl: async () => { calls += 1; return response(contradictory); },
+  });
+  assert.equal(calls, 1);
+  assert.equal(result.provider, 'gemini');
+  assert.equal(result.severity, 'watch');
+  assert.equal(result.priority, 'watch');
+  assert.equal(result.visualVariant, 'watch');
+});
+
+test('planner preserves verified facts trace when Gemini omits factsUsed', async () => {
+  const result = await generatePresentationPlan(context({ factsUsed: ['flood.severity', 'weather.current'] }), config(), {
+    fetchImpl: async () => response(modelPlan({ factsUsed: [] })),
+  });
+  assert.deepEqual(result.factsUsed, ['flood.severity', 'weather.current']);
+});
+
+test('planner rejects model output with an invalid presentation contract', async () => {
+  await assert.rejects(() => generatePresentationPlan(context(), config(), {
+    fetchImpl: async () => response({ spokenText: '', cards: [], audioStyle: {} }),
+  }), /validation failed/);
+});

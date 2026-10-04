@@ -1,91 +1,132 @@
-// src/flex/components.js
-// V1.5 Phase 3: compact, horizontal, flood-first Flex carousel components.
-
-const LINKS = Object.freeze({
-  cctv: 'https://cctv.maholan.net/',
-  flood: 'https://chachoengsao-flood.vercel.app/phatthalung',
-  weather: 'https://chachoengsao-flood.vercel.app/phatthalung/weather',
-});
-
-const SEVERITY = Object.freeze({
-  normal: { label: 'ปกติ', color: '#0F766E', wash: '#D1FAE5', accent: '#0F766E' },
-  watch: { label: 'เฝ้าระวัง', color: '#B45309', wash: '#FEF3C7', accent: '#B45309' },
-  affected: { label: 'ได้รับผลกระทบ', color: '#C2410C', wash: '#FFEDD5', accent: '#C2410C' },
-  critical: { label: 'วิกฤต', color: '#B91C1C', wash: '#FEE2E2', accent: '#B91C1C' },
-  unknown: { label: 'ยังยืนยันไม่ได้', color: '#475569', wash: '#E2E8F0', accent: '#475569' },
-});
+const { TOKENS, SEVERITY_TOKENS, CTA_URLS, CTA_LABELS } = require('./tokens');
 
 function safeSeverity(value) {
-  return SEVERITY[value] ? value : 'unknown';
+  return Object.hasOwn(SEVERITY_TOKENS, value) ? value : 'unknown';
 }
-
-function textBlock(text, options = {}) {
+function textNode(value, options = {}) {
   return {
-    type: 'text',
-    text: String(text || ''),
-    size: options.size || 'sm',
-    weight: options.weight,
-    color: options.color || '#0F172A',
-    margin: options.margin || 'sm',
-    wrap: true,
-    flex: options.flex,
+    type: 'text', text: String(value ?? ''), size: options.size || 'sm',
+    ...(options.weight ? { weight: options.weight } : {}),
+    color: options.color || TOKENS.text.primary,
+    wrap: options.wrap !== false,
+    ...(options.align ? { align: options.align } : {}),
+    ...(options.margin ? { margin: options.margin } : {}),
+    ...(options.flex !== undefined ? { flex: options.flex } : {}),
   };
 }
-
-function cardShell({ title, role, severity, children, page }) {
-  const style = SEVERITY[safeSeverity(severity)];
-  const roleLabel = {
-    hero: 'สถานการณ์น้ำ',
-    action: 'ควรทำตอนนี้',
-    facts: 'ข้อมูลสำคัญ',
-    impact: 'พื้นที่/ผลกระทบ',
-    weather: 'พยากรณ์อากาศ',
-    source: 'แหล่งข้อมูล',
-    uncertainty: 'ข้อจำกัดข้อมูล',
-  }[role] || 'ข้อมูล';
+function badge(severity) {
+  const token = SEVERITY_TOKENS[safeSeverity(severity)];
   return {
-    type: 'bubble',
-    size: 'kilo',
-    body: {
-      type: 'box',
-      layout: 'vertical',
-      paddingAll: 'md',
-      backgroundColor: '#F8FAFC',
-      contents: [
-        {
-          type: 'box',
-          layout: 'horizontal',
-          contents: [
-            { type: 'text', text: roleLabel, size: 'xs', weight: 'bold', color: style.color, flex: 1 },
-            { type: 'text', text: page || '', size: 'xs', color: '#64748B', align: 'end' },
-          ],
-        },
-        textBlock(title, { size: 'lg', weight: 'bold', margin: 'sm' }),
-        ...children,
-      ],
+    type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+      { type: 'box', layout: 'vertical', width: '32px', height: '32px', cornerRadius: '16px', backgroundColor: token.band,
+        justifyContent: 'center', contents: [textNode(token.icon, { size: 'md', align: 'center' })] },
+      textNode(token.label, { size: 'lg', weight: 'bold', color: token.foreground }),
+    ],
+  };
+}
+function chip(label, options = {}) {
+  return {
+    type: 'box', layout: 'vertical', paddingAll: 'xs', cornerRadius: 'md',
+    backgroundColor: options.backgroundColor || '#E2E8F0',
+    contents: [textNode(label, { size: 'xs', weight: 'bold', color: options.color || TOKENS.text.secondary })],
+  };
+}
+function stationStatusScale(label) {
+  const current = String(label || '');
+  const states = [
+    { label: 'ปกติ', severity: 'normal', matches: /ปกติ/ },
+    { label: 'น้ำมาก', severity: 'watch', matches: /น้ำมาก/ },
+    { label: 'ใกล้ล้นตลิ่ง', severity: 'affected', matches: /ใกล้\s*ล้นตลิ่ง/ },
+    { label: 'ล้นตลิ่ง', severity: 'critical', matches: /ล้นตลิ่ง/ },
+  ];
+  return {
+    type: 'box', layout: 'horizontal', spacing: 'xs', margin: 'sm', contents: states.map((state) => {
+      const nearBank = /ใกล้\s*ล้นตลิ่ง/.test(current);
+      const active = Boolean(current && (state.severity === 'critical'
+        ? /ล้นตลิ่ง/.test(current) && !nearBank
+        : state.matches.test(current)));
+      const token = SEVERITY_TOKENS[state.severity];
+      return chip(state.label, {
+        backgroundColor: active ? token.band : '#F1F5F9',
+        color: active ? token.foreground : TOKENS.text.muted,
+      });
+    }),
+  };
+}
+function stationRow(station = {}) {
+  const left = [textNode('📍 ' + (station.name || ''), { size: 'sm', weight: 'bold' })];
+  if (station.waterway) left.push(textNode(station.waterway, { size: 'xs', color: TOKENS.text.muted }));
+  if (station.label) left.push(textNode(station.label, { size: 'xs', color: TOKENS.text.secondary }));
+  if (station.trend) left.push(textNode(station.trend, { size: 'xs', color: TOKENS.text.muted }));
+  const right = station.distance
+    ? [textNode(station.distance, { size: 'sm', weight: 'bold', align: 'end' })]
+    : [textNode('ระดับจากแหล่งข้อมูล', { size: 'xs', color: TOKENS.text.muted, align: 'end' })];
+  const details = {
+    type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+      { type: 'box', layout: 'vertical', flex: 1, contents: left },
+      { type: 'box', layout: 'vertical', contents: right },
+    ],
+  };
+  return { type: 'box', layout: 'vertical', margin: 'md', contents: [details, stationStatusScale(station.label)] };
+}
+function metricTile({ icon = '•', label, value, detail } = {}) {
+  const contents = [
+    { type: 'box', layout: 'horizontal', spacing: 'xs', contents: [textNode(icon, { size: 'sm' }), textNode(label || 'ข้อมูล', { size: 'xs', weight: 'bold', color: TOKENS.text.secondary })] },
+    textNode(value || '', { size: 'md', weight: 'bold' }),
+  ];
+  if (detail) contents.push(textNode(detail, { size: 'xs', color: TOKENS.text.muted }));
+  return { type: 'box', layout: 'vertical', flex: 1, paddingAll: 'sm', cornerRadius: 'md', backgroundColor: TOKENS.surface.subtle, contents };
+}
+function actionRow(value, { severity = 'watch', label = 'สิ่งที่ควรทำ' } = {}) {
+  const critical = safeSeverity(severity) === 'critical';
+  const contents = critical && label === 'ทำทันที'
+    ? [textNode(label + ': ' + value, { size: 'sm', weight: 'bold', color: TOKENS.text.inverse })]
+    : [
+      textNode(label, { size: 'xs', weight: 'bold', color: critical ? TOKENS.text.inverse : SEVERITY_TOKENS.affected.foreground }),
+      textNode(value, { size: 'sm', weight: 'bold', color: critical ? TOKENS.text.inverse : TOKENS.text.primary }),
+    ];
+  return {
+    type: 'box', layout: 'vertical', paddingAll: 'sm', cornerRadius: 'md',
+    backgroundColor: critical ? TOKENS.surface.darkAction : '#FFF7ED',
+    contents,
+  };
+}
+function ctaFooter(items = [], { severity = 'normal', primaryId } = {}) {
+  const token = SEVERITY_TOKENS[safeSeverity(severity)];
+  const buttons = items.filter((item) => item && Object.hasOwn(CTA_URLS, item.id)).map((item) => ({
+    type: 'button', style: item.id === primaryId ? 'primary' : 'secondary', height: 'sm',
+    ...(item.id === primaryId ? { color: token.accent } : {}),
+    action: { type: 'uri', label: CTA_LABELS[item.id], uri: CTA_URLS[item.id] },
+  }));
+  return { type: 'box', layout: 'vertical', spacing: 'sm', margin: 'md', contents: buttons };
+}
+function heroBubble({ severity = 'unknown', contents = [], backgroundColor } = {}) {
+  const token = SEVERITY_TOKENS[safeSeverity(severity)];
+  return {
+    type: 'bubble', size: 'kilo', body: {
+      type: 'box', layout: 'vertical', paddingAll: 'md', backgroundColor: backgroundColor || token.surface, contents,
     },
   };
 }
-
-function cta(label, uri, color = '#1D4ED8') {
-  return { type: 'button', style: 'primary', height: 'sm', color, action: { type: 'uri', label: String(label).slice(0, 20), uri } };
+function bubbleShell({ role, heading, severity = 'unknown', contents = [], headerColor, backgroundColor } = {}) {
+  const token = SEVERITY_TOKENS[safeSeverity(severity)];
+  const header = {
+    type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+      textNode(heading || 'ข้อมูล', { size: 'md', weight: 'bold', color: headerColor || token.foreground, flex: 1 }),
+      textNode(role || '', { size: 'xs', color: TOKENS.text.muted, align: 'end' }),
+    ],
+  };
+  return heroBubble({ severity, backgroundColor, contents: [header, ...contents] });
 }
+const stationsBubble = (options = {}) => bubbleShell({ ...options, role: 'ข้อมูลสถานี' });
+const locationsBubble = (options = {}) => bubbleShell({ ...options, role: 'พื้นที่และเส้นทาง' });
+const impactBubble = (options = {}) => bubbleShell({ ...options, role: 'ผลกระทบ' });
+const actionsBubble = (options = {}) => bubbleShell({ ...options, role: 'คำแนะนำ' });
+const weatherBubble = (options = {}) => bubbleShell({ ...options, role: 'อากาศ' });
+const sourceBubble = (options = {}) => bubbleShell({ ...options, role: 'แหล่งข้อมูล' });
+const whyUnknownBubble = (options = {}) => bubbleShell({ ...options, role: 'ข้อจำกัดข้อมูล' });
 
-function sourceCtas(severity) {
-  const buttons = [
-    cta('ดูสถานะน้ำ / CCTV', LINKS.cctv, '#0F766E'),
-    cta('สถานการณ์น้ำพัทลุง', LINKS.flood, '#1D4ED8'),
-  ];
-  if (severity !== 'critical') buttons.push(cta('อากาศ / เรดาร์ฝน', LINKS.weather, '#2563EB'));
-  return buttons;
-}
-
-function headerBlock(location, dateInfo) {
-  return { type: 'box', layout: 'vertical', paddingAll: 'md', background: { type: 'linearGradient', angle: '135deg', startColor: '#0F2742', endColor: '#155E75' }, contents: [
-    textBlock('น้องจุ่นจ้าน • รายงานประจำวัน', { size: 'sm', weight: 'bold', color: '#BAE6FD', margin: 'none' }),
-    textBlock(location?.name || 'บ้านลำพาย', { size: 'xl', weight: 'bold', color: '#FFFFFF', margin: 'xs' }),
-    textBlock((location?.district || '') + ' • ' + (location?.province || 'พัทลุง') + (dateInfo?.solarText ? ' • ' + dateInfo.solarText : ''), { size: 'xs', color: '#E0F2FE', margin: 'xs' }),
-  ] };
-}
-
-module.exports = { LINKS, SEVERITY, safeSeverity, textBlock, cardShell, cta, sourceCtas, headerBlock };
+module.exports = {
+  safeSeverity, textNode, badge, chip, stationStatusScale, stationRow, metricTile, actionRow, ctaFooter,
+  heroBubble, stationsBubble, locationsBubble, impactBubble, actionsBubble, weatherBubble, sourceBubble, whyUnknownBubble,
+};

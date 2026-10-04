@@ -11,8 +11,10 @@ const { buildForecastData } = require('../forecast/formatter');
 const { generateGeminiReport } = require('../content/geminiReport');
 const { generatePresentationPlan } = require('../content/presentationPlanner');
 const { validateGeneratedFacts } = require('../content/safetyFirewall');
-const { scorePresentationQuality } = require('../content/qualityScore');
-const { buildFlex } = require('../flex/builder');
+const { buildFactsSnapshot } = require('../presentation/facts');
+const { buildVisualPlan } = require('../presentation/visualPlan');
+const { buildFlexV2 } = require('../flex/builder');
+const { lintFlexMessage } = require('../flex/lint');
 const { synthesizeSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
 const { storeAudio } = require('../audio/storage');
@@ -20,6 +22,22 @@ const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
 const { withRetry } = require('./retry');
 const { log } = require('./logger');
 const { writeStatusReport, shouldSkipDuplicateProductionRun } = require('./statusReport');
+
+function inspectFlexForDelivery(flexMessage, factsSnapshot) {
+  const errors = lintFlexMessage(flexMessage, { factsSnapshot });
+  if (errors.length) {
+    const error = new Error('Flex structural lint rejected output: ' + errors.join('; '));
+    error.stage = 'flex.lint';
+    error.errors = errors;
+    throw error;
+  }
+  return {
+    passed: true,
+    bubbles: flexMessage.contents.contents.length,
+    payloadBytes: Buffer.byteLength(JSON.stringify(flexMessage), 'utf8'),
+    severity: factsSnapshot.severity,
+  };
+}
 
 async function runPipeline(config) {
   const { runId } = config;
@@ -105,10 +123,6 @@ async function runPipeline(config) {
   }
   mark('content.safety', 'success');
 
-  const qualityScore = scorePresentationQuality(presentationPlan, floodSituation, weatherAnalysis);
-  result.qualityScore = qualityScore;
-  mark('content.quality', 'success', { score: qualityScore.score, passed: qualityScore.passed, total: qualityScore.total });
-
   mark('flex.render', 'start');
   const reportData = buildForecastData(weatherAnalysis, floodSituation, config.location, {
     ...report,
@@ -117,8 +131,31 @@ async function runPipeline(config) {
     priority: presentationPlan.priority,
   });
   reportData.presentationPlan = presentationPlan;
-  const flexMessage = buildFlex(reportData);
+  const factsSnapshot = buildFactsSnapshot({ floodSituation, weatherAnalysis, location: config.location, dateInfo: { date: dateInfo } });
+  const visualPlan = buildVisualPlan(factsSnapshot);
+  let flexMessage;
+  try {
+    flexMessage = buildFlexV2({ factsSnapshot, visualPlan });
+  } catch (error) {
+    mark('flex.render', 'failure', { message: error.message });
+    result.lastError = { stage: error.stage || 'flex.render', message: error.message };
+    writeStatusReport(result, config);
+    throw error;
+  }
   mark('flex.render', 'success', { severity: floodSituation.severity });
+
+  mark('flex.lint', 'start');
+  let flexLint;
+  try {
+    flexLint = inspectFlexForDelivery(flexMessage, factsSnapshot);
+    result.flexLint = flexLint;
+    mark('flex.lint', 'success', flexLint);
+  } catch (error) {
+    mark('flex.lint', 'failure', { errors: error.errors || [error.message] });
+    result.lastError = { stage: 'flex.lint', message: error.message, errors: error.errors || [] };
+    writeStatusReport(result, config);
+    throw error;
+  }
 
   const messages = [flexMessage];
   let audioInfo;
@@ -152,15 +189,15 @@ async function runPipeline(config) {
 
   if (config.dryRun) {
     mark('line.send', 'skipped', { dryRun: true, reason: 'DRY_RUN=true; LINE API was not called', messageCount: messages.length });
-    const dryResult = { ...result, dryRun: true, floodSituation, report, presentationPlan, reportData, messages, audioInfo };
+    const dryResult = { ...result, dryRun: true, floodSituation, report, presentationPlan, factsSnapshot, visualPlan, flexMessage, reportData, messages, audioInfo };
     writeStatusReport(dryResult, config);
     return dryResult;
   }
   mark('line.send', 'start');
   await withRetry(() => pushMessages(messages, config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
   mark('line.send', 'success', { messageCount: messages.length });
-  const finalResult = { ...result, floodSituation, report, presentationPlan, reportData, messages, audioInfo };
+  const finalResult = { ...result, floodSituation, report, presentationPlan, factsSnapshot, visualPlan, flexMessage, reportData, messages, audioInfo };
   writeStatusReport(finalResult, config);
   return finalResult;
 }
-module.exports = { runPipeline };
+module.exports = { runPipeline, inspectFlexForDelivery };
