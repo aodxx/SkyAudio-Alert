@@ -61,7 +61,7 @@ async function synthesizeWithGemini(script, config, opts = {}) {
     'warm, familiar, friendly and human',
     'sounds like a real local community morning announcement, not a studio commercial',
     'clear Thai pronunciation for older listeners',
-    'moderately slow and relaxed',
+    config.speakingRate < 0.9 ? 'slow and relaxed pacing' : config.speakingRate < 1 ? 'moderately slow and relaxed pacing' : config.speakingRate > 1.1 ? 'brisk but clear pacing' : 'natural conversational pacing',
     'natural breathing and short pauses between topics',
     'slightly cheerful but calm',
     'gentle emphasis on flood status, temperatures, rain chances and safety advice',
