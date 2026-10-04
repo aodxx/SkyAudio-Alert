@@ -18,3 +18,11 @@ Current runtime areas:
 Runtime rule: flood -> weather -> Gemini content -> Flex -> Gemini TTS -> LINE.
 
 No market/news stage belongs in the production path.
+
+## Current Release Status — 2026-10-04
+
+Milestone 4A Gemini live acceptance: **PASS**.
+
+Next milestone: **4B LINE Test Acceptance**.
+
+Production remains **NO-GO** until LINE delivery/human review and the documented B1/B2/B4 release gates are closed.
