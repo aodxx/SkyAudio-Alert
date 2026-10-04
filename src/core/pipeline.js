@@ -92,7 +92,7 @@ async function runPipeline(config) {
 
   // Phase 5: deterministic firewall. Never allow unsafe presentation to reach TTS or LINE.
   mark('content.safety', 'start');
-  const safetyErrors = validateGeneratedFacts(presentationPlan, { floodSituation, weatherAnalysis }, {
+  const safetyErrors = validateGeneratedFacts(presentationPlan, { floodSituation, weatherAnalysis, date: dateInfo }, {
     forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
   });
   if (safetyErrors.length) {
