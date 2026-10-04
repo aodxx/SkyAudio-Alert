@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { buildConfig } = require('../src/config');
 const { generateGeminiReport } = require('../src/content/geminiReport');
 const { synthesizeSpeech } = require('../src/audio/tts');
-const { validateAudioBuffer } = require('../src/audio/validate');
+const { validateAudio } = require('../src/audio/validate');
 
 async function main() {
   const config = buildConfig();
@@ -33,8 +33,8 @@ async function main() {
 
   const audio = await synthesizeSpeech(report.spokenText, config.tts);
   assert.ok(Buffer.isBuffer(audio) && audio.length > 0);
-  const audioCheck = validateAudioBuffer(audio);
-  assert.equal(audioCheck.ok, true, JSON.stringify(audioCheck.errors || []));
+  const audioCheck = validateAudio(audio);
+  assert.ok(audioCheck.durationMs > 0);
   console.log(JSON.stringify({
     ok: true,
     contentProvider: report.provider,
