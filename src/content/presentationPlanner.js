@@ -175,7 +175,7 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
   if (!response.ok) throw Object.assign(new Error('Gemini long-form narration request failed: ' + response.status), {
     stage: 'content.narration', retryable: response.status === 429 || response.status >= 500,
   });
-  const json = parseGeminiJsonText(extractText(await response.json()));
+  const json = JSON.parse(parseGeminiJsonText(extractText(await response.json())));
   const sections = Array.isArray(json?.sections) ? json.sections.map((section, index) => ({
     id: String(section?.id || 'section-' + (index + 1)),
     title: String(section?.title || ''),
