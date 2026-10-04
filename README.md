@@ -123,3 +123,19 @@ npm test
 ใช้ GitHub Actions workflow **Milestone 4B — LINE Test Acceptance** สำหรับส่งรายงานจริงเข้า LINE TEST เท่านั้น โดย workflow จะรัน `DRY_RUN=false` และใช้ `LINE_CHANNEL_ACCESS_TOKEN_TEST` / `LINE_GROUP_ID_TEST` แยกจาก production
 
 ก่อนกด Run ต้องตรวจว่า TEST group เป็นกลุ่มทดสอบ ไม่ใช่กลุ่ม production จริง หลังส่งแล้วต้องตรวจ Flex บนมือถือและฟัง Audio จริงก่อนบันทึกผลเป็น PASS
+
+
+## 📌 Milestone 4B Delivery Update — 2026-10-04
+
+**ล่าสุด: LINE TEST delivery ผ่านแล้ว ✅**
+
+จากการรันจริง `DRY_RUN=false` ระบบส่งทั้ง **Flex Message** และ **Audio Message** เข้ากลุ่ม LINE TEST ได้สำเร็จ
+
+สิ่งที่ยังต้องตรวจเพื่อปิด Milestone 4B:
+- ตรวจการแสดงผล Flex บนมือถือจริง
+- ยืนยันว่า Flex มาก่อน Audio ตามที่ออกแบบ
+- กดเล่นและฟัง Audio จริง
+- ตรวจเนื้อหาว่าไม่มีราคาปาล์ม/ยางพารา/ข่าวทั่วไป
+- บันทึก human acceptance
+
+**Production: ยังเป็น NO-GO**
