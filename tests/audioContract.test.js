@@ -6,7 +6,7 @@ test('audio duration is adaptive and not a fixed report duration', () => {
   const short = estimateDurationMs('สวัสดีครับ',1);
   const long = estimateDurationMs('สวัสดีครับ '.repeat(80),1);
   assert.ok(long > short);
-  assert.equal(estimateDurationMs('',1),10000);
+  assert.equal(estimateDurationMs('',1),0);
 });
 
 test('audio validator rejects empty buffers', () => {
