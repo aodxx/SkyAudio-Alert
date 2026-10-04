@@ -2,11 +2,27 @@
   "runId": "2026-10-04-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {},
-  "lastError": {
-    "stage": "content.safety",
-    "message": "Presentation safety firewall rejected output: factsUsed trace is required"
+  "stages": {
+    "flood.fetch": "success",
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "content.generate": "success",
+    "content.presentation": "success",
+    "content.safety": "success",
+    "content.quality": "success",
+    "flex.render": "success",
+    "tts.synthesize": "success",
+    "audio.validate": "success",
+    "audio.store": "success",
+    "line.send": "success"
   },
-  "audio": null,
-  "generatedAt": "2026-10-04T11:06:27.063Z"
+  "lastError": null,
+  "audio": {
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@363c1d2e606fd0c0beb88bd978adde36c0bb03bd/public/audio/2026-10-04.mp3",
+    "durationMs": 41448,
+    "bytes": 663213,
+    "mimeType": "audio/mpeg"
+  },
+  "generatedAt": "2026-10-04T11:14:28.033Z"
 }
