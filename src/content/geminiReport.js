@@ -56,6 +56,26 @@ function extractText(json) {
   return json?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim() || '';
 }
 
+function parseGeminiJsonText(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return '';
+  const withoutFence = raw.replace(/^\`\`\`(?:json)?\s*/i, '').replace(/\s*\`\`\`$/i, '').trim();
+  try {
+    JSON.parse(withoutFence);
+    return withoutFence;
+  } catch (_) {}
+  const first = withoutFence.indexOf('{');
+  const last = withoutFence.lastIndexOf('}');
+  if (first >= 0 && last > first) {
+    const candidate = withoutFence.slice(first, last + 1);
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch (_) {}
+  }
+  return withoutFence;
+}
+
 async function fetchGeminiContent(doFetch, url, options, maxAttempts = 3) {
   let lastResponse;
   let lastDetail = '';
@@ -100,27 +120,70 @@ async function generateGeminiReport(context, config, opts = {}) {
     'ตอบเป็น JSON ตาม schema ที่กำหนดเท่านั้น',
     JSON.stringify(input),
   ].join('\n');
-  const body = {
+
+  const responseSchema = {
+    type: 'OBJECT',
+    properties: {
+      spokenText: { type: 'STRING' },
+      shortSummary: { type: 'STRING' },
+      priority: { type: 'STRING', enum: ['normal', 'watch', 'affected', 'critical', 'unknown'] },
+      actions: { type: 'ARRAY', items: { type: 'STRING' } },
+      factsUsed: { type: 'ARRAY', items: { type: 'STRING' } },
+      warnings: { type: 'ARRAY', items: { type: 'STRING' } },
+    },
+    required: ['spokenText', 'shortSummary', 'priority', 'actions', 'factsUsed', 'warnings'],
+  };
+
+  const structuredBody = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
       thinkingConfig: { thinkingLevel: config.content.thinkingLevel },
-      responseSchema: {
-        type: 'OBJECT',
-        properties: {
-          spokenText: { type: 'STRING' }, shortSummary: { type: 'STRING' },
-          priority: { type: 'STRING', enum: ['normal', 'watch', 'affected', 'critical', 'unknown'] },
-          actions: { type: 'ARRAY', items: { type: 'STRING' } },
-          factsUsed: { type: 'ARRAY', items: { type: 'STRING' } },
-          warnings: { type: 'ARRAY', items: { type: 'STRING' } },
-        },
-        required: ['spokenText', 'shortSummary', 'priority', 'actions', 'factsUsed', 'warnings'],
-      },
+      responseSchema,
     },
   };
   const url = `${GEMINI_BASE_URL}/${encodeURIComponent(config.content.model)}:generateContent`;
-  const result = await fetchGeminiContent(doFetch, url, { method: 'POST', headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  const res = result?.response || result;
+  const result = await fetchGeminiContent(doFetch, url, {
+    method: 'POST',
+    headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify(structuredBody),
+  });
+  let res = result?.response || result;
+
+  // Gemini can return 503 for structured-output requests during demand spikes.
+  // Retry the same request first; only then reduce request complexity. This keeps
+  // the normal path schema-validated while giving the narrative layer a lighter
+  // recovery path without changing the verified facts.
+  if (!res.ok && res.status === 503) {
+    const recoveryBody = {
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: [
+            prompt,
+            'หากไม่สามารถบังคับ JSON schema ได้ ให้ตอบเป็น JSON object ธรรมดาเท่านั้น ห้ามใส่ markdown code fence และต้องมีคีย์ spokenText, shortSummary, priority, actions, factsUsed, warnings ครบถ้วน',
+          ].join('\n'),
+        }],
+      }],
+    };
+    const recovery = await fetchGeminiContent(doFetch, url, {
+      method: 'POST',
+      headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(recoveryBody),
+    }, 2);
+    res = recovery?.response || recovery;
+    if (!res.ok) {
+      const detail = recovery?.detail || result?.detail || '';
+      throw reportError(`Gemini content request failed after structured + recovery retry: ${res.status}`, res.status >= 500 || res.status === 429, detail);
+    }
+    const recoveryText = parseGeminiJsonText(extractText(await res.json()));
+    const recovered = parseReportDraft(recoveryText);
+    if (!recovered.ok) {
+      throw reportError('Gemini recovery response failed ReportDraft validation', false, recovered.errors.join('; '));
+    }
+    return { ...recovered.draft, provider: 'gemini' };
+  }
+
   if (!res.ok) {
     const detail = result?.detail || '';
     throw reportError(`Gemini content request failed after retry: ${res.status}`, res.status >= 500 || res.status === 429, detail);
@@ -131,4 +194,4 @@ async function generateGeminiReport(context, config, opts = {}) {
   return { ...parsed.draft, provider: 'gemini' };
 }
 
-module.exports = { GEMINI_BASE_URL, buildFallbackReport, generateGeminiReport, fetchGeminiContent };
+module.exports = { GEMINI_BASE_URL, buildFallbackReport, generateGeminiReport, fetchGeminiContent, parseGeminiJsonText };
