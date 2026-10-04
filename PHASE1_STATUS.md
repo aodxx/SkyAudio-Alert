@@ -70,3 +70,17 @@
 **Reference:** `docs/V1_5_PHASE0_BASELINE.md`
 
 **Production: NO-GO.** Phase 1 requires explicit review of the locked baseline before implementation begins.
+
+
+## V1.5 — Phase 1 Visual Design System — 2026-10-04
+- [x] Visual tokens defined
+- [x] Five severity themes defined
+- [x] Carousel/card hierarchy defined
+- [x] Mobile/accessibility rules defined
+- [x] CTA scope locked
+- [x] Stale/unknown treatment defined
+- [x] Phase 1 complete
+
+**Reference:** `docs/V1_5_PHASE1_VISUAL_SYSTEM.md`
+
+**Production: NO-GO.** Phase 2 requires review of this visual system before presentation-contract implementation.
