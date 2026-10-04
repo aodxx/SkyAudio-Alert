@@ -209,3 +209,18 @@ The Flex must include two prominent URI buttons:
 **Reason:** The Gemini runtime risk has been reduced enough to proceed to delivery-channel validation, but successful Gemini/TTS generation does not prove that LINE delivery, Flex rendering, public audio URL accessibility, or human playback are correct.
 
 **Release consequence:** Production remains **NO-GO** until LINE Test Acceptance and the remaining release gates are explicitly passed.
+
+
+## Decision 021 — V1.5: Detailed adaptive audio + short horizontal Flex carousel
+
+**Date:** 2026-10-04
+
+**Decision:** V1.5 จะไม่บังคับให้ Audio สั้นเพื่อความกระชับอีกต่อไป รายงานเสียงต้องมีรายละเอียดเพียงพอให้ชุมชนเข้าใจสถานการณ์และลดการตีความผิด โดยความยาวเกิดจาก information density และความสำคัญของข้อมูลในวันนั้น ไม่ใช้ fixed 2–3 minute target และไม่ใช้เพดานสั้นตายตัว
+
+Gemini มีสิทธิ์เลือกใช้ข้อความ/ประโยคที่ตัวเองสร้างขึ้น ตัดข้อความซ้ำ รวมประโยค สลับลำดับ และขยายรายละเอียดได้อย่างเป็นธรรมชาติ ตราบใดที่ผลลัพธ์สุดท้ายยังอยู่ภายใต้ verified facts, safety rules และ deterministic severity; validator ต้องตรวจ final spokenText ก่อน TTS ทุกครั้ง
+
+สำหรับ Flex ให้เปลี่ยนจาก single tall bubble เป็น **carousel ของ short bubbles** แบ่งตามช่วงความสำคัญ เช่น สถานะน้ำ → รายละเอียดจุด/ผลกระทบ → action → weather/source โดยการ์ดแรกต้องทำให้ผู้ใช้เข้าใจสถานการณ์หลักได้ทันที และการ์ดถัดไปใช้สำหรับรายละเอียดที่ไม่ควรอัดรวมอยู่ในใบเดียว
+
+**Reason:** Flex ที่สั้นลงต่อการ์ดช่วยให้มือถืออ่านง่ายและลดความสูงของ message ขณะที่ Audio ที่มีรายละเอียดมากขึ้นช่วยลดความเสี่ยงที่ผู้รับจะสรุปสถานการณ์ผิดจากประกาศสั้นเกินไป ทั้งสองช่องทางจึงมีหน้าที่ต่างกันแต่ต้องสอดคล้องกันด้าน facts/severity
+
+**Constraint:** Gemini ยังไม่มีสิทธิ์สร้างตัวเลข สถานี ถนน เวลา เหตุการณ์ หรือเปลี่ยน severity จาก facts; carousel ไม่สามารถซ่อน fact สำคัญที่ผู้ใช้จำเป็นต้องรู้ไว้เฉพาะการ์ดท้ายโดยไม่ทำให้การ์ดแรกเข้าใจผิด

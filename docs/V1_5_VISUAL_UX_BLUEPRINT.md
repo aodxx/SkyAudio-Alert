@@ -27,9 +27,10 @@ V1.5 ไม่ใช่การเปลี่ยนระบบให้เป
    - unknown
 4. ข้อมูล weather ช่วยให้ตัดสินใจเตรียมตัว แต่ไม่ถูกใช้เป็นหลักฐานว่าน้ำท่วม
 5. มี action ที่อ่านแล้วรู้ว่า “ตอนนี้ควรทำอะไร”
-6. Gemini ช่วยจัดลำดับและเขียนภาษาธรรมชาติ แต่ **ไม่มีสิทธิ์สร้าง fact**
-7. Audio มีบุคลิกผู้ประกาศที่เหมาะกับชุมชน และความยาวปรับตามความสำคัญ
-8. Flex อ่านง่ายบนมือถือและรองรับผู้สูงอายุ
+6. Gemini ช่วยจัดลำดับ เขียน และคัดเลือกข้อความที่ตัวเองสร้างขึ้นได้อย่างเป็นธรรมชาติ แต่ **ไม่มีสิทธิ์สร้างหรือเปลี่ยน fact**
+7. Audio ต้องมีรายละเอียดเพียงพอสำหรับการเข้าใจสถานการณ์ ไม่บังคับให้สั้น และให้ Gemini เลือกข้อความ/ลำดับ/การเชื่อมประโยคจาก facts ที่ตรวจสอบแล้วตามความสำคัญของวัน
+8. Flex เปลี่ยนจากการ์ดใบเดียวที่ยาว เป็น **carousel หลายการ์ดสั้น** แบ่งตามช่วงความสำคัญ เพื่อให้ผู้ใช้ปัดดูรายละเอียดด้านข้างได้
+9. Flex อ่านง่ายบนมือถือและรองรับผู้สูงอายุ
 9. ข้อมูลสำคัญไม่พึ่งสีอย่างเดียว
 10. ทุกการเปลี่ยนแปลงมี fixture/test และสามารถตรวจ visual/audio ได้ก่อน production
 
@@ -43,7 +44,8 @@ V1.5 ไม่ใช่การเปลี่ยนระบบให้เป
 - ไม่ scrape CCTV มาเป็น source
 - ไม่ให้ Gemini browse เพื่อหา fact
 - ไม่ให้ forecast ฝนกลายเป็นคำยืนยันน้ำท่วม
-- ไม่ใช้ fixed 2–3 minute audio
+- ไม่ใช้ fixed 2–3 minute audio และไม่กำหนดเพดานสั้นแบบตายตัวเพื่อบังคับ Gemini
+- ไม่ย่อข้อมูลสำคัญเพียงเพื่อให้ Flex หรือ Audio สั้นลง
 - ไม่เปิด production schedule เพียงเพราะ UI ใหม่ดูดี
 
 ---
@@ -53,10 +55,10 @@ V1.5 ไม่ใช่การเปลี่ยนระบบให้เป
 | Phase | ชื่อ | เป้าหมาย | ผลที่ต้องเห็นเมื่อเสร็จ |
 |---|---|---|---|
 | 0 | Baseline & Design Lock | ล็อกสิ่งที่จะเปลี่ยนและสิ่งที่ห้ามเปลี่ยน | มี blueprint และ acceptance matrix ที่ทีมใช้เป็น checklist เดียวกัน |
-| 1 | Visual Design System | สร้างภาษา visual กลาง | มี tokens, severity themes, component rules และ mockup ครบ 5 states |
-| 2 | Presentation Contract | กำหนดข้อมูลที่ UI/Audio ต้องใช้ | มี contract สำหรับ presentation plan, action, source, freshness และ audio style |
-| 3 | Adaptive Flex | นำ design ไปใช้จริง | ทั้ง 5 states render ได้จริงใน fixture และ mobile-safe |
-| 4 | Adaptive Audio | ทำเสียงให้สอดคล้องกับสถานการณ์ | เสียงแต่ละ state มี tone/priority/duration เหมาะสมและผ่าน audio QA |
+| 1 | Visual Design System | สร้างภาษา visual กลาง | มี tokens, severity themes, carousel/card rules และ mockup ครบ 5 states |
+| 2 | Presentation Contract | กำหนดข้อมูลที่ UI/Audio ต้องใช้ | มี contract สำหรับ presentation plan, card sections, source, freshness และ audio style/freedom |
+| 3 | Adaptive Flex Carousel | นำ design ไปใช้จริง | ทุก state แบ่งเป็นการ์ดสั้นหลายใบ ปัดด้านข้างได้ และ mobile-safe |
+| 4 | Adaptive Audio | ทำเสียงให้สอดคล้องกับสถานการณ์ | เสียงมีรายละเอียดเพียงพอ, Gemini เลือกใช้ข้อความได้อย่างเป็นธรรมชาติ และผ่าน audio QA |
 | 5 | Safety + Quality Firewall | กันข้อมูลเกินจริงและ regression | test ตรวจ no-fabrication, certainty, layout, audio และ source transparency |
 | 6 | End-to-End LINE Acceptance | ทดสอบสายงานจริง | LINE TEST ได้ Flex → Audio ตามลำดับและตรวจมือถือ/เสียงจริง |
 | 7 | Release Readiness | ปิด gate ก่อน production | checklist ครบ, docs ตรงกัน, rollback/monitoring พร้อม และจึงค่อยพิจารณา GO |
@@ -159,6 +161,8 @@ V1.5 ไม่ใช่การเปลี่ยนระบบให้เป
 7. Sources — แหล่งข้อมูล
 8. CTA — ปุ่มที่เกี่ยวข้อง
 
+**Carousel rule:** หนึ่ง Flex Message ใช้ carousel container และแบ่งเนื้อหาเป็นหลาย bubble สั้น ๆ ตามลำดับความสำคัญ ผู้ใช้ปัดซ้าย/ขวาเพื่อดูการ์ดถัดไปได้ โดยไม่ทำให้การ์ดใดการ์ดหนึ่งสูงเกินไป
+
 ## 4.3 สร้าง design tokens
 
 กำหนดเป็น code/config ไม่กระจาย hard-code:
@@ -202,7 +206,7 @@ V1.5 ไม่ใช่การเปลี่ยนระบบให้เป
 
 ต้องมี solid fallback หาก gradient/rendering มีปัญหา
 
-## 4.5 ออกแบบ 5 Flex variants
+## 4.5 ออกแบบ 5 Flex variants + Carousel Cards
 
 ### Variant A — NORMAL
 
@@ -210,14 +214,13 @@ V1.5 ไม่ใช่การเปลี่ยนระบบให้เป
 
 > สถานการณ์ปัจจุบันไม่มีสัญญาณผิดปกติที่ source ยืนยัน
 
-UI:
+UI แบ่งเป็นการ์ดสั้น เช่น:
 
-- hero ขนาดกะทัดรัด
-- trend
-- update time
-- weather สั้น
-- action แบบ “ติดตามตามปกติ”
-- source
+- Card 1: สถานะน้ำ + trend + update
+- Card 2: จุด/ข้อมูลสำคัญ
+- Card 3: weather context + action/source
+
+ไม่จำเป็นต้องมีทุกการ์ดหากวันนั้นไม่มีข้อมูลที่มีประโยชน์
 
 ### Variant B — WATCH
 
@@ -225,12 +228,14 @@ UI:
 
 > มีสัญญาณที่ควรติดตาม แต่ยังไม่ควรใช้ภาษาวิกฤต
 
-UI เพิ่ม:
+UI เพิ่มเป็น carousel:
 
-- จุด/สถานีสำคัญ
-- trend เด่นขึ้น
-- weather context ถ้ามี
-- action “ติดตาม/เตรียมตัว”
+- Card 1: สถานะเฝ้าระวัง + trend
+- Card 2: จุด/สถานีสำคัญ
+- Card 3: weather context ที่เกี่ยวข้อง
+- Card 4: action/แหล่งข้อมูล
+
+Gemini มีสิทธิ์เลือกว่าจะนำข้อความใดมาใช้ในแต่ละ card จากข้อความที่สร้างและ facts ที่ตรวจสอบแล้ว
 
 ### Variant C — AFFECTED
 
@@ -238,12 +243,14 @@ UI เพิ่ม:
 
 > source มีข้อมูลพื้นที่/จุดที่ได้รับผลกระทบ
 
-UI:
+UI แบ่งเป็นช่วงสั้น:
 
-- affected area/road เฉพาะที่มี fact
-- action ชัดเจน
-- weather เป็น supporting
-- source เด่น
+- Card 1: สถานะ + ผลกระทบ
+- Card 2: พื้นที่/ถนนที่ source ยืนยัน
+- Card 3: action ที่ควรทำ
+- Card 4: weather/source ถ้ามีประโยชน์
+
+แต่ละ card ต้องอ่านจบได้ด้วยตัวเอง ไม่ตัดประโยคสำคัญกลาง card
 
 ### Variant D — CRITICAL
 
@@ -251,14 +258,15 @@ UI:
 
 > ข้อมูลยืนยันสถานการณ์รุนแรง/วิกฤต
 
-UI:
+UI แบ่งเป็นการ์ดสั้นและเน้นความสำคัญ:
 
-- status hero ใหญ่ที่สุด
-- ลดข้อมูลรอง
-- action เด่นที่สุด
-- ปุ่มน้ำ/CCTV เด่น
-- weather ย่อ
-- หลีกเลี่ยงข้อมูลตกแต่งที่ทำให้ผู้ใช้ต้องอ่านนาน
+- Card 1: CRITICAL + สิ่งที่เกิดขึ้น
+- Card 2: จุด/พื้นที่/ถนนที่สำคัญ
+- Card 3: สิ่งที่ควรทำทันที
+- Card 4: แหล่งข้อมูล/CCTV
+- weather เป็น supporting card ที่ย่อหรือเลื่อนไปท้าย
+
+เป้าหมายคือ **สั้นต่อการ์ด แต่ข้อมูลรวมไม่สั้นจนทำให้เข้าใจผิด**
 
 ### Variant E — UNKNOWN
 
@@ -266,14 +274,14 @@ UI:
 
 > ระบบยังยืนยันสถานการณ์น้ำไม่ได้
 
-UI:
+UI แบ่งเป็นการ์ดสั้น:
 
-- ห้ามใช้ visual ที่ทำให้ดูเหมือน normal
-- แสดง “ข้อมูลน้ำยังยืนยันไม่ได้”
-- ระบุ source unavailable/stale ตามข้อเท็จจริง
-- weather แสดงได้ถ้ามี
-- action เป็น “ติดตามจากแหล่งข้อมูล”
-- source button ต้องยังเข้าถึงได้
+- Card 1: “ยังยืนยันสถานการณ์น้ำไม่ได้”
+- Card 2: สาเหตุของ unknown/stale ตามข้อเท็จจริง
+- Card 3: weather ที่ยังมีข้อมูล
+- Card 4: แหล่งข้อมูลสำหรับตรวจสอบ
+
+ห้ามใช้ card แรกที่ทำให้ผู้ใช้เข้าใจว่าเป็น normal
 
 ## 4.6 Accessibility
 
@@ -302,9 +310,11 @@ UI:
 
 - [ ] 5 variants approved
 - [ ] token set ชัดเจน
-- [ ] component hierarchy ชัดเจน
+- [ ] carousel/card hierarchy ชัดเจน
 - [ ] mobile compact rule ชัดเจน
 - [ ] accessibility rule ชัดเจน
+- [ ] กำหนดจำนวน/บทบาทการ์ดตาม severity แล้ว
+
 
 ---
 
@@ -336,8 +346,11 @@ Flood/Weather facts ต้องไม่ถูกแก้เพื่อให
   "weatherContext": {},
   "sourceNotes": [],
   "visualVariant": "watch",
+  "cards": [],
   "audioStyle": "calm-alert",
-  "spokenText": "..."
+  "audioSelectionPolicy": "gemini-adaptive-within-verified-facts",
+  "spokenText": "...",
+  "spokenSections": []
 }
 ```
 
@@ -346,7 +359,9 @@ Flood/Weather facts ต้องไม่ถูกแก้เพื่อให
 - `severity` มาจาก deterministic flood analysis
 - `priorityFacts` ต้อง trace กลับไปยัง facts
 - `actions` ต้องมาจาก allowed facts/rules
-- Gemini ช่วยเรียบเรียงได้ แต่ไม่สามารถยกระดับ severity เอง
+- `cards` เป็น presentation sections ที่สั้นและแยกตามความสำคัญ ไม่ใช่การตัดข้อมูลทิ้ง
+- Gemini ช่วยเรียบเรียงและ **เลือกใช้ข้อความ/ประโยค/การเชื่อมความที่ตัวเองสร้างขึ้น** ได้ตามธรรมชาติ ตราบใดที่ยังอยู่ใน verified facts
+- Gemini สามารถเลือกว่าจะพูดรายละเอียดใดมาก/น้อยในวันนั้นได้ แต่ต้องไม่ละเลย fact สำคัญที่ safety/policy ระบุว่าจำเป็น
 - `visualVariant` ต้องไม่ขัดกับ severity
 
 ## 5.3 Gemini ทำอะไร / ไม่ทำอะไร
@@ -355,10 +370,14 @@ Flood/Weather facts ต้องไม่ถูกแก้เพื่อให
 
 - เรียงความสำคัญ
 - เขียน headline
-- เขียน spokenText
-- ย่อ/ขยายตามสถานการณ์
+- สร้าง spokenText และ sections
+- เลือกใช้/ตัด/เชื่อมข้อความที่ตัวเองสร้างขึ้นเพื่อให้เสียงเป็นธรรมชาติ
+- ขยายรายละเอียดเมื่อข้อมูลมีความสำคัญหรือมีหลายจุดที่ต้องอธิบาย
+- เลือกความยาวตาม information density และความเสี่ยงของสถานการณ์
 - ทำภาษาชุมชนให้อ่านง่าย
 - เลือก emphasis จาก facts ที่มี
+
+**หลักใหม่:** เราไม่บังคับ Gemini ให้พูดสั้นเพียงเพื่อประหยัดเวลา เพราะรายงานที่สั้นเกินไปอาจทำให้คนตีความสถานการณ์ผิด
 
 ### Gemini ทำไม่ได้
 
@@ -401,7 +420,7 @@ Developer ต้องสามารถเอา fixture เดียวกั�
 
 ## 6.1 เป้าหมาย
 
-นำ design system + presentation contract ไปลงใน `src/flex`
+นำ design system + presentation contract ไปลงใน `src/flex` โดยเปลี่ยนจาก single tall bubble เป็น carousel ของ short bubbles ซึ่ง LINE รองรับให้หลาย bubbles วางเรียงด้านข้างและผู้ใช้เลื่อนดูได้ citeturn0search0turn0search2
 
 ## 6.2 งาน
 
@@ -420,20 +439,19 @@ Developer ต้องสามารถเอา fixture เดียวกั�
 - `sourceFooter`
 - `ctaButtons`
 
-### B. Variant renderer
+### B. Variant + carousel renderer
 
 แนวคิด:
 
 ```text
 renderFlex(presentationPlan)
   → selectVariant(severity)
-  → buildHero()
-  → buildFacts()
-  → buildActions()
-  → buildWeather()
-  → buildSources()
-  → buildCTA()
+  → buildCardSections()
+  → orderCardsByImportance()
+  → buildCarousel()
   → validateFlex()
+  → validateCardLength()
+  → validateCarouselConsistency()
 ```
 
 ### C. Smart station selection
@@ -451,7 +469,7 @@ renderFlex(presentationPlan)
 
 แต่ต้อง **ไม่สร้าง station ใหม่**
 
-### D. Action hierarchy
+### D. Card hierarchy + action hierarchy
 
 Normal:
 - ข้อมูล/แหล่งข้อมูลเป็นหลัก
@@ -472,7 +490,7 @@ Unknown:
 - แหล่งข้อมูล + weather
 - ไม่ทำให้ดูเหมือนสถานการณ์ปกติ
 
-### E. AltText
+### E. AltText + carousel navigation cue
 
 altText ต้องเป็น flood-first เช่น:
 
@@ -482,7 +500,7 @@ altText ต้องเป็น flood-first เช่น:
 
 `รายงานสถานการณ์น้ำบ้านลำพาย: ยังยืนยันสถานการณ์น้ำไม่ได้`
 
-## 6.3 Visual QA
+## 6.3 Visual QA + Carousel QA
 
 สร้าง fixture snapshots:
 
@@ -503,23 +521,32 @@ altText ต้องเป็น flood-first เช่น:
 - text truncation
 - visual hierarchy
 - mobile height
+- card-to-card continuity
+- first-card self-contained understanding
+- sideways-scroll usability
+- no critical fact hidden only on a later card
 
 ## 6.4 เมื่อเสร็จต้องเห็นอะไร
 
 เมื่อส่ง fixture 5 states เข้า renderer ต้องได้ Flex 5 แบบที่:
 
 - severity ต่างกันเห็นได้ทันที
-- flood อยู่ด้านบน
+- **การ์ดแรกทำให้รู้สถานการณ์ได้ทันที**
+- flood อยู่ในช่วงต้นของ carousel
 - weather ไม่แย่งความเด่น
 - critical ไม่รก
 - unknown ไม่ถูกตีความว่า normal
 - ปุ่มยังใช้งานได้
 - altText ถูกต้อง
+- ผู้ใช้ปัดไปอ่านรายละเอียดต่อได้โดยไม่เจอการ์ดที่สูงเกินจำเป็น
+
+LINE ระบุว่า carousel เป็น container ที่มีหลาย bubbles วางด้านข้างและเลื่อนดูด้วยการ scroll แนวนอนได้ และควรหลีกเลี่ยง message ที่สูงเกินไปบนหน้าจอมือถือ
 
 ### Exit criteria
 
 - [ ] Flex tests ผ่าน
 - [ ] 5 variants render
+- [ ] ทุก variant มี carousel card plan
 - [ ] gradient + solid fallback ผ่าน
 - [ ] CTA URL contract ผ่าน
 - [ ] altText tests ผ่าน
@@ -534,29 +561,37 @@ altText ต้องเป็น flood-first เช่น:
 
 ทำให้ Audio เป็น “ผู้ประกาศสถานการณ์” ไม่ใช่แค่เอาข้อความ Flex ไปอ่านออกเสียง
 
-## 7.2 Audio structure
+## 7.2 Audio structure — Detailed Natural Announcement
+
+Audio ไม่ควรถูกออกแบบให้ “สั้นที่สุด” แต่ควรถูกออกแบบให้ **ฟังแล้วเข้าใจสถานการณ์โดยไม่ต้องเดา**
 
 แนวคิด:
 
-1. ทักทายสั้น
-2. บอกสถานะน้ำก่อน
-3. บอก fact สำคัญ
-4. บอก trend/freshness เมื่อมีประโยชน์
-5. weather เฉพาะเมื่อช่วยตัดสินใจ
-6. action
-7. ปิดท้ายสั้น
+1. เปิดรายงานและบอกสถานะน้ำ
+2. อธิบาย facts สำคัญตามลำดับความสำคัญ
+3. ระบุจุด/พื้นที่/ถนน/เวลาเฉพาะเมื่อ source ยืนยัน
+4. อธิบายแนวโน้มและ freshness เมื่อช่วยตีความสถานการณ์
+5. เชื่อม weather เฉพาะส่วนที่ช่วยให้เตรียมตัว โดยไม่เปลี่ยน forecast เป็น flood fact
+6. บอก action/สิ่งที่ควรติดตาม
+7. ปิดท้ายด้วยแหล่งข้อมูลหรือข้อจำกัดของข้อมูลเมื่อจำเป็น
 
-ลำดับนี้เป็น **priority rule** ไม่ใช่ fixed script ที่บังคับทุกวัน
+นี่เป็น **content priority framework** ไม่ใช่ fixed script และไม่กำหนดจำนวนประโยคตายตัว
 
-## 7.3 Adaptive duration
+## 7.3 Adaptive duration + Gemini content freedom
 
-ไม่กำหนด 2–3 นาที
+ไม่กำหนด 2–3 นาที และไม่กำหนดความยาวสั้นตายตัว
 
-- normal → สั้น
-- watch → เพิ่มรายละเอียด
-- affected → เน้นผลกระทบ/action
-- critical → กระชับแต่ชัดและเร่งความสำคัญ
-- unknown → สั้น ชัด และย้ำข้อจำกัดข้อมูล
+ความยาวควรเกิดจาก **จำนวนและความสำคัญของข้อมูลจริง**:
+
+- normal → รายงานครบแต่ไม่ยืดรายละเอียดที่ไม่มีประโยชน์
+- watch → เพิ่มรายละเอียดจุด/แนวโน้ม/ช่วงเวลาที่ควรติดตาม
+- affected → อธิบายผลกระทบ พื้นที่/ถนน และ action ให้เพียงพอ
+- critical → รายละเอียดต้องเพียงพอต่อการตัดสินใจ แต่ตัดคำฟุ่มเฟือยและนำ action สำคัญขึ้นก่อน
+- unknown → อธิบายข้อจำกัดของ source ให้ชัด พร้อมข้อมูล weather ที่มีจริง
+
+**Gemini content freedom:** Gemini สามารถเลือกข้อความจาก draft ที่ตัวเองสร้างขึ้นมาใช้จริง ตัดข้อความซ้ำ รวมประโยค สลับลำดับ และขยายรายละเอียดได้ตามสถานการณ์ เพื่อให้การฟังเป็นธรรมชาติ โดย validator ต้องตรวจผลสุดท้ายกับ verified facts ก่อน TTS ทุกครั้ง
+
+เป้าหมายจึงไม่ใช่ “เสียงสั้น” แต่คือ **เสียงที่ละเอียดพอ + ฟังเป็นธรรมชาติ + ไม่พูดเกินข้อเท็จจริง**
 
 ## 7.4 Voice profile
 
@@ -597,17 +632,21 @@ Style ต้องแยกจาก spoken text
 
 - Flex บอก severity อะไร
 - Audio ต้องบอก severity เดียวกัน
-- Audio ต้องไม่พูด fact ที่ Flex/verified facts ไม่มี
+- Audio ต้องไม่พูด fact ที่ verified facts ไม่มี
+- Audio มีรายละเอียดเพียงพอที่จะลดความเสี่ยงจากการตีความผิด
+- Gemini มีอิสระด้านการเลือกข้อความ/ลำดับ/การเชื่อมภาษา แต่ผลสุดท้ายต้องผ่าน validator
 - critical ฟังแล้วรู้ความเร่งด่วน
 - unknown ฟังแล้วรู้ว่า “ยังยืนยันไม่ได้”
-- normal ไม่ยืดเยื้อ
+- normal ไม่ยืดด้วยข้อมูลที่ไม่มีประโยชน์
 
 ### Exit criteria
 
 - [ ] male live test ผ่าน
 - [ ] female live test ผ่านหรือมี approved fixture ตาม gate
 - [ ] audio validator ผ่าน
-- [ ] duration adaptive
+- [ ] duration adaptive ตาม information density
+- [ ] ไม่มี fixed short-duration cap ที่บังคับทุกวัน
+- [ ] Gemini content freedom ผ่าน contract/validator
 - [ ] safety text validation ผ่าน
 - [ ] human listening review ผ่าน
 
@@ -665,9 +704,11 @@ Style ต้องแยกจาก spoken text
 - freshness visibility
 - action clarity
 - source visibility
-- text compactness
+- text compactness ต่อ card
+- carousel completeness
 - accessibility
 - audio consistency
+- audio information sufficiency
 
 คะแนนนี้ใช้ **ตรวจคุณภาพภายใน ไม่ใช่ส่งให้ผู้ใช้เป็น fact**
 
@@ -930,7 +971,9 @@ V1.5 ถือว่า “เสร็จ” เมื่อผู้ใช้�
 และเมื่อกดฟังเสียง:
 
 - เสียงสอดคล้องกับ Flex
-- เสียงไม่ยาวเกินความจำเป็น
+- เสียงมีรายละเอียดเพียงพอต่อความเข้าใจ
+- ความยาวเกิดจากข้อมูล ไม่ใช่เพดานตายตัว
+- Gemini เลือกใช้ข้อความที่ตัวเองสร้างขึ้นได้อย่างเป็นธรรมชาติ
 - เสียงไม่สร้าง fact
 - น้ำเป็นเรื่องแรก
 - weather เป็นเรื่องประกอบ
@@ -992,9 +1035,9 @@ GO / NO-GO
 ### P0 — ต้องทำก่อน
 
 1. Phase 0 baseline
-2. Phase 1 visual system
-3. Phase 2 presentation contract
-4. Phase 3 adaptive Flex
+2. Phase 1 visual system + carousel design
+3. Phase 2 presentation contract + audio freedom policy
+4. Phase 3 adaptive Flex carousel
 5. Phase 5 safety firewall
 
 ### P1 — ทำต่อทันที
@@ -1022,7 +1065,7 @@ V1.5 ไม่ได้วัดความสำเร็จจาก “ห�
 
 ต้องวัดจาก:
 
-**เร็วขึ้นในการเข้าใจ + ชัดขึ้นในการตัดสินใจ + ปลอดภัยขึ้นในการสื่อสาร + ตรวจสอบย้อนกลับได้ + ไม่ทำลาย runtime เดิม**
+**เร็วขึ้นในการเข้าใจ + รายละเอียดเพียงพอไม่ให้ตีความผิด + ชัดขึ้นในการตัดสินใจ + ปลอดภัยขึ้นในการสื่อสาร + ตรวจสอบย้อนกลับได้ + ไม่ทำลาย runtime เดิม**
 
 ดังนั้นทุก feature ใหม่ต้องผ่านคำถาม 5 ข้อ:
 
