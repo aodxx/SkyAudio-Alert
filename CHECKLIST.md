@@ -1,20 +1,50 @@
 # SkyAudio-Alert — Verification Checklist
 
-> **Scope review notice — 2026-10-03:** รายการด้านล่างเป็นหลักฐานการผ่านของระบบ legacy ใน TEST เท่านั้น ไม่ใช่ acceptance ของ flood-first product ใหม่ ให้ใช้ [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) และ checklist ใน design/refactor docs เพื่อสร้างรายการตรวจชุดใหม่ก่อนเปิด production
+> DOCUMENT LOCK — FLOOD-FIRST — 2026-10-04
+>
+> Legacy weather + market/news acceptance is historical evidence only.
 
-## ขั้นที่ 1 — Foundation
-- [x] PRD / architecture / core repository structure
+## Stage 1 — Document Lock
+- [x] Flood-first scope declared
+- [x] Market/news removed from production requirements
+- [x] Fixed 2–3 minute audio removed
+- [x] Adaptive Gemini narrative recorded
+- [x] Gemini TTS male/female configuration recorded
+- [x] Flood-first runtime order recorded
+- [x] Source-of-truth hierarchy recorded
+- [x] Production remains NO-GO
 
-## ขั้นที่ 2 — End-to-end TEST LINE verification
-- [x] Weather fetch / normalize / analyze
-- [x] Palm-oil and rubber market fetch
-- [x] Local news fetch
-- [x] Thai forecast render
-- [x] Thai audio synthesis
-- [x] MP3 validation
-- [x] Public audio storage / HTTPS validation
-- [x] Flex + Audio delivered to TEST LINE
-- [x] Latest verified run: `2026-09-29-lampai-test`
-- [x] No error reported in the latest run
+## Stage 2 — Contracts
+- [x] FloodSituation contract
+- [x] Unknown/stale semantics
+- [x] ReportDraft contract
+- [x] Gemini no-fabrication validation
+- [ ] Real Gemini content model verified
+- [ ] Real Gemini TTS model/voice verified
+- [ ] Flood source contract accepted as stable
 
-> **Boundary:** ขั้นที่ 2 ถือว่าผ่านใน TEST environment เท่านั้น ณ 2026-09-29. Production credentials/destination and production delivery have not been marked complete by this checklist.
+## Stage 3 — Fixtures/tests
+- [x] normal/watch/affected/critical/unknown flood fixtures
+- [ ] stale/timeout fixtures verified against final policy
+- [ ] Gemini structured-output fixtures complete
+- [ ] male/female TTS configuration tests complete
+- [ ] Flex compact/button/priority tests complete
+- [ ] legacy market/news tests fully removed or archived
+
+## Stage 4 — Runtime acceptance
+- [x] flood-first pipeline exists
+- [x] dry-run can stop before LINE send
+- [x] duplicate guard remains
+- [ ] real Gemini end-to-end test
+- [ ] real TTS playback test
+- [ ] TEST LINE acceptance
+- [ ] human review of Flex + Audio
+
+## Stage 5 — Production gate
+- [ ] B1 flood source resolved/accepted
+- [ ] B2 degraded mode explicitly accepted
+- [ ] B3 Gemini contract verified
+- [ ] B4 docs/tests/workflows migration complete
+- [ ] production schedule enabled
+
+**Current release state: NO-GO**
