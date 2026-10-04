@@ -147,7 +147,7 @@ async function generateGeminiReport(context, config, opts = {}) {
     method: 'POST',
     headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify(structuredBody),
-  });
+  }, opts.primaryMaxAttempts || 3);
   let res = result?.response || result;
 
   // Gemini can return 503 for structured-output requests during demand spikes.
@@ -170,7 +170,7 @@ async function generateGeminiReport(context, config, opts = {}) {
       method: 'POST',
       headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify(recoveryBody),
-    }, 2);
+    }, opts.recoveryMaxAttempts || 2);
     res = recovery?.response || recovery;
     if (!res.ok) {
       const detail = recovery?.detail || result?.detail || '';
