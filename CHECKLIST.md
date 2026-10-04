@@ -49,4 +49,8 @@
 
 **Stage 3 test gate: PASS — GitHub Actions verified 35/35 tests.**
 
+**Milestone 4A test gate: PASS — GitHub Actions verified 40/40 tests after Gemini 503 resilience changes.**
+
+**Gemini live diagnostic:** minimal requests returned 200 for both comparison models; shaped JSON requests returned 503 `UNAVAILABLE` during high demand. The runtime now keeps structured output as the primary path and has a lightweight JSON recovery path after 503 retries.
+
 **Current release state: NO-GO**
