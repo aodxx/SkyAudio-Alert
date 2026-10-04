@@ -41,3 +41,11 @@ test('invalid flood contract is rejected', () => {
   const errors = validateFloodSituation({severity:'critical'});
   assert.ok(errors.length >= 3);
 });
+
+test('stale state cannot claim zero age', () => {
+  const s = normalizeFloodSituation({
+    severity:'normal', summary:'ข้อมูลเก่า', location:{name:'บ้านลำพาย'},
+    source:{name:'source'}, freshness:{state:'stale',ageMinutes:0}
+  });
+  assert.ok(validateFloodSituation(s).includes('stale freshness must have positive ageMinutes'));
+});
