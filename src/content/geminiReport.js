@@ -69,7 +69,7 @@ async function fetchGeminiContent(doFetch, url, options, maxAttempts = 3) {
     const retryAfter = Number(res.headers?.get?.('retry-after'));
     const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
       ? Math.min(retryAfter * 1000, 10000)
-      : attempt * 1500;
+      : attempt === 1 ? 5000 : 15000;
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
   return { response: lastResponse, detail: lastDetail };
@@ -104,6 +104,7 @@ async function generateGeminiReport(context, config, opts = {}) {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
+      thinkingConfig: { thinkingLevel: config.content.thinkingLevel },
       responseSchema: {
         type: 'OBJECT',
         properties: {
