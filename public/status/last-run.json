@@ -2,11 +2,25 @@
   "runId": "2026-10-05-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {},
+  "stages": {
+    "flood.fetch": "success",
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "content.generate": "success",
+    "content.presentation": "success",
+    "content.safety": "success",
+    "flex.render": "success",
+    "flex.lint": "success",
+    "content.narration": "failure"
+  },
   "lastError": {
     "stage": "content.narration",
-    "message": "Gemini long-form narration request failed: 429"
+    "message": "Long-form narration safety firewall rejected output: unsupported certainty claim",
+    "errors": [
+      "unsupported certainty claim"
+    ]
   },
   "audio": null,
-  "generatedAt": "2026-10-04T17:58:48.864Z"
+  "generatedAt": "2026-10-04T18:17:58.646Z"
 }
