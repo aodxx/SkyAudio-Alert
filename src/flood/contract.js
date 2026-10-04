@@ -85,6 +85,7 @@ function createUnknownFloodSituation({ location, source, retrievedAt } = {}) {
 function validateFloodSituation(situation) {
   const errors = [];
   if (!situation || typeof situation !== 'object') return ['FloodSituation must be an object'];
+  if (situation.schemaVersion !== '1.0') errors.push('schemaVersion must be 1.0');
   if (!FLOOD_SEVERITIES.includes(situation.severity)) errors.push('invalid severity');
   if (!FLOOD_TRENDS.includes(situation.trend)) errors.push('invalid trend');
   if (!situation.location || !situation.location.name) errors.push('location.name is required');
@@ -92,7 +93,12 @@ function validateFloodSituation(situation) {
   if (!situation.source || !situation.source.name) errors.push('source.name is required');
   if (!situation.freshness || !FRESHNESS_STATES.includes(situation.freshness.state)) errors.push('invalid freshness state');
   if (!Array.isArray(situation.stations)) errors.push('stations must be an array');
+  if (!Array.isArray(situation.affectedAreas)) errors.push('affectedAreas must be an array');
+  if (!Array.isArray(situation.roads)) errors.push('roads must be an array');
+  if (!Array.isArray(situation.actions) || situation.actions.length > 3) errors.push('actions must be an array of at most 3 items');
   if (situation.severity === 'unknown' && !situation.summary) errors.push('unknown situation needs an explicit summary');
+  if (situation.freshness.state === 'stale' && situation.freshness.ageMinutes !== null && situation.freshness.ageMinutes <= 0) errors.push('stale freshness must have positive ageMinutes');
+  if (situation.freshness.state === 'fresh' && situation.freshness.ageMinutes !== null && situation.freshness.ageMinutes < 0) errors.push('fresh freshness ageMinutes cannot be negative');
   return errors;
 }
 module.exports = { FLOOD_SEVERITIES, FLOOD_TRENDS, FRESHNESS_STATES, freshnessState, normalizeFloodSituation, createUnknownFloodSituation, validateFloodSituation };
