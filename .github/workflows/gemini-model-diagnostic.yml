@@ -1,0 +1,28 @@
+name: Gemini model diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      primary_model:
+        description: 'Primary model to diagnose'
+        required: true
+        default: 'gemini-3.8-flash'
+      comparison_model:
+        description: 'Comparison model'
+        required: true
+        default: 'gemini-3.7-flash'
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run Gemini model probes
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_PRIMARY_MODEL: ${{ inputs.primary_model }}
+          GEMINI_COMPARISON_MODEL: ${{ inputs.comparison_model }}
+        run: node tests/gemini-model-diagnostic.js
