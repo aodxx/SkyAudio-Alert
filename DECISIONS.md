@@ -181,3 +181,16 @@ The Flex must include two prominent URI buttons:
 **Decision:** `assets/flex/village-hall-cutout.jpg` now comes from อ๊อด's original, uncropped photo of the pavilion (blue sky, full symmetric roof, full signboard, no transparent corners), cropped to the roofline+sign+porch band (720×350, ~2.06:1) with the roof peak given a small sky margin and the signboard confirmed (by pixel measurement) to sit within the first ~160px — safely inside the 200px `gravity:'top'` header even under a wide/flat runtime crop. `headerBlock()` itself is unchanged (same height, gravity, single-wash structure from Decision 012).
 
 **Reason:** The previous source was a small, pre-existing user-supplied cutout with irregular transparent corners (a decorative roof-shaped crop), which forced upscaling (visible blur) and a narrow safe rectangle to avoid transparent slivers. The new photo is a plain rectangular original at native resolution — sharper, no upscale artifacts, and gives far more room to choose a well-composed crop instead of being constrained by where the old cutout happened to be opaque.
+
+
+## Decision 019 — Document Lock: Flood-first is the only current production scope
+
+**Date:** 2026-10-04
+
+**Decision:** All current implementation documents, configuration examples, checklists and workflow descriptions are locked to the flood-first product: flood situation primary, weather supporting, Gemini adaptive narrative, Gemini TTS, compact Flood-first Flex, then LINE delivery.
+
+**Superseded for current production:** legacy requirements for palm/rubber prices, general news, fixed report order, fixed 2–3 minute audio and weather-first presentation.
+
+**Reason:** The repository contained multiple legacy documents that could cause future implementation to reintroduce removed runtime behavior. Historical acceptance evidence remains preserved as history but cannot be used as current product requirements.
+
+**Gate:** Production schedule remains NO-GO until B1–B4 in docs/SCOPE_REVIEW_REPORT.md are resolved or explicitly accepted.
