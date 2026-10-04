@@ -1,0 +1,14 @@
+{
+  "severity": "critical",
+  "summary": "ระดับน้ำอยู่ในภาวะวิกฤตและต้องเฝ้าระวังอย่างใกล้ชิด",
+  "trend": "rising",
+  "confidence": "high",
+  "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+  "water": { "level": 0.85, "levelUnit": "เมตร", "threshold": 0.8, "thresholdUnit": "เมตร" },
+  "affectedAreas": ["พื้นที่ลุ่มต่ำ"],
+  "roads": ["ถนนจุดต่ำ"],
+  "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung", "publisher": "ศูนย์ข้อมูลน้ำ" },
+  "observedAt": "2026-10-04T00:40:00Z",
+  "retrievedAt": "2026-10-04T01:00:00Z",
+  "actions": ["เตรียมอพยพตามประกาศ", "หลีกเลี่ยงเส้นทางเสี่ยง", "ติดตามประกาศทางการ"]
+}
