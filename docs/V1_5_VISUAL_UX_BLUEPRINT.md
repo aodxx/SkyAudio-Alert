@@ -1100,3 +1100,8 @@ V1.5 ไม่ได้วัดความสำเร็จจาก “ห�
 **Phase 1 update — 2026-10-04:** Visual tokens, five severity themes, carousel/card hierarchy, mobile/accessibility rules, CTA scope, and stale/unknown treatment are locked in `docs/V1_5_PHASE1_VISUAL_SYSTEM.md`. Phase 1 is complete. Production remains NO-GO.
 
 **สถานะ production ปัจจุบัน: NO-GO จนกว่า release gates จะผ่านครบ**
+
+
+---
+
+> **V1.6 note (2026-10-04):** Phase 3 (Adaptive Flex) and Phase 4 (Adaptive Audio) are **reopened**. The implemented contract kept only string cards and one `spokenText`, so the components, tokens and variants specified above were never built and the audio-length policy in §7.3 is superseded by Decision 022 (Audio > 10 minutes). See `docs/REVIEW_V1_6_PRESENTATION_REDESIGN.md`.

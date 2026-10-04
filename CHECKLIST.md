@@ -139,3 +139,14 @@ B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 docum
 - [x] PR #17 merged to main
 
 **Next: Phase 6 — End-to-End LINE Acceptance. Production remains NO-GO.**
+
+
+## Stage V1.6 — Presentation Redesign (Decision 022)
+- [x] P0 — repository review, Decision 022, document alignment, firewall test file repaired (80/80)
+- [ ] P1 — FactsSnapshot, VisualPlan, NarrationPlan contracts + explainer library
+- [ ] P2 — Flex v2 (tokens, components, variants, text-budget lint)
+- [ ] P3 — Per-segment narrator, Thai speech normalizer, firewall v2
+- [ ] P4 — Long-form TTS, ffprobe duration gate (> 600 s), validator limits, audio-withheld behaviour
+- [ ] P5 — Cross-channel consistency, regression matrix
+- [ ] P6 — LINE TEST acceptance with human visual + listening review
+- [ ] Production GO (remains NO-GO)

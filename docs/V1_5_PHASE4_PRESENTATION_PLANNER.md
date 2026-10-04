@@ -28,3 +28,6 @@ The planner may choose emphasis, ordering, wording, card count and audio detail,
 - PresentationPlan contract tests cover all five states and safety failures.
 - Planner runtime tests verify successful Gemini output and severity-drift rejection.
 - Existing Node CI and Phase 3 tests must remain green.
+
+
+> **Reopened by V1.6 (2026-10-04):** acceptance for this phase did not cover visual hierarchy or the audio requirement. Superseded in part by Decision 022; see `docs/REVIEW_V1_6_PRESENTATION_REDESIGN.md`.
