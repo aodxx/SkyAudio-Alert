@@ -1,8 +1,8 @@
-name: Daily flood and weather announcement (TEST target)
+name: Daily Flood-first announcement (TEST target)
 
 on:
   schedule:
-    # 06:00 Asia/Bangkok (UTC+7) = 23:00 UTC previous day.
+    # Flood-first report at 06:00 Asia/Bangkok (UTC+7) = 23:00 UTC previous day.
     - cron: '0 23 * * *'
   workflow_dispatch: {}
 
@@ -25,7 +25,7 @@ jobs:
           node-version: '20'
       - name: Install FFmpeg for Gemini TTS MP3 conversion
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Run daily flood/weather report (TEST target)
+      - name: Run daily Flood-first report (TEST target)
         env:
           RUN_MODE: test
           LINE_CHANNEL_ACCESS_TOKEN_TEST: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_TEST }}
