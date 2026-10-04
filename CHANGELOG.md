@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — V1.6 Presentation Redesign: P0 (2026-10-04)
+
+- Added `docs/REVIEW_V1_6_PRESENTATION_REDESIGN.md`: repository review, root cause, new architecture, Flex/Audio design, safety constraints, test plan and implementation plan.
+- Added Decision 022 (typed presentation plans, two channels, Audio > 10 minutes with measured duration gate, severity removed from Gemini schema).
+- Fixed a SyntaxError in `tests/safetyFirewall.test.js` (extra brace) that prevented the firewall tests from ever running; full suite now 80/80.
+- Updated PRD wording on audio length; marked V1.5 Phase 3/4 as reopened by V1.6.
+- No runtime behaviour changed. Production remains NO-GO.
+
 ## Unreleased — Flood-first Document Lock (2026-10-04)
 
 - Locked PRD, architecture, API, repository structure, checklist, context and phase status to the flood-first product.

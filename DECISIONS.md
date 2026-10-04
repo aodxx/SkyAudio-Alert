@@ -2,6 +2,8 @@
 
 Decision 019 is the current scope lock. Earlier decisions remain historical unless explicitly retained by the latest decisions.
 
+> **2026-10-04 update:** Decision 022 supersedes the audio-length and presentation-contract parts of Decisions 015 and 021. See `docs/REVIEW_V1_6_PRESENTATION_REDESIGN.md`.
+
 # SkyAudio-Alert — Architecture Decision Record
 
 ## Decision 001 — No AI Agent in production runtime
@@ -224,3 +226,24 @@ Gemini มีสิทธิ์เลือกใช้ข้อความ/ป
 **Reason:** Flex ที่สั้นลงต่อการ์ดช่วยให้มือถืออ่านง่ายและลดความสูงของ message ขณะที่ Audio ที่มีรายละเอียดมากขึ้นช่วยลดความเสี่ยงที่ผู้รับจะสรุปสถานการณ์ผิดจากประกาศสั้นเกินไป ทั้งสองช่องทางจึงมีหน้าที่ต่างกันแต่ต้องสอดคล้องกันด้าน facts/severity
 
 **Constraint:** Gemini ยังไม่มีสิทธิ์สร้างตัวเลข สถานี ถนน เวลา เหตุการณ์ หรือเปลี่ยน severity จาก facts; carousel ไม่สามารถซ่อน fact สำคัญที่ผู้ใช้จำเป็นต้องรู้ไว้เฉพาะการ์ดท้ายโดยไม่ทำให้การ์ดแรกเข้าใจผิด
+
+
+## Decision 022 — V1.6: typed presentation plans; Audio must exceed 10 minutes; Flex is a visual brief
+
+**Date:** 2026-10-04
+
+**Decision:** Supersedes the audio-length and presentation-contract parts of Decisions 015 and 021 (and the matching PRD lines).
+
+1. **Two separate presentation channels.** `Verified Facts → FactsSnapshot → Presentation Planner → { VisualPlan → Flex carousel, NarrationPlan → long-form TTS }`. Flex and Audio must not share generated text.
+2. **Typed VisualPlan.** Flex cards are built from typed slots (severity badge, trend, freshness, stations, metrics, actions, CTAs). Numbers and names on cards come from fact IDs, not from free text written by Gemini. Card text is limited by enforced text budgets.
+3. **Severity belongs to the deterministic adapter.** `severity`, `priority` and `visualVariant` are removed from the schema Gemini fills; Gemini cannot change them.
+4. **Audio is a village news-storyteller narrative of 10 segments**, generated per segment from allowed facts, an approved explainer library and connective narration. It must not read Flex text or the report.
+5. **Duration gate:** measured duration (ffprobe, after TTS) must be **> 600 s**. Exactly 600 s fails. If the gate fails after bounded expansion, the Audio message is **not sent**; Flex is sent alone and the run is recorded as `audio-withheld`. No false facts may be added to reach the length.
+6. **Validator changes:** audio duration is no longer clamped to 10–190 s; file-size limits are set for long speech (mono, lower bitrate); the LINE `duration` field carries the measured value.
+7. **Firewall v2:** allow-list covers numbers, station names, waterways, roads, areas and times (including Thai spoken forms), plus cross-channel consistency between Flex, Audio and facts.
+
+**Reason:** Review of the repository found the failure was architectural, not stylistic: string-only contracts, structured facts discarded before rendering, a generic text-card renderer, a single Gemini call producing both channels, an audio pipeline that physically cannot deliver more than 190 s or 8 MiB, and tests that rewarded text-only output. Details: `docs/REVIEW_V1_6_PRESENTATION_REDESIGN.md`.
+
+**Unchanged:** Flood-first scope (Decision 019), no market/news content, forecast never establishes actual flooding, stale is a freshness condition not a severity, production remains NO-GO.
+
+**Risk recorded:** On low-information days a 10+ minute audio is mostly explanation and recap. The explainer library is drafted by the implementer and is marked *pending community review* before production.

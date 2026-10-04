@@ -33,9 +33,9 @@ Production runtime ต้องทำงานอัตโนมัติผ่�
 Gemini เป็น narrative layer เท่านั้น:
 - รับ normalized flood/weather facts
 - สร้าง spokenText และ shortSummary แบบ adaptive
-- เลือกความยาวตามความสำคัญของวัน
-- ไม่กำหนดความยาวเสียงตายตัว
-- ไม่กำหนดลำดับหัวข้อตายตัว
+- Audio เป็น narrative แบบ "นักเล่าข่าวประจำหมู่บ้าน" 10 ช่วง และ **ต้องยาวกว่า 10 นาที (วัดจริงหลัง TTS; ≤ 600 วินาทีถือว่า FAIL และไม่ส่ง Audio)** — ดู Decision 022
+- ความยาวที่เพิ่มต้องมาจากคำอธิบาย/บริบท/สรุปที่ไม่สร้างข้อเท็จจริงใหม่ ห้ามแต่งตัวเลข สถานี ถนน เวลา หรือเหตุการณ์
+- Flex เป็น visual brief (icon/สี/ตัวเลข/label มาก่อนข้อความ) และไม่ใช้ข้อความชุดเดียวกับ Audio
 - ห้ามสร้าง facts ที่ไม่มีใน input
 
 ผลลัพธ์ต้องเป็น structured output และผ่าน deterministic validator ก่อนส่งเข้า TTS
