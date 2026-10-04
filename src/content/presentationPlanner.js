@@ -263,10 +263,14 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
       if (combined.length < 7000) throw Object.assign(new Error('Long-form narration fallback is too short: ' + combined.length + ' characters; minimum 7000'), { stage: 'content.narration', retryable: false });
       return { sections, spokenText: combined, totalCharacters: combined.length, provider: 'gemini-fallback' };
     }
-    // If both content models are quota-limited, do not loop the same 429 again.
-    // Use a deterministic fact-safe narration so TTS can still be validated and
-    // the pipeline can report/deliver a truthful announcement.
-    if (fallbackResponse.status === 429) return buildQuotaSafeLongFormNarration(context, plan);
+    // If both content models are unavailable for a retryable reason, do not
+    // loop the same request again. Use a deterministic fact-safe narration so
+    // TTS can still be validated and the pipeline can report a truthful
+    // announcement. This covers quota (429) and transient provider errors
+    // (5xx) from the fallback model.
+    if (fallbackResponse.status === 429 || fallbackResponse.status >= 500) {
+      return buildQuotaSafeLongFormNarration(context, plan);
+    }
   }
 
   if (!response.ok && response.status === 503) {
