@@ -21,6 +21,14 @@
 - GitHub Actions unit suite passed **40/40** after the change.
 - Real Gemini end-to-end content + TTS acceptance remains pending; production remains NO-GO.
 
+## Milestone 4B — LINE Test Delivery — 2026-10-04
+
+- Completed a real `DRY_RUN=false` Flood-first run against the LINE TEST destination.
+- Confirmed both the Flex Message and Audio Message were delivered to the TEST group.
+- Marked the LINE delivery gate as passed.
+- Kept human Flex/mobile review and real Audio playback verification open.
+- Production remains **NO-GO**.
+
 ## Historical changes
 
 Entries below this section are retained for audit/history only. They must not be interpreted as current production requirements.
