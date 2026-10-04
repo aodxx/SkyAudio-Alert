@@ -1,4 +1,4 @@
-name: Manual flood/weather test
+name: Manual Flood-first test
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
           node-version: '20'
       - name: Install FFmpeg for Gemini TTS MP3 conversion
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Run flood/weather test
+      - name: Run Flood-first test
         env:
           RUN_MODE: test
           DRY_RUN: ${{ inputs.dry_run }}
