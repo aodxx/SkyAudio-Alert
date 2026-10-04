@@ -1,52 +1,53 @@
 # SkyAudio-Alert — Architecture
 
-> **Scope review notice — 2026-10-03:** data flow ในเอกสารนี้ยังเป็น legacy weather + market/news และยังไม่ใช่ architecture ที่อนุมัติสำหรับ flood-first runtime ให้ยึด [`docs/SCOPE_REVIEW_REPORT.md`](docs/SCOPE_REVIEW_REPORT.md) และ [`docs/REFACTOR_PLAN_FLOOD_WEATHER.md`](docs/REFACTOR_PLAN_FLOOD_WEATHER.md) จนกว่าจะ rewrite flow เป็น flood → weather → Gemini content → Gemini TTS → Flex/LINE
+> 🔒 **DOCUMENT LOCK — FLOOD-FIRST — 2026-10-04**
+>
+> Production architecture is flood-first. Market/news are historical and are not runtime stages.
 
-## Data flow
+## Runtime flow
 
-```text
-GitHub Actions (cron 06:00 Asia/Bangkok, or manual)
-        │
-        ▼
-src/index.js
-        │
-        ▼
-core/pipeline.js
-        │
-        ├─▶ weather/openMeteo.js   → raw Open-Meteo JSON (free, no key)
-        ├─▶ weather/normalize.js   → stable WeatherData shape
-        ├─▶ weather/analyzer.js    → theme + adviceSignals (deterministic rules)
-        │
-        ├─▶ market/phatthalungPrices.js → palm/rubber prices
-        ├─▶ news/phatthalungNews.js → official local headlines
-        ├─▶ forecast/formatter.js  → hourly slots, advice sentences, Thai script
-        ├─▶ flex/builder.js        → LINE Flex JSON (visual message)
-        │
-        ├─▶ audio/tts.js           → Gemini TTS (village loudspeaker style)
-        ├─▶ audio/validate.js      → duration/size checks
-        ├─▶ audio/storage.js       → commit MP3 to this repo, serve via jsDelivr
-        │
-        └─▶ line/messagingApi.js   → push Flex + Audio to the LINE group
-```
+GitHub Actions → src/index.js → src/core/pipeline.js
 
-## Why this is free (PRD G5)
+1. src/flood/phatthalungCenter.js → FloodSituation → normalize + freshness + severity
+2. src/weather/openMeteo.js → WeatherData → normalize + deterministic analysis
+3. src/content/geminiReport.js → validated ReportDraft
+4. src/flex/builder.js → compact flood-first Flex
+5. src/audio/tts.js → Gemini TTS audio
+6. src/audio/validate.js + storage.js → validated public HTTPS audio URL
+7. src/line/messagingApi.js → LINE Flex → LINE Audio
 
-| Component | Cost |
+## Domain boundaries
+
+Flood is authoritative for water facts. The current Phatthalung source is a strict HTML adapter, not a guaranteed API.
+
+Weather provides supporting forecast facts. It must never promote forecast rainfall into a confirmed flood event.
+
+Gemini receives normalized safe facts only. It is not a source of truth and must not browse for facts.
+
+Flex renders the flood-first visual report and keeps water-status actions primary.
+
+Audio synthesizes, validates, stores and exposes the spoken report. Duration is adaptive; there is no fixed target.
+
+LINE sends Flex first and Audio second.
+
+## Safety invariants
+
+1. No unsupported factual claim reaches TTS.
+2. Unknown flood data is represented as unknown, not normal.
+3. Forecast does not equal observed flood.
+4. Market/news content cannot enter the production report.
+5. Production success is not recorded if a required stage fails.
+6. Test/dry-run must not send LINE.
+
+## External services
+
+| Service | Role |
 |---|---|
-| Weather data | Open-Meteo — free, no API key |
-| Scheduler/runner | GitHub Actions — free minutes on a public repo |
-| Audio hosting | The repo itself + jsDelivr CDN — free, HTTPS, no bucket |
-| Text-to-speech | Gemini TTS via configured API key; model/voice are configuration-driven |
-| Messaging | LINE Messaging API — free push messages within LINE's own limits |
+| Flood source | Primary water facts |
+| Open-Meteo | Supporting weather forecast |
+| Gemini | Narrative + TTS |
+| GitHub Actions | Scheduler/runner |
+| LINE Messaging API | Delivery |
+| jsDelivr/repository | Audio hosting if current storage adapter remains selected |
 
-No server runs 24/7. The only recurring job is the scheduled GitHub Actions run.
-
-## Failure policy (PRD 13.3)
-
-- Weather fetch fails → whole run fails, nothing is sent (never fabricate weather).
-- TTS/audio fails → required stage fails the run; no LINE delivery is attempted.
-- LINE push fails → retried once for transient (5xx/429) errors, then the run fails loudly in the Actions log.
-
-## Provider independence (PRD G7)
-
-Every external call sits behind one small adapter file (`openMeteo.js`, `phatthalungPrices.js`, `phatthalungNews.js`, `tts.js`, `messagingApi.js`). Swapping a provider means rewriting one file, not the pipeline.
+Provider adapters isolate external API details from domain logic.
