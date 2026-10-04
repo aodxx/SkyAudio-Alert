@@ -45,7 +45,7 @@ function buildConfig() {
       voiceName: optional('TTS_VOICE_NAME', ttsProfile === 'female-friendly' ? 'Sulafat' : 'Achird'),
       voiceNameMale: optional('TTS_VOICE_NAME_MALE', 'Achird'),
       voiceNameFemale: optional('TTS_VOICE_NAME_FEMALE', 'Sulafat'),
-      model: optional('GEMINI_TTS_MODEL', ''),
+      model: optional('GEMINI_TTS_MODEL', 'gemini-3.8-flash-tts'),
       style: optional('TTS_STYLE', ''),
       languageCode: optional('TTS_LANGUAGE_CODE', 'th-TH'),
       speakingRate: parseFloat(optional('TTS_SPEAKING_RATE', '0.92')),
