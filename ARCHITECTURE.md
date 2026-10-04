@@ -51,3 +51,10 @@ LINE sends Flex first and Audio second.
 | jsDelivr/repository | Audio hosting if current storage adapter remains selected |
 
 Provider adapters isolate external API details from domain logic.
+
+
+## Acceptance Status — 2026-10-04
+
+The live Gemini Content → Gemini TTS path has passed Milestone 4A. The architecture therefore treats Gemini live generation as an accepted runtime dependency for the next test stage, while preserving Gemini as a narrative layer only.
+
+Next validation boundary is LINE delivery: Flex rendering, public audio URL accessibility, Audio Message playback, and delivery ordering. Production remains gated until those checks pass.
