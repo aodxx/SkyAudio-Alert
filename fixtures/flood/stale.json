@@ -1,0 +1,11 @@
+{
+  "severity": "watch",
+  "summary": "ข้อมูลเดิมระบุว่าควรติดตามระดับน้ำ",
+  "trend": "stable",
+  "confidence": "medium",
+  "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+  "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung" },
+  "observedAt": "2026-10-01T00:00:00Z",
+  "retrievedAt": "2026-10-04T01:00:00Z",
+  "actions": ["ตรวจสอบข้อมูลล่าสุดก่อนตัดสินใจ"]
+}
