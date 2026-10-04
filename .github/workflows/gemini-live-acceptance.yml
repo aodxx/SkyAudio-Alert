@@ -28,6 +28,7 @@ jobs:
           DRY_RUN: true
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_CONTENT_MODEL: ${{ secrets.GEMINI_CONTENT_MODEL || 'gemini-3.8-flash' }}
+          GEMINI_THINKING_LEVEL: low
           GEMINI_TTS_MODEL: ${{ secrets.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts' }}
           CONTENT_PROVIDER: gemini
           TTS_PROVIDER: gemini
