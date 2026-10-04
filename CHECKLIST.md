@@ -99,3 +99,17 @@ B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 docum
 **Current result:** The latest real LINE TEST run successfully delivered both the Flex Message and Audio Message to the TEST group. Audio playback and human visual/content acceptance are still pending confirmation.
 
 **Important:** this workflow is TEST-only. It does not authorize production and does not use PROD LINE secrets.
+
+
+## V1.5 — Phase 1 Visual Design System — 2026-10-04
+- [x] Five severity themes defined
+- [x] Carousel/card hierarchy locked
+- [x] Card 1 self-contained rule locked
+- [x] Dynamic card-count rule locked
+- [x] Mobile readability rules locked
+- [x] Accessibility/altText rules locked
+- [x] CTA scope locked
+- [x] Stale/unknown treatment locked
+- [x] No production runtime changed
+
+**Phase 1: COMPLETE. Next: Phase 2 — Presentation Contract.**
