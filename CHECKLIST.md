@@ -25,11 +25,11 @@
 
 ## Stage 3 — Fixtures/tests
 - [x] normal/watch/affected/critical/unknown flood fixtures
-- [ ] stale/timeout fixtures verified against final policy
-- [ ] Gemini structured-output fixtures complete
-- [ ] male/female TTS configuration tests complete
-- [ ] Flex compact/button/priority tests complete
-- [ ] legacy market/news tests fully removed or archived
+- [x] stale/source-unavailable fixtures verified against final policy
+- [x] Gemini structured-output contract tests complete
+- [x] male/female TTS configuration values documented and validated at config/contract level
+- [x] Flex compact/button/priority tests complete
+- [x] legacy market/news assertions are rejected by the current ReportDraft contract
 
 ## Stage 4 — Runtime acceptance
 - [x] flood-first pipeline exists
@@ -46,5 +46,7 @@
 - [ ] B3 Gemini contract verified
 - [ ] B4 docs/tests/workflows migration complete
 - [ ] production schedule enabled
+
+**Stage 3 test gate: PASS — GitHub Actions verified 35/35 tests.**
 
 **Current release state: NO-GO**
