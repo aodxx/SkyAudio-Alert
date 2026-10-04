@@ -12,13 +12,19 @@
     "content.safety": "success",
     "flex.render": "success",
     "flex.lint": "success",
-    "content.narration": "failure"
+    "content.narration": "success",
+    "tts.synthesize": "success",
+    "audio.validate": "success",
+    "audio.store": "success",
+    "line.send": "success"
   },
-  "lastError": {
-    "stage": "content.narration",
-    "message": "Gemini long-form narration request failed: 429",
-    "errors": []
+  "lastError": null,
+  "audio": {
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@fc0388252c6ff28b3ab9b0fe601d2bf0c69aed70/public/audio/2026-10-05.mp3",
+    "durationMs": 836520,
+    "bytes": 6692205,
+    "mimeType": "audio/mpeg",
+    "sections": 10
   },
-  "audio": null,
-  "generatedAt": "2026-10-04T20:01:07.557Z"
+  "generatedAt": "2026-10-04T20:12:09.849Z"
 }
