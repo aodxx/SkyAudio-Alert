@@ -41,7 +41,7 @@ function buildConfig() {
     line: { channelAccessToken: dryRun ? optional(lineTokenName, '') : required(lineTokenName), groupId: dryRun ? optional(lineGroupName, '') : required(lineGroupName) },
     tts: {
       provider: optional('TTS_PROVIDER', 'gemini').toLowerCase(),
-      mockFile: optional('TTS_MOCK_FILE', 'public/audio/2026-10-03.mp3'),
+      mockFile: optional('TTS_MOCK_FILE', 'public/audio/mock-longform-section.mp3'),
       apiKey: optional('GEMINI_API_KEY', ''),
       profile: ttsProfile,
       voiceName: optional('TTS_VOICE_NAME', ttsProfile === 'female-friendly' ? 'Sulafat' : 'Achird'),

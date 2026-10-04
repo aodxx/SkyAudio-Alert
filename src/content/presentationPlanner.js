@@ -180,7 +180,7 @@ function buildQuotaSafeLongFormNarration(context, plan) {
     text: text + ' ' + storytellerExpansions[index % storytellerExpansions.length] + ' ' + storytellerExpansions[(index + 1) % storytellerExpansions.length],
     factsUsed: plan?.factsUsed || [],
   }));
-  const spokenText = sections.map((section) => section.text).join('\\n');
+  const spokenText = sections.map((section) => section.text).join('\n');
   return { sections, spokenText, totalCharacters: spokenText.length, provider: 'quota-safe-fallback' };
 }
 
@@ -258,7 +258,7 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
         text: String(section?.text || '').trim(),
         factsUsed: Array.isArray(section?.factsUsed) ? section.factsUsed.filter(Boolean).map(String) : [],
       })).filter((section) => section.text) : [];
-      const combined = sections.map((section) => section.text).join('\\n');
+      const combined = sections.map((section) => section.text).join('\n');
       if (sections.length < 10) throw Object.assign(new Error('Long-form narration fallback must contain 10 sections; received ' + sections.length), { stage: 'content.narration', retryable: false });
       if (combined.length < 7000) throw Object.assign(new Error('Long-form narration fallback is too short: ' + combined.length + ' characters; minimum 7000'), { stage: 'content.narration', retryable: false });
       return { sections, spokenText: combined, totalCharacters: combined.length, provider: 'gemini-fallback' };
@@ -293,4 +293,4 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
   return { sections, spokenText: combined, totalCharacters: combined.length, provider: 'gemini' };
 }
 
-module.exports = { generatePresentationPlan, generateLongFormNarration, plannerSchema, narrationSchema };
+module.exports = { generatePresentationPlan, generateLongFormNarration, buildQuotaSafeLongFormNarration, plannerSchema, narrationSchema };

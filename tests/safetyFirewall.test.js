@@ -51,3 +51,23 @@ for (const severity of ['normal', 'watch', 'affected', 'critical', 'unknown']) {
     assert.equal(validateGeneratedFacts(presentation, input, { forecastOnly: severity === 'unknown' }).length, 0);
   });
 }
+
+test('allows negated certainty phrases used to explain what not to assume', () => {
+  for (const text of [
+    'ข้อมูลนี้ไม่ได้แปลว่าปลอดภัยแน่นอน ควรติดตามต่อ',
+    'อย่าเพิ่งคิดว่าปลอดภัยแน่นอน',
+    'พยากรณ์ฝนไม่ได้หมายความว่าน้ำท่วมแน่นอน',
+  ]) {
+    assert.deepEqual(validateGeneratedFacts(plan('watch', text), facts()), [], text);
+  }
+});
+
+test('still rejects asserted certainty even when a negation appears elsewhere in the text', () => {
+  for (const text of [
+    'ตอนนี้ปลอดภัยแน่นอน',
+    'สถานการณ์ไม่ปกติแต่ปลอดภัยแน่นอน',
+    'ไม่ได้แปลว่าปลอดภัย แต่ตอนนี้น้ำท่วมแน่นอน',
+  ]) {
+    assert.ok(validateGeneratedFacts(plan('watch', text), facts()).some((e) => e.includes('certainty')), text);
+  }
+});

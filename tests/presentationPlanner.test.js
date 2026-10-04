@@ -146,3 +146,10 @@ test('long-form narration accepts 10 sufficiently detailed sections', async () =
   assert.equal(result.sections.length, 10);
   assert.ok(result.totalCharacters >= 7000);
 });
+
+test('quota-safe long-form narration joins sections with a real newline, not a literal backslash-n', () => {
+  const { buildQuotaSafeLongFormNarration } = require('../src/content/presentationPlanner');
+  const narration = buildQuotaSafeLongFormNarration({}, { factsUsed: ['flood.severity'] });
+  assert.ok(!narration.spokenText.includes('\\n'));
+  assert.equal(narration.spokenText.split('\n').length, narration.sections.length);
+});
