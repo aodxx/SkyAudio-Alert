@@ -1,3 +1,7 @@
+# 🔒 FLOOD-FIRST DOCUMENT LOCK — 2026-10-04
+
+สถานะปัจจุบันของระบบคือ **Flood-first + supporting weather + Gemini adaptive content + Gemini TTS** เท่านั้น ราคาปาล์ม ราคายาง ข่าวทั่วไป และ fixed 2–3 minute audio เป็น historical scope และห้ามนำกลับเข้า production runtime.
+
 # SkyAudio-Alert — น้องจุ่นจ้าน
 
 ระบบรายงานสถานการณ์น้ำท่วมเป็นหลัก พร้อมพยากรณ์อากาศประจำวัน สำหรับกลุ่มไลน์บ้านลำพาย ต.โคกชะงาย อ.เมือง จ.พัทลุง โดยมีน้องจุ่นจ้านเป็นผู้ประกาศ
@@ -18,10 +22,10 @@
 
 ต้นทุนเป้าหมาย: **0 บาท/เดือน**
 
-## GitHub Actions
+## GitHub Actions — Flood-first
 
 ### ทดสอบแบบ Dry Run
-Actions → **Manual flood/weather test** → Run workflow → `dry_run=true`
+Actions → **Manual Flood-first test** → Run workflow → `dry_run=true`
 
 Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
 หาก TTS, การตรวจ MP3 หรือขั้นตอนที่จำเป็นล้มเหลว job จะล้มเหลว ไม่รายงานว่าสำเร็จแบบ Flex-only
@@ -32,7 +36,7 @@ Dry run จะดึงอากาศจริง สร้าง Flex แล�
 - `LINE_GROUP_ID_TEST`
 
 ### Production
-Workflow **Daily flood and weather announcement** รันที่ 23:00 UTC ซึ่งตรงกับ 06:00 Asia/Bangkok
+Workflow **Daily Flood-first announcement** รันที่ 23:00 UTC ซึ่งตรงกับ 06:00 Asia/Bangkok
 Production ต้องมี:
 - `LINE_CHANNEL_ACCESS_TOKEN_PROD`
 - `LINE_GROUP_ID_PROD`
@@ -45,7 +49,7 @@ Production ต้องมี:
 
 ใช้ **Gemini** สร้างเนื้อหาตามข้อมูลสำคัญของแต่ละวันแบบไม่ใช้โครงหรือตัวกำหนดความยาวตายตัว แล้วใช้ **Gemini TTS** สร้างเสียงตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เสียงต้องอบอุ่น เป็นกันเอง ชัดเจน และเหมาะกับผู้สูงอายุ
 
-Edge TTS และ Google TTS ยังรองรับเป็นตัวเลือกสำหรับการทดสอบ/ย้อนกลับ โดยกำหนด `TTS_PROVIDER` ตาม provider ที่ต้องการ
+Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 
 หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ โดยไม่มี target duration แบบตายตัว แต่ต้องผ่านข้อจำกัดทางเทคนิคของ LINE สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
 
