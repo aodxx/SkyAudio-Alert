@@ -3,6 +3,15 @@
 // It does not call Gemini and does not decide whether facts are true.
 
 const REPORT_PRIORITIES = Object.freeze(['normal', 'watch', 'affected', 'critical', 'unknown']);
+const UNSUPPORTED_CERTAINTY_PATTERNS = [
+  /ปลอดภัยแน่นอน/i,
+  /น้ำท่วมแน่นอน/i,
+  /ยืนยันว่าเกิดน้ำท่วม/i,
+];
+const FORECAST_ONLY_FLOOD_PATTERNS = [
+  /ฝน.*(จึง|เลย|ทำให้).*น้ำท่วม/i,
+  /น้ำท่วม.*แน่นอน/i,
+];
 const FORBIDDEN_TOPIC_PATTERNS = [
   /ราคาปาล์ม/i,
   /ราคายาง/i,
@@ -66,6 +75,12 @@ function validateReportDraft(draft, options = {}) {
   if (options.requireFreshnessWarning && !/ยังยืนยัน|ข้อมูลเก่า|ล้าสมัย|ไม่สามารถยืนยัน/i.test(combined)) {
     errors.push('stale/unknown report must disclose freshness limitation');
   }
+  if (UNSUPPORTED_CERTAINTY_PATTERNS.some((pattern) => pattern.test(combined))) {
+    errors.push('report contains unsupported certainty claim');
+  }
+  if (options.forecastOnly && FORECAST_ONLY_FLOOD_PATTERNS.some((pattern) => pattern.test(combined))) {
+    errors.push('forecast-only facts cannot establish an actual flood');
+  }
   return errors;
 }
 
@@ -82,6 +97,8 @@ function buildGeminiReportInput({ floodSituation, weatherAnalysis, location, dat
 
 module.exports = {
   REPORT_PRIORITIES,
+  UNSUPPORTED_CERTAINTY_PATTERNS,
+  FORECAST_ONLY_FLOOD_PATTERNS,
   parseReportDraft,
   validateReportDraft,
   buildGeminiReportInput,
