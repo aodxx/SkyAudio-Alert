@@ -1,3 +1,7 @@
+# 🔒 FLOOD-FIRST DECISION LOCK — 2026-10-04
+
+Decision 019 is the current scope lock. Earlier decisions remain historical unless explicitly retained by the latest decisions.
+
 # SkyAudio-Alert — Architecture Decision Record
 
 ## Decision 001 — No AI Agent in production runtime
