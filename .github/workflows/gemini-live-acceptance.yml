@@ -1,0 +1,44 @@
+name: Gemini live acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      voice_profile:
+        description: 'TTS profile to verify'
+        required: true
+        default: 'male-friendly'
+        type: choice
+        options:
+          - male-friendly
+          - female-friendly
+
+jobs:
+  live-gemini:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Run Gemini content + TTS smoke test
+        env:
+          RUN_MODE: test
+          DRY_RUN: true
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_CONTENT_MODEL: ${{ secrets.GEMINI_CONTENT_MODEL || 'gemini-3.8-flash' }}
+          GEMINI_TTS_MODEL: ${{ secrets.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts' }}
+          CONTENT_PROVIDER: gemini
+          TTS_PROVIDER: gemini
+          TTS_PROFILE: ${{ inputs.voice_profile }}
+          TTS_VOICE_NAME_MALE: Achird
+          TTS_VOICE_NAME_FEMALE: Sulafat
+          TTS_LANGUAGE_CODE: th-TH
+          TTS_SPEAKING_RATE: '0.92'
+          LOCATION_NAME: บ้านลำพาย
+          PROVINCE_NAME: พัทลุง
+          DISTRICT_NAME: ต.โคกชะงาย
+          FLOOD_DEGRADED_MODE: unknown-weather
+          FLOOD_FRESHNESS_LIMIT_MINUTES: '180'
+        run: node tests/live-gemini-smoke.js
