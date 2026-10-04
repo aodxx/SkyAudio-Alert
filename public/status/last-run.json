@@ -1,7 +1,7 @@
 {
   "runId": "2026-10-05-lampai-test",
   "mode": "test",
-  "dryRun": true,
+  "dryRun": false,
   "stages": {
     "flood.fetch": "success",
     "weather.fetch": "success",
@@ -12,19 +12,13 @@
     "content.safety": "success",
     "flex.render": "success",
     "flex.lint": "success",
-    "content.narration": "success",
-    "tts.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "skipped"
+    "content.narration": "failure"
   },
-  "lastError": null,
-  "audio": {
-    "url": null,
-    "durationMs": 770088,
-    "bytes": 6160749,
-    "mimeType": "audio/mpeg",
-    "sections": 10
+  "lastError": {
+    "stage": "content.narration",
+    "message": "Gemini long-form narration request failed: 429",
+    "errors": []
   },
-  "generatedAt": "2026-10-04T19:54:48.094Z"
+  "audio": null,
+  "generatedAt": "2026-10-04T20:01:07.557Z"
 }
