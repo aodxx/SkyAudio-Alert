@@ -72,3 +72,20 @@
 - **Production: NO-GO 🔴**
 
 B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 documentation/test migration is being updated by this documentation milestone.
+
+
+## Milestone 4B — LINE Test Acceptance — IN PROGRESS
+
+- [x] Dedicated LINE TEST workflow created
+- [x] TEST destination is selected through *_TEST secrets
+- [x] Workflow runs the complete flood-first pipeline with DRY_RUN=false
+- [x] Gemini Content + TTS configuration included
+- [ ] LINE TEST delivery verified
+- [ ] Flex rendering verified on real mobile LINE
+- [ ] Audio Message playback verified
+- [ ] Flex arrives before Audio
+- [ ] No market/rubber/news content observed
+- [ ] Unknown/degraded flood wording verified if exercised
+- [ ] Human acceptance recorded
+
+**Important:** this workflow is TEST-only. It does not authorize production and does not use PROD LINE secrets.
