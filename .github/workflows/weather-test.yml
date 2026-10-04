@@ -1,3 +1,4 @@
+# 🔒 FLOOD-FIRST WORKFLOW — test/dry-run only until acceptance
 name: Manual Flood-first test
 
 on:
