@@ -1081,10 +1081,13 @@ V1.5 ไม่ได้วัดความสำเร็จจาก “ห�
 
 ## Current status
 
+**Phase 0 update — 2026-10-04:** Baseline/runtime inventory, invariants, fixture set, acceptance matrix, and V1.5 change boundary are locked in `docs/V1_5_PHASE0_BASELINE.md`. Phase 0 is complete. Production remains NO-GO.
+
+
 - [x] V1.0 Flood-first scope locked
 - [x] Gemini live acceptance passed
 - [x] LINE TEST delivery passed
-- [ ] V1.5 Phase 0
+- [x] V1.5 Phase 0 — Baseline & Design Lock complete
 - [ ] V1.5 Phase 1
 - [ ] V1.5 Phase 2
 - [ ] V1.5 Phase 3

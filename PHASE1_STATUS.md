@@ -56,3 +56,17 @@
 - Audio Message was delivered to the TEST group.
 - **Delivery gate: PASS ✅**
 - Audio playback, mobile rendering/content review, and human acceptance remain pending.
+
+
+## V1.5 — Phase 0 Baseline & Design Lock — 2026-10-04
+
+- [x] Runtime inventory completed
+- [x] Invariants locked
+- [x] Five severity + stale baseline fixtures identified
+- [x] Acceptance matrix committed
+- [x] V1.5 change boundary committed
+- [x] Phase 0 complete
+
+**Reference:** `docs/V1_5_PHASE0_BASELINE.md`
+
+**Production: NO-GO.** Phase 1 requires explicit review of the locked baseline before implementation begins.
