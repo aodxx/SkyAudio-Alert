@@ -35,9 +35,9 @@
 - [x] flood-first pipeline exists
 - [x] dry-run can stop before LINE send
 - [x] duplicate guard remains
-- [ ] real Gemini end-to-end test
+- [x] real Gemini end-to-end test
 - [ ] real TTS playback test
-- [ ] TEST LINE acceptance
+- [x] TEST LINE delivery verified
 - [ ] human review of Flex + Audio
 
 ## Stage 5 — Production gate
@@ -74,18 +74,20 @@
 B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 documentation/test migration is being updated by this documentation milestone.
 
 
-## Milestone 4B — LINE Test Acceptance — IN PROGRESS
+## Milestone 4B — LINE Test Acceptance — DELIVERY VERIFIED / HUMAN REVIEW PENDING
 
 - [x] Dedicated LINE TEST workflow created
 - [x] TEST destination is selected through *_TEST secrets
 - [x] Workflow runs the complete flood-first pipeline with DRY_RUN=false
 - [x] Gemini Content + TTS configuration included
-- [ ] LINE TEST delivery verified
+- [x] LINE TEST delivery verified — Flex + Audio received in TEST group
 - [ ] Flex rendering verified on real mobile LINE
 - [ ] Audio Message playback verified
 - [ ] Flex arrives before Audio
 - [ ] No market/rubber/news content observed
 - [ ] Unknown/degraded flood wording verified if exercised
 - [ ] Human acceptance recorded
+
+**Current result:** The latest real LINE TEST run successfully delivered both the Flex Message and Audio Message to the TEST group. Audio playback and human visual/content acceptance are still pending confirmation.
 
 **Important:** this workflow is TEST-only. It does not authorize production and does not use PROD LINE secrets.
