@@ -2,19 +2,11 @@
   "runId": "2026-10-04-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {
-    "flood.fetch": "success",
-    "weather.fetch": "success",
-    "weather.normalize": "success",
-    "weather.analyze": "success",
-    "content.generate": "success",
-    "content.presentation": "success",
-    "content.safety": "failure"
-  },
+  "stages": {},
   "lastError": {
     "stage": "content.safety",
-    "message": "generated numeric fact not found in verified facts: 4, 2569, 1.20"
+    "message": "Presentation safety firewall rejected output: generated numeric fact not found in verified facts: 4, 2569, 1.20"
   },
   "audio": null,
-  "generatedAt": "2026-10-04T10:36:18.342Z"
+  "generatedAt": "2026-10-04T10:36:19.494Z"
 }
