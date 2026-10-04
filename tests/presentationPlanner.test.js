@@ -36,7 +36,7 @@ function context(report = {}) {
 }
 
 function config() {
-  return { mode: 'test', dryRun: true, content: { apiKey: 'test-only', model: 'gemini-test', thinkingLevel: 'low' } };
+  return { mode: 'test', dryRun: true, content: { apiKey: 'test-only', model: 'gemini-test', fallbackModel: 'gemini-fallback-test', thinkingLevel: 'low' } };
 }
 
 test('Gemini schema does not ask for severity, priority, or visualVariant', () => {
@@ -67,6 +67,21 @@ test('planner preserves verified facts trace when Gemini omits factsUsed', async
   assert.deepEqual(result.factsUsed, ['flood.severity', 'weather.current']);
 });
 
+test('planner uses fallback model when primary returns 429', async () => {
+  const calls = [];
+  const result = await generatePresentationPlan(context(), config(), {
+    fetchImpl: async (url) => {
+      calls.push(url);
+      return calls.length === 1 ? response({ error: 'quota' }, 429) : response(modelPlan());
+    },
+    maxAttempts: 1,
+    fallbackMaxAttempts: 1,
+  });
+  assert.equal(result.provider, 'gemini-fallback');
+  assert.equal(calls.length, 2);
+  assert.match(calls[1], /gemini-fallback-test/);
+});
+
 test('planner rejects model output with an invalid presentation contract', async () => {
   await assert.rejects(() => generatePresentationPlan(context(), config(), {
     fetchImpl: async () => response({ spokenText: '', cards: [], audioStyle: {} }),
@@ -85,6 +100,24 @@ test('long-form narration rejects fewer than 10 sections or insufficient length'
   await assert.rejects(() => generateLongFormNarration(context(), modelPlan(), config(), {
     fetchImpl: async () => response(shortSections),
   }), /Long-form narration is too short|must contain 10 sections/);
+});
+
+test('long-form narration uses fallback model when primary returns 429', async () => {
+  const text = 'วันนี้เราจะค่อย ๆ เล่าและอธิบายสถานการณ์จากข้อมูลที่ตรวจสอบแล้ว เพื่อให้ฟังเข้าใจง่ายและไม่รีบสรุปเกินข้อเท็จจริง '.repeat(80);
+  const sections = Array.from({ length: 10 }, (_, i) => ({ id: 's' + i, title: 'ช่วง ' + i, text, factsUsed: ['flood.severity'] }));
+  let calls = 0;
+  const result = await generateLongFormNarration(context(), modelPlan(), config(), {
+    fetchImpl: async () => {
+      calls += 1;
+      return calls === 1 ? response({ error: 'quota' }, 429) : response({ sections });
+    },
+    maxAttempts: 1,
+    fallbackMaxAttempts: 1,
+  });
+  assert.equal(result.provider, 'gemini-fallback');
+  assert.equal(calls, 2);
+  assert.equal(result.sections.length, 10);
+  assert.ok(result.totalCharacters >= 7000);
 });
 
 test('long-form narration accepts 10 sufficiently detailed sections', async () => {
