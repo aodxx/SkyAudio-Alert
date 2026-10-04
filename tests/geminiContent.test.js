@@ -22,6 +22,7 @@ const config = {
   content: {
     apiKey: 'test-key',
     model: 'gemini-3.8-flash',
+    fallbackModel: '',
     thinkingLevel: 'low',
   },
   mode: 'test',
@@ -98,4 +99,53 @@ test('Gemini non-503 failure does not enter the structured recovery path', async
     (error) => error.message === 'Gemini content request failed after retry: 400',
   );
   assert.equal(calls, 1);
+});
+
+test('Gemini 429 quota exhaustion uses the configured fallback model', async () => {
+  const urls = [];
+  let call = 0;
+  const quotaConfig = {
+    ...config,
+    content: {
+      ...config.content,
+      fallbackModel: 'gemini-3.7-flash',
+    },
+  };
+  const fetchImpl = async (url, options) => {
+    urls.push(url);
+    call += 1;
+    if (call === 1) {
+      return response(429, { error: { code: 429, status: 'RESOURCE_EXHAUSTED' } });
+    }
+    const body = JSON.parse(options.body);
+    assert.equal(body.generationConfig.responseMimeType, 'application/json');
+    return response(200, {
+      candidates: [{
+        content: {
+          parts: [{
+            text: JSON.stringify({
+              spokenText: 'สวัสดีครับ สถานการณ์น้ำอยู่ในระดับเฝ้าระวัง',
+              shortSummary: 'น้ำเฝ้าระวัง · พัทลุง',
+              priority: 'watch',
+              actions: ['ติดตามระดับน้ำล่าสุด'],
+              factsUsed: ['flood.severity', 'flood.summary'],
+              warnings: [],
+            }),
+          }],
+        },
+      }],
+    });
+  };
+
+  const report = await generateGeminiReport(context, quotaConfig, {
+    fetchImpl,
+    primaryMaxAttempts: 1,
+    fallbackMaxAttempts: 1,
+  });
+
+  assert.equal(report.provider, 'gemini');
+  assert.equal(report.priority, 'watch');
+  assert.equal(urls.length, 2);
+  assert.match(urls[0], /gemini-3\.8-flash:generateContent$/);
+  assert.match(urls[1], /gemini-3\.7-flash:generateContent$/);
 });

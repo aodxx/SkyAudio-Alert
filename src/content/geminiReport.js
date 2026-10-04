@@ -154,6 +154,54 @@ async function generateGeminiReport(context, config, opts = {}) {
   // Retry the same request first; only then reduce request complexity. This keeps
   // the normal path schema-validated while giving the narrative layer a lighter
   // recovery path without changing the verified facts.
+  // A 429 can mean the selected model has exhausted its free-tier request quota.
+  // Keep verified facts unchanged and try the explicitly configured fallback model
+  // before failing the whole Flood-first pipeline.
+  if (!res.ok && res.status === 429 && config.content.fallbackModel && config.content.fallbackModel !== config.content.model) {
+    const fallbackUrl = GEMINI_BASE_URL + '/' + encodeURIComponent(config.content.fallbackModel) + ':generateContent';
+    const fallbackResult = await fetchGeminiContent(doFetch, fallbackUrl, {
+      method: 'POST',
+      headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(structuredBody),
+    }, opts.fallbackMaxAttempts || 1);
+    const fallbackRes = fallbackResult?.response || fallbackResult;
+    if (fallbackRes.ok) {
+      const fallbackText = extractText(await fallbackRes.json());
+      const fallbackParsed = parseReportDraft(fallbackText);
+      if (!fallbackParsed.ok) {
+        throw reportError('Gemini fallback model response failed ReportDraft validation', false, fallbackParsed.errors.join('; '));
+      }
+      return { ...fallbackParsed.draft, provider: 'gemini' };
+    }
+    if (fallbackRes.status === 503) {
+      const fallbackRecoveryBody = {
+        contents: [{
+          role: 'user',
+          parts: [{
+            text: [
+              prompt,
+              'หากไม่สามารถบังคับ JSON schema ได้ ให้ตอบเป็น JSON object ธรรมดาเท่านั้น ห้ามใส่ markdown code fence และต้องมีคีย์ spokenText, shortSummary, priority, actions, factsUsed, warnings ครบถ้วน',
+            ].join('\n'),
+          }],
+        }],
+      };
+      const fallbackRecovery = await fetchGeminiContent(doFetch, fallbackUrl, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify(fallbackRecoveryBody),
+      }, opts.fallbackRecoveryMaxAttempts || 1);
+      const fallbackRecoveryRes = fallbackRecovery?.response || fallbackRecovery;
+      if (fallbackRecoveryRes.ok) {
+        const recoveryText = parseGeminiJsonText(extractText(await fallbackRecoveryRes.json()));
+        const recovered = parseReportDraft(recoveryText);
+        if (!recovered.ok) {
+          throw reportError('Gemini fallback recovery response failed ReportDraft validation', false, recovered.errors.join('; '));
+        }
+        return { ...recovered.draft, provider: 'gemini' };
+      }
+    }
+  }
+
   if (!res.ok && res.status === 503) {
     const recoveryBody = {
       contents: [{

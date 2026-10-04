@@ -35,6 +35,7 @@ function buildConfig() {
       provider: optional('CONTENT_PROVIDER', 'gemini').toLowerCase(),
       apiKey: optional('GEMINI_API_KEY', ''),
       model: optional('GEMINI_CONTENT_MODEL', 'gemini-3.8-flash'),
+      fallbackModel: optional('GEMINI_CONTENT_FALLBACK_MODEL', ''),
       thinkingLevel: optional('GEMINI_THINKING_LEVEL', 'low').toLowerCase(),
     },
     line: { channelAccessToken: dryRun ? optional(lineTokenName, '') : required(lineTokenName), groupId: dryRun ? optional(lineGroupName, '') : required(lineGroupName) },
