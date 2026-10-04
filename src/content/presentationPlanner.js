@@ -77,6 +77,36 @@ async function generatePresentationPlan(context, config, opts = {}) {
     body: JSON.stringify(body),
   }, opts.maxAttempts || 2);
   let response = result?.response || result;
+
+  // A 429 on the primary presentation model can be a model-specific
+  // free-tier/request quota. Keep the verified facts unchanged and retry
+  // the same presentation request on the explicitly configured fallback model.
+  if (!response.ok && response.status === 429 && config.content.fallbackModel && config.content.fallbackModel !== config.content.model) {
+    const fallbackUrl = GEMINI_BASE_URL + '/' + encodeURIComponent(config.content.fallbackModel) + ':generateContent';
+    const fallbackResult = await fetchGeminiContent(fetchImpl, fallbackUrl, {
+      method: 'POST',
+      headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }, opts.fallbackMaxAttempts || 1);
+    const fallbackResponse = fallbackResult?.response || fallbackResult;
+    if (fallbackResponse.ok) {
+      const fallbackPlan = parsePresentationPlan(
+        parseGeminiJsonText(extractText(await fallbackResponse.json())),
+        { expectedSeverity },
+      );
+      if (!fallbackPlan.ok) {
+        throw Object.assign(new Error('Gemini presentation fallback model validation failed: ' + fallbackPlan.errors.join('; ')), {
+          stage: 'content.presentation',
+        });
+      }
+      return {
+        ...fallbackPlan.plan,
+        factsUsed: fallbackPlan.plan.factsUsed.length ? fallbackPlan.plan.factsUsed : (context.report?.factsUsed || []),
+        provider: 'gemini-fallback',
+      };
+    }
+  }
+
   if (!response.ok && response.status === 503) {
     const recoveryBody = { contents: [{ role: 'user', parts: [{ text: prompt + '\nหาก schema ไม่ได้ ให้ตอบ JSON ธรรมดาเท่านั้น ห้ามใส่ markdown' }] }] };
     const recovery = await fetchGeminiContent(fetchImpl, url, {
@@ -164,6 +194,33 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
     body: JSON.stringify(body),
   }, opts.maxAttempts || 2);
   let response = result?.response || result;
+
+  // Long-form narration uses the same quota fallback as presentation planning.
+  // This preserves the >10-minute gate while avoiding failure when only the
+  // primary content model is quota-limited.
+  if (!response.ok && response.status === 429 && config.content.fallbackModel && config.content.fallbackModel !== config.content.model) {
+    const fallbackUrl = GEMINI_BASE_URL + '/' + encodeURIComponent(config.content.fallbackModel) + ':generateContent';
+    const fallbackResult = await fetchGeminiContent(fetchImpl, fallbackUrl, {
+      method: 'POST',
+      headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }, opts.fallbackMaxAttempts || 1);
+    const fallbackResponse = fallbackResult?.response || fallbackResult;
+    if (fallbackResponse.ok) {
+      const json = JSON.parse(parseGeminiJsonText(extractText(await fallbackResponse.json())));
+      const sections = Array.isArray(json?.sections) ? json.sections.map((section, index) => ({
+        id: String(section?.id || 'section-' + (index + 1)),
+        title: String(section?.title || ''),
+        text: String(section?.text || '').trim(),
+        factsUsed: Array.isArray(section?.factsUsed) ? section.factsUsed.filter(Boolean).map(String) : [],
+      })).filter((section) => section.text) : [];
+      const combined = sections.map((section) => section.text).join('\n');
+      if (sections.length < 10) throw Object.assign(new Error('Long-form narration fallback must contain 10 sections; received ' + sections.length), { stage: 'content.narration' });
+      if (combined.length < 7000) throw Object.assign(new Error('Long-form narration fallback is too short: ' + combined.length + ' characters; minimum 7000'), { stage: 'content.narration' });
+      return { sections, spokenText: combined, totalCharacters: combined.length, provider: 'gemini-fallback' };
+    }
+  }
+
   if (!response.ok && response.status === 503) {
     const recovery = await fetchGeminiContent(fetchImpl, url, {
       method: 'POST',
