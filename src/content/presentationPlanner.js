@@ -111,6 +111,24 @@ function narrationSchema() {
 }
 
 async function generateLongFormNarration(context, plan, config, opts = {}) {
+  if (!config?.content?.apiKey) {
+    if (config?.mode === 'production' && !config.dryRun) throw Object.assign(new Error('GEMINI_API_KEY is not configured for long-form narration'), { stage: 'content.narration' });
+    const base = String(plan?.spokenText || context?.report?.spokenText || 'รายงานสถานการณ์น้ำบ้านลำพายวันนี้');
+    const explainers = [
+      'ช่วงนี้เราจะค่อย ๆ ทำความเข้าใจข้อมูลที่มีอยู่ โดยย้ำว่าข้อมูลสถานการณ์น้ำต้องอ่านจากแหล่งที่ตรวจสอบได้ และข้อมูลพยากรณ์อากาศเป็นข้อมูลประกอบ ไม่ใช่หลักฐานยืนยันน้ำท่วม',
+      'การติดตามสถานการณ์ที่ดีไม่ใช่การรีบสรุปจากข้อมูลเพียงอย่างเดียว แต่ควรดูเวลาอัปเดต แนวโน้ม และข้อมูลจากจุดตรวจร่วมกัน แล้วค่อยตัดสินใจตามสิ่งที่แหล่งข้อมูลยืนยัน',
+      'สำหรับพี่น้องในพื้นที่ หากข้อมูลบางส่วนยังไม่พร้อม สิ่งสำคัญคือรับรู้ข้อจำกัดนั้นตรง ๆ และใช้ช่องทางตรวจสอบที่ระบบเตรียมไว้ แทนการคาดเดาเหตุการณ์ล่วงหน้า',
+      'เราจะทบทวนสาระสำคัญอีกครั้งอย่างช้า ๆ เพื่อให้ผู้ฟังที่กำลังเตรียมตัวทำงานในตอนเช้าได้ยินประเด็นสำคัญครบ โดยไม่ต้องตีความตัวเลขหรือข้อความจากหน้าจอเอง',
+    ];
+    const sections = Array.from({ length: 10 }, (_, index) => ({
+      id: 'section-' + (index + 1),
+      title: ['เปิดรายการ', 'สถานการณ์น้ำ', 'ข้อมูลสำคัญ', 'แนวโน้ม', 'ข้อจำกัดข้อมูล', 'อากาศวันนี้', 'ทำความเข้าใจพยากรณ์', 'สิ่งที่ควรทำ', 'สรุป', 'ปิดรายการ'][index],
+      text: (index === 0 ? 'สวัสดีครับพี่น้องบ้านลำพาย วันนี้น้องจุ่นจ้านจะมาเล่าให้ฟังแบบค่อย ๆ เป็นค่อย ๆ ไปครับ ' : '') + base + ' ' + explainers[index % explainers.length] + ' ' + explainers[(index + 1) % explainers.length] + ' ' + base,
+      factsUsed: plan?.factsUsed || [],
+    }));
+    return { sections, spokenText: sections.map((section) => section.text).join('\n'), totalCharacters: sections.reduce((sum, section) => sum + section.text.length, 0), provider: 'fallback' };
+  }
+
   const input = buildGeminiReportInput({
     floodSituation: context.floodSituation,
     weatherAnalysis: context.weatherAnalysis,
