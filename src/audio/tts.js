@@ -101,6 +101,38 @@ async function synthesizeWithGemini(script, config, opts = {}) {
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
+async function synthesizeLongFormSpeech(scripts, config, opts = {}) {
+  const sections = Array.isArray(scripts) ? scripts.map((value) => String(value || '').trim()).filter(Boolean) : [];
+  if (!sections.length) throw makeError('Long-form TTS requires at least one narration section');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-longform-'));
+  const files = [];
+  try {
+    for (let index = 0; index < sections.length; index += 1) {
+      const audio = await synthesizeSpeech(sections[index], config, opts);
+      const inputPath = path.join(dir, 'part-' + String(index).padStart(2, '0') + '.mp3');
+      fs.writeFileSync(inputPath, audio);
+      files.push(inputPath);
+    }
+    const concatPath = path.join(dir, 'concat.txt');
+    fs.writeFileSync(concatPath, files.map((file) => "file '" + file.replace(/'/g, "'\\''") + "'").join('\n'));
+    const output = path.join(dir, 'longform.mp3');
+    execFileSync('ffmpeg', [
+      '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concatPath,
+      '-af', 'aresample=24000,loudnorm=I=-16:TP=-1.5:LRA=11',
+      '-codec:a', 'libmp3lame', '-b:a', '64k', '-ar', '24000', '-ac', '1', output,
+    ], { stdio: 'pipe', timeout: 300000 });
+    if (!fs.existsSync(output)) throw makeError('FFmpeg did not create long-form MP3');
+    const result = fs.readFileSync(output);
+    if (!result.length) throw makeError('Long-form MP3 is empty');
+    return result;
+  } catch (err) {
+    if (err.stage) throw err;
+    throw makeError('Long-form TTS assembly failed', true, String(err.stderr || err.message || '').slice(0, 500));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 function synthesizeWithMock(config) {
   const file = config.mockFile || 'public/audio/2026-10-03.mp3';
   if (!fs.existsSync(file)) throw makeError('TTS mock file does not exist: ' + file);
@@ -115,4 +147,4 @@ async function synthesizeSpeech(script, config, opts = {}) {
   return synthesizeWithEdge(script, config);
 }
 
-module.exports = { synthesizeSpeech, edgeRate };
+module.exports = { synthesizeSpeech, synthesizeLongFormSpeech, edgeRate };
