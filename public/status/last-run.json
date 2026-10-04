@@ -8,18 +8,13 @@
     "weather.normalize": "success",
     "weather.analyze": "success",
     "content.generate": "success",
-    "flex.render": "success",
-    "tts.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "success"
+    "content.presentation": "success",
+    "content.safety": "failure"
   },
-  "lastError": null,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@099ea6bec21b66b5bfe3122042c1b7d3ed62403d/public/audio/2026-10-04.mp3",
-    "durationMs": 43080,
-    "bytes": 689325,
-    "mimeType": "audio/mpeg"
+  "lastError": {
+    "stage": "content.safety",
+    "message": "generated numeric fact not found in verified facts: 4, 2569, 1.20"
   },
-  "generatedAt": "2026-10-04T06:33:12.627Z"
+  "audio": null,
+  "generatedAt": "2026-10-04T10:36:18.342Z"
 }
