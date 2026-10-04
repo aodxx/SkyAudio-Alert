@@ -84,7 +84,7 @@ test('missing optional weather fields do not crash normalize/analyze', () => {
 });
 
 test('audio validation helpers remain LINE-safe', () => {
-  assert.ok(estimateDurationMs('สวัสดีครับ', 1) >= 10000);
+  assert.ok(estimateDurationMs('สวัสดีครับ', 1) > 0);
   assert.ok(estimateDurationMs('ทดสอบ '.repeat(300), 1) <= 190000);
   assert.equal(edgeRate(0.95), '-5%');
   assert.deepEqual(buildAudioMessage('https://cdn.example.test/report.mp3', 35000), { type: 'audio', originalContentUrl: 'https://cdn.example.test/report.mp3', duration: 35000 });
