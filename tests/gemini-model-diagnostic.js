@@ -67,14 +67,20 @@ async function main() {
   console.log(JSON.stringify({ ok: true, results }, null, 2));
 
   const primaryMinimal = results.find((r) => r.model === MODELS[0] && r.kind === 'minimal');
+  const primaryShaped = results.find((r) => r.model === MODELS[0] && r.kind === 'shaped');
   assert.ok(primaryMinimal, 'Primary minimal probe missing');
+  assert.ok(primaryShaped, 'Primary shaped probe missing');
 
   if (primaryMinimal.status >= 500) {
     console.log('DIAGNOSIS=primary_model_server_error');
   } else if (primaryMinimal.status === 429) {
     console.log('DIAGNOSIS=primary_model_rate_or_quota');
+  } else if (primaryMinimal.ok && primaryShaped.status === 503) {
+    console.log('DIAGNOSIS=primary_reachable_structured_output_capacity_error');
+  } else if (primaryMinimal.ok && primaryShaped.ok) {
+    console.log('DIAGNOSIS=primary_minimal_and_structured_reachable');
   } else if (primaryMinimal.ok) {
-    console.log('DIAGNOSIS=primary_model_reachable');
+    console.log('DIAGNOSIS=primary_reachable_but_structured_request_error');
   } else {
     console.log('DIAGNOSIS=primary_model_request_or_auth_error');
   }
