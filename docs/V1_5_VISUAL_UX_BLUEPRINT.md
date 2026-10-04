@@ -540,7 +540,7 @@ altText ต้องเป็น flood-first เช่น:
 - altText ถูกต้อง
 - ผู้ใช้ปัดไปอ่านรายละเอียดต่อได้โดยไม่เจอการ์ดที่สูงเกินจำเป็น
 
-LINE ระบุว่า carousel เป็น container ที่มีหลาย bubbles วางด้านข้างและเลื่อนดูด้วยการ scroll แนวนอนได้ และควรหลีกเลี่ยง message ที่สูงเกินไปบนหน้าจอมือถือ citeturn0search0turn0search1
+LINE ระบุว่า carousel เป็น container ที่มีหลาย bubbles วางด้านข้างและเลื่อนดูด้วยการ scroll แนวนอนได้ และควรหลีกเลี่ยง message ที่สูงเกินไปบนหน้าจอมือถือ
 
 ### Exit criteria
 
