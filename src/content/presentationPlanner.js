@@ -105,6 +105,10 @@ async function generatePresentationPlan(context, config, opts = {}) {
         provider: 'gemini-fallback',
       };
     }
+    // Keep the pipeline usable when both presentation models are unavailable
+    // for a retryable provider error. The deterministic plan is still checked
+    // against the verified adapter facts by the pipeline firewall.
+    if (fallbackResponse.status === 429 || fallbackResponse.status >= 500) return fallback();
   }
 
   if (!response.ok && response.status === 503) {
