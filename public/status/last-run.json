@@ -1,12 +1,30 @@
 {
   "runId": "2026-10-05-lampai-test",
   "mode": "test",
-  "dryRun": false,
-  "stages": {},
-  "lastError": {
-    "stage": "content.narration",
-    "message": "Long-form narration safety firewall rejected output: unsupported certainty claim"
+  "dryRun": true,
+  "stages": {
+    "flood.fetch": "success",
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "content.generate": "success",
+    "content.presentation": "success",
+    "content.safety": "success",
+    "flex.render": "success",
+    "flex.lint": "success",
+    "content.narration": "success",
+    "tts.synthesize": "success",
+    "audio.validate": "success",
+    "audio.store": "success",
+    "line.send": "skipped"
   },
-  "audio": null,
-  "generatedAt": "2026-10-04T18:17:59.823Z"
+  "lastError": null,
+  "audio": {
+    "url": null,
+    "durationMs": 770088,
+    "bytes": 6160749,
+    "mimeType": "audio/mpeg",
+    "sections": 10
+  },
+  "generatedAt": "2026-10-04T19:41:53.452Z"
 }
