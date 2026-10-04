@@ -34,7 +34,7 @@ function buildConfig() {
     content: {
       provider: optional('CONTENT_PROVIDER', 'gemini').toLowerCase(),
       apiKey: optional('GEMINI_API_KEY', ''),
-      model: optional('GEMINI_CONTENT_MODEL', ''),
+      model: optional('GEMINI_CONTENT_MODEL', 'gemini-3.8-flash'),
     },
     line: { channelAccessToken: dryRun ? optional(lineTokenName, '') : required(lineTokenName), groupId: dryRun ? optional(lineGroupName, '') : required(lineGroupName) },
     tts: {
