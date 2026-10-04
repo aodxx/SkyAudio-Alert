@@ -35,6 +35,7 @@ function buildConfig() {
       provider: optional('CONTENT_PROVIDER', 'gemini').toLowerCase(),
       apiKey: optional('GEMINI_API_KEY', ''),
       model: optional('GEMINI_CONTENT_MODEL', 'gemini-3.8-flash'),
+      thinkingLevel: optional('GEMINI_THINKING_LEVEL', 'low').toLowerCase(),
     },
     line: { channelAccessToken: dryRun ? optional(lineTokenName, '') : required(lineTokenName), groupId: dryRun ? optional(lineGroupName, '') : required(lineGroupName) },
     tts: {
@@ -57,6 +58,7 @@ function buildConfig() {
   if (!Number.isFinite(config.flood.freshnessLimitMinutes) || config.flood.freshnessLimitMinutes <= 0) throw new Error('FLOOD_FRESHNESS_LIMIT_MINUTES must be positive');
   if (!['unknown-weather', 'no-send'].includes(config.flood.degradedMode)) throw new Error('FLOOD_DEGRADED_MODE must be unknown-weather or no-send');
   if (!['gemini'].includes(config.content.provider)) throw new Error('CONTENT_PROVIDER must be gemini');
+  if (!['low', 'medium', 'high'].includes(config.content.thinkingLevel)) throw new Error('GEMINI_THINKING_LEVEL must be low, medium or high');
   if (!Number.isFinite(config.tts.speakingRate) || config.tts.speakingRate <= 0) throw new Error('TTS_SPEAKING_RATE must be positive');
   if (!['edge', 'google', 'gemini', 'mock'].includes(config.tts.provider)) throw new Error('TTS_PROVIDER must be edge, google, gemini or mock');
   if (!['male-friendly', 'female-friendly'].includes(config.tts.profile)) throw new Error('TTS_PROFILE must be male-friendly or female-friendly');
