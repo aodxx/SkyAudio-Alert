@@ -4,10 +4,10 @@
   "dryRun": false,
   "stages": {},
   "lastError": {
-    "stage": "audio.synthesize",
-    "message": "Gemini TTS request failed: 400",
-    "detail": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"* GenerateContentRequest.model: unexpected model name format\\n\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n"
+    "stage": "content.generate",
+    "message": "Gemini content request failed after retry: 429",
+    "detail": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 17h36m45.72047327s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n"
   },
   "audio": null,
-  "generatedAt": "2026-10-04T02:15:45.056Z"
+  "generatedAt": "2026-10-04T06:23:14.293Z"
 }
