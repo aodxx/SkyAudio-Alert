@@ -126,3 +126,16 @@ B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 docum
 - [x] No production runtime changed
 
 **Phase 2: COMPLETE. Next: Phase 3 — Adaptive Flex Carousel.**
+
+
+## V1.5 Phase 5 — Safety + Quality Firewall — COMPLETE
+- [x] Final safety gate before TTS/LINE
+- [x] No-fabrication / certainty checks
+- [x] Numeric fact leakage checks
+- [x] Severity consistency gate
+- [x] factsUsed traceability
+- [x] Internal presentation quality score
+- [x] Regression tests across five flood states
+- [x] PR #17 merged to main
+
+**Next: Phase 6 — End-to-End LINE Acceptance. Production remains NO-GO.**
