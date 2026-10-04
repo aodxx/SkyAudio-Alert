@@ -37,3 +37,32 @@ test('Gemini content adapter uses a validated flood/weather fallback in test mod
   const report = await generateGeminiReport({ floodSituation: { severity: 'watch', summary: 'มีสถานีใกล้ล้นตลิ่ง', actions: [], freshness: { state: 'fresh' } }, weatherAnalysis: { current: { description: { label: 'มีเมฆมาก' }, temperature: 28 }, daily: { precipitationProbabilityMax: 80 } }, location: { name: 'บ้านลำพาย', province: 'พัทลุง' }, date: 'วันนี้' }, { mode: 'test', dryRun: true, content: { apiKey: '', model: '' } });
   assert.equal(report.provider, 'fallback'); assert.equal(report.priority, 'watch'); assert.match(report.spokenText, /สถานการณ์น้ำ/);
 });
+
+
+test('ReportDraft rejects unsupported actual-flood claim when facts are forecast-only', () => {
+  const { validateReportDraft } = require('../src/content/reportContract');
+  const draft = {
+    spokenText:'ฝนจะตกหนักจึงเกิดน้ำท่วมแน่นอนครับ',
+    shortSummary:'น้ำท่วมแน่นอน',
+    priority:'critical',
+    actions:[],
+    factsUsed:['weather.daily.precipitationProbabilityMax'],
+    warnings:[]
+  };
+  const errors = validateReportDraft(draft, { forecastOnly:true });
+  assert.ok(errors.some((error) => error.includes('forecast')));
+});
+
+test('ReportDraft rejects unsupported certainty language when facts are unknown', () => {
+  const { validateReportDraft } = require('../src/content/reportContract');
+  const draft = {
+    spokenText:'สถานการณ์น้ำปลอดภัยแน่นอนครับ',
+    shortSummary:'ปลอดภัยแน่นอน',
+    priority:'normal',
+    actions:[],
+    factsUsed:['flood.severity=unknown'],
+    warnings:[]
+  };
+  const errors = validateReportDraft(draft, { expectedPriority:'unknown', requireFreshnessWarning:true });
+  assert.ok(errors.length > 0);
+});
