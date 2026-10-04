@@ -37,3 +37,13 @@
 - [ ] production schedule enabled
 
 **Current release state: NO-GO**
+
+## Milestone 4A / Current Status — 2026-10-04
+
+- [x] Real Gemini content acceptance
+- [x] Real Gemini TTS acceptance
+- [x] Generated audio validation
+- [ ] TEST LINE acceptance — Milestone 4B
+- [ ] Human Flex + Audio review
+
+**Current release state: NO-GO**. Gemini live acceptance is complete; delivery-channel and remaining flood/release gates are still open.
