@@ -31,3 +31,10 @@ Delivery order: 1) Flex Message, 2) Audio Message. Test and production destinati
 
 ## Production
 No production schedule may be enabled until docs/SCOPE_REVIEW_REPORT.md acceptance gates pass.
+
+
+## Gemini Resilience / Live Acceptance Status — 2026-10-04
+
+The Gemini content adapter keeps structured JSON as the preferred request. After exhausted transient 503 handling, a lightweight JSON recovery request may be attempted; recovered output is still validated by ReportDraft. This behavior is covered by deterministic tests.
+
+Milestone 4A live acceptance has passed for Gemini Content, Gemini TTS, and generated-audio validation. LINE TEST remains the next acceptance boundary.
