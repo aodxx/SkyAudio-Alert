@@ -42,6 +42,6 @@ async function generatePresentationPlan(context,config,opts={}){
  const parsed=parsePresentationPlan(parseGeminiJsonText(extractText(await res.json())));
  if(!parsed.ok)throw Object.assign(new Error('Gemini presentation plan validation failed: '+parsed.errors.join('; ')),{stage:'content.presentation'});
  if(parsed.plan.severity!==context.floodSituation?.severity)throw Object.assign(new Error('Presentation planner changed verified flood severity'),{stage:'content.presentation'});
- return {...parsed.plan,provider:'gemini'};
+ const factsUsed=parsed.plan.factsUsed?.length?parsed.plan.factsUsed:(context.report?.factsUsed||[]);if(!factsUsed.length)throw Object.assign(new Error('Presentation planner has no factsUsed trace'),{stage:'content.presentation'});return {...parsed.plan,factsUsed,provider:'gemini'};
 }
 module.exports={generatePresentationPlan,plannerSchema};
