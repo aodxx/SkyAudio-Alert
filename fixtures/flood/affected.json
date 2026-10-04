@@ -1,0 +1,13 @@
+{
+  "severity": "affected",
+  "summary": "พบพื้นที่ได้รับผลกระทบและควรหลีกเลี่ยงจุดเสี่ยง",
+  "trend": "rising",
+  "confidence": "high",
+  "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+  "affectedAreas": ["ชุมชนริมคลอง"],
+  "roads": ["ถนนสายชุมชนจุดต่ำ"],
+  "source": { "name": "ศูนย์ข้อมูลน้ำพัทลุง", "url": "https://chachoengsao-flood.vercel.app/phatthalung", "publisher": "ศูนย์ข้อมูลน้ำ" },
+  "observedAt": "2026-10-04T00:40:00Z",
+  "retrievedAt": "2026-10-04T01:00:00Z",
+  "actions": ["หลีกเลี่ยงพื้นที่เสี่ยง", "ติดตามประกาศ"]
+}
