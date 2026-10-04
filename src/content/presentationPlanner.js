@@ -177,7 +177,7 @@ function buildQuotaSafeLongFormNarration(context, plan) {
   const sections = sectionsText.map((text, index) => ({
     id: 'section-' + (index + 1),
     title: ['เปิดรายการ', 'สถานการณ์น้ำ', 'ข้อมูลสำคัญ', 'แนวโน้ม', 'ข้อจำกัดข้อมูล', 'อากาศวันนี้', 'ทำความเข้าใจพยากรณ์', 'สิ่งที่ควรทำ', 'สรุป', 'ปิดรายการ'][index],
-    text: text + ' ' + storytellerExpansions[index % storytellerExpansions.length],
+    text: text + ' ' + storytellerExpansions[index % storytellerExpansions.length] + ' ' + storytellerExpansions[(index + 1) % storytellerExpansions.length],
     factsUsed: plan?.factsUsed || [],
   }));
   const spokenText = sections.map((section) => section.text).join('\\n');
