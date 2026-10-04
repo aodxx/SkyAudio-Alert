@@ -1,0 +1,10 @@
+{
+  "severity": "unknown",
+  "summary": "ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้",
+  "trend": "unknown",
+  "confidence": "none",
+  "location": { "name": "บ้านลำพาย", "province": "พัทลุง" },
+  "source": { "name": "source unavailable" },
+  "retrievedAt": "2026-10-04T01:00:00Z",
+  "actions": ["ติดตามข้อมูลจากแหล่งทางการ"]
+}
