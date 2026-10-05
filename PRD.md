@@ -33,8 +33,8 @@ Production runtime ต้องทำงานอัตโนมัติผ่�
 Gemini เป็น narrative layer เท่านั้น:
 - รับ normalized flood/weather facts
 - สร้าง spokenText และ shortSummary แบบ adaptive
-- Audio เป็น narrative ภาษาไทยแบบผู้ประกาศชุมชนที่คุยกับเพื่อนบ้านอย่างเป็นธรรมชาติ มี 4 ช่วง ไม่ทวนข้อมูลเกินจำเป็น และมีเป้าหมาย **3–5 นาที** (วัดจริงหลัง TTS ด้วย ffprobe; ช่วงที่ยอมรับคือ 180,000–300,000 ms รวมขอบ) โดยเปิดด้วยการทักทาย มีคำเชื่อมแบบสนทนา สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และปิดด้วยการพบกันใหม่
-- ห้ามยืดบทด้วยข้อความซ้ำหรือเติมเพื่อให้ครบเวลา; หากเสียงสั้น/ยาวเกินช่วง หรือการสร้าง/ตรวจ/จัดเก็บ Audio ล้มเหลว ให้ withheld เฉพาะ Audio และยังส่ง Flex ที่ผ่าน lint ได้
+- Audio เป็น narrative ภาษาไทยแบบผู้ประกาศชุมชนที่คุยกับเพื่อนบ้านอย่างเป็นธรรมชาติ มี 4 ช่วง ไม่ทวนข้อมูลเกินจำเป็น และไม่มีเป้าหมายนาทีตายตัว วัด MP3 จริงด้วย ffprobe และใช้เพียง technical guard ที่ 10 วินาที–5 นาที โดยเปิดด้วยการทักทาย มีคำเชื่อมแบบสนทนา สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และปิดด้วยการพบกันใหม่
+- ห้ามยืดบทด้วยข้อความซ้ำหรือเติมเพื่อให้ครบเวลา; หากไฟล์ไม่สมบูรณ์ ต่ำกว่า technical floor/เกินเพดาน หรือการสร้าง/ตรวจ/จัดเก็บ Audio ล้มเหลว ให้ withheld เฉพาะ Audio และยังส่ง Flex ที่ผ่าน lint ได้
 - Gemini เติมถ้อยคำทักทาย คำอวยพร และภาษาพูดทั่วไปได้เพื่อให้ฟังเป็นมนุษย์ แต่ข้อมูล/คำแนะนำเฉพาะต้องมาจาก input เท่านั้น ห้ามแต่งตัวเลข สถานี ถนน เวลา หรือเหตุการณ์
 - Flex เป็น visual brief (icon/สี/ตัวเลข/label มาก่อนข้อความ) และไม่ใช้ข้อความชุดเดียวกับ Audio
 - ห้ามสร้าง facts ที่ไม่มีใน input
@@ -98,7 +98,7 @@ Flood source → adapter/normalize/freshness/severity → Weather source → nor
 - flood fetch/parse failure → unknown flood state; do not fabricate
 - weather failure → do not fabricate weather
 - narration/TTS/audio validation/storage failure → withhold Audio, preserve the failure stage, and deliver valid Flex alone; mark the run degraded/non-zero rather than full success
-- audio outside 180,000–300,000 ms → withhold Audio; do not clamp or misreport measured duration
+- audio under 10,000 ms or over 300,000 ms → withhold Audio; do not clamp or misreport measured duration
 - LINE transient failure → retry according to retry policy
 - Flex already delivered on the same Bangkok date → skip another production run to avoid duplicate Flex, even if Audio was withheld; a run that failed before Flex delivery may be retried
 

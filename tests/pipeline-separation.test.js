@@ -127,7 +127,7 @@ test('TTS failure withholds Audio but still sends the valid Flex message', async
 test('duration validation failure withholds only Audio and records audio.withheld', async () => {
   const state = {};
   const deps = overrides(state);
-  deps.validateAudio = () => { throw Object.assign(new Error('outside 3–5 minute range'), { stage: 'audio.validate', retryable: false }); };
+  deps.validateAudio = () => { throw Object.assign(new Error('audio exceeds technical duration limits'), { stage: 'audio.validate', retryable: false }); };
   const result = await runPipeline(testConfig(false), deps);
   assert.deepEqual(state.sentMessages.map((message) => message.type), ['flex']);
   assert.equal(result.stages['audio.validate'], 'failure');

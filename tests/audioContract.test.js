@@ -27,11 +27,12 @@ test('audio validator keeps the 16 MiB file-size ceiling', () => {
   assert.throws(() => validateAudio(Buffer.alloc(5), '', 1, { maxFileBytes: 4 }), /Audio file too large/);
 });
 
-test('audio gate is inclusive at three and five minutes and rejects durations outside the range', () => {
-  assert.equal(MIN_DURATION_MS, 180000);
+test('audio gate enforces only a 10-second validity floor and a five-minute upper limit', () => {
+  assert.equal(MIN_DURATION_MS, 10000);
   assert.equal(MAX_DURATION_MS, 300000);
-  assert.throws(() => validateAt(179999), /minimum 180000ms/);
-  assert.equal(validateAt(180000).durationMs, 180000);
+  assert.throws(() => validateAt(9999), /minimum 10000ms/);
+  assert.equal(validateAt(10000).durationMs, 10000);
+  assert.equal(validateAt(101088).durationMs, 101088);
   assert.equal(validateAt(300000).durationMs, 300000);
   assert.throws(() => validateAt(300001), /maximum 300000ms/);
 });

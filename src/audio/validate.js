@@ -5,7 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
-const MIN_DURATION_MS = 3 * 60 * 1000;
+const MIN_DURATION_MS = 10 * 1000;
 const MAX_DURATION_MS = 5 * 60 * 1000;
 const MAX_FILE_BYTES = 16 * 1024 * 1024;
 

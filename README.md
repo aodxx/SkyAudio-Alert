@@ -29,7 +29,7 @@
 Actions → **Manual Flood-first test** → Run workflow → `dry_run=true`
 
 Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
-ระบบวัดระยะ MP3 จริงด้วย `ffprobe`; ใน production หากเสียงสังเคราะห์/ตรวจสอบ/จัดเก็บไม่ผ่าน หรือความยาวอยู่นอก 3–5 นาที จะไม่ส่ง Audio ที่ใช้ไม่ได้ แต่ Flex ที่ผ่าน lint ยังส่งได้ พร้อมบันทึก `audio.withheld` และทำให้ workflow จบแบบ degraded/non-zero
+ระบบวัดระยะ MP3 จริงด้วย `ffprobe`; ไม่มีเป้าหมายเวลาและไม่ยืดเสียงให้ครบความยาว ใช้เพียง guard ทางเทคนิค 10 วินาที–5 นาทีและขนาดไฟล์ไม่เกิน 16 MiB หากเสียงสังเคราะห์/ตรวจสอบ/จัดเก็บไม่ผ่าน จะไม่ส่ง Audio ที่ใช้ไม่ได้ แต่ Flex ที่ผ่าน lint ยังส่งได้ พร้อมบันทึก `audio.withheld` และทำให้ workflow จบแบบ degraded/non-zero
 
 ### ทดสอบส่งเข้า LINE Test
 ตั้ง `dry_run=false` และต้องมี secrets:
@@ -48,7 +48,7 @@ Production ต้องมี:
 
 ## TTS
 
-เสียงสร้างแยกจาก Flex โดยใช้บท 4 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เป้าหมายคือ 3–5 นาที โดยไม่เติมคำซ้ำเพื่อให้ครบเวลา บทควรฟังเหมือนคนเล่าให้เพื่อนบ้านฟัง เปิดด้วยคำทักทาย มีคำเชื่อมธรรมชาติ สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และกล่าวพบกันใหม่ได้ โดยคำพูดอบอุ่นเหล่านี้ห้ามเพิ่มข้อเท็จจริงของสถานการณ์ เสียงต้องชัดเจนและเหมาะกับผู้สูงอายุ
+เสียงสร้างแยกจาก Flex โดยใช้บท 4 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy ให้ความยาวเป็นไปตามข้อมูลจริง ไม่กำหนด target นาทีและไม่เติมคำซ้ำ บทควรฟังเหมือนคนเล่าให้เพื่อนบ้านฟัง เปิดด้วยคำทักทาย มีคำเชื่อมธรรมชาติ สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และกล่าวพบกันใหม่ได้ โดยคำพูดอบอุ่นเหล่านี้ห้ามเพิ่มข้อเท็จจริงของสถานการณ์ เสียงต้องชัดเจนและเหมาะกับผู้สูงอายุ
 
 Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 

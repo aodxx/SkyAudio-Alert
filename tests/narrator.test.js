@@ -82,7 +82,7 @@ test('narrator rejects missing sections and repeated section text', async () => 
   }), /must not repeat/);
 });
 
-test('narrator prompt requests a 3–5 minute report without repeated filler', async () => {
+test('narrator prompt follows the available facts without a fixed time target or repeated filler', async () => {
   let prompt = '';
   await generateNarration(context(), config(), {
     fetchImpl: async (_url, options) => {
@@ -90,8 +90,9 @@ test('narrator prompt requests a 3–5 minute report without repeated filler', a
       return response({ sections: sections() });
     },
   });
-  assert.match(prompt, /3–5 นาที/);
-  assert.match(prompt, /ห้ามยืดด้วยข้อความซ้ำ/);
+  assert.match(prompt, /ไม่กำหนดเป้าหมายนาที/);
+  assert.match(prompt, /ห้ามยืดบทด้วยข้อความซ้ำ/);
+  assert.doesNotMatch(prompt, /3–5 นาที/);
   assert.doesNotMatch(prompt, /7,000|10 ช่วง/);
 });
 
