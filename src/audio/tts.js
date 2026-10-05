@@ -22,6 +22,24 @@ function edgeRate(rate) {
   return (pct >= 0 ? '+' : '') + pct + '%';
 }
 
+function buildGeminiTtsStyle(config = {}) {
+  const speakingRate = Number.isFinite(config.speakingRate) ? config.speakingRate : 1;
+  return [
+    config.profile === 'female-friendly' ? 'Thai female village loudspeaker announcer' : 'Thai male village loudspeaker announcer',
+    'warm, familiar, friendly and human',
+    'sounds like a real local community morning announcement, not a studio commercial',
+    'speak as if warmly addressing familiar neighbors, with a natural greeting and gentle conversational sign-off',
+    'clear Thai pronunciation for older listeners',
+    speakingRate < 0.9 ? 'slow and relaxed pacing' : speakingRate < 1 ? 'moderately slow and relaxed pacing' : speakingRate > 1.1 ? 'brisk but clear pacing' : 'natural conversational pacing',
+    'natural breathing and short pauses between topics',
+    'slightly cheerful but calm',
+    'gentle emphasis on flood status, temperatures, rain chances and safety advice',
+    'do not sound like a television newsreader',
+    'do not rush or read every sentence with the same rhythm',
+    'keep the tone conversational and reassuring',
+  ].join('; ');
+}
+
 function synthesizeWithEdge(script, config) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-'));
   const output = path.join(dir, 'speech.mp3');
@@ -56,19 +74,7 @@ async function synthesizeWithGoogle(script, config, opts = {}) {
 async function synthesizeWithGemini(script, config, opts = {}) {
   const doFetch = opts.fetchImpl || fetch;
   if (!config.apiKey) throw makeError('GEMINI_API_KEY is not configured');
-  const style = config.style || [
-    config.profile === 'female-friendly' ? 'Thai female village loudspeaker announcer' : 'Thai male village loudspeaker announcer',
-    'warm, familiar, friendly and human',
-    'sounds like a real local community morning announcement, not a studio commercial',
-    'clear Thai pronunciation for older listeners',
-    config.speakingRate < 0.9 ? 'slow and relaxed pacing' : config.speakingRate < 1 ? 'moderately slow and relaxed pacing' : config.speakingRate > 1.1 ? 'brisk but clear pacing' : 'natural conversational pacing',
-    'natural breathing and short pauses between topics',
-    'slightly cheerful but calm',
-    'gentle emphasis on flood status, temperatures, rain chances and safety advice',
-    'do not sound like a television newsreader',
-    'do not rush or read every sentence with the same rhythm',
-    'keep the tone conversational and reassuring',
-  ].join('; ');
+  const style = config.style || buildGeminiTtsStyle(config);
   const body = {
     contents: [{ role: 'user', parts: [{ text: script, speech_metadata: { style } }] }],
     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { voice: config.voiceName } } },
@@ -115,4 +121,4 @@ async function synthesizeSpeech(script, config, opts = {}) {
   return synthesizeWithEdge(script, config);
 }
 
-module.exports = { synthesizeSpeech, edgeRate };
+module.exports = { synthesizeSpeech, edgeRate, buildGeminiTtsStyle };

@@ -95,6 +95,54 @@ test('narrator prompt requests a 3–5 minute report without repeated filler', a
   assert.doesNotMatch(prompt, /7,000|10 ช่วง/);
 });
 
+test('narrator prompt asks Gemini for a human greeting, summary, well-wish, and farewell without invented facts', async () => {
+  let prompt = '';
+  await generateNarration(context(), config(), {
+    fetchImpl: async (_url, options) => {
+      prompt = JSON.parse(options.body).contents[0].parts[0].text;
+      return response({ sections: sections() });
+    },
+  });
+  assert.match(prompt, /ทักทายสวัสดี/);
+  assert.match(prompt, /สรุปสั้น/);
+  assert.match(prompt, /ฝากความปรารถนาดี/);
+  assert.match(prompt, /บอกลา/);
+  assert.match(prompt, /พบกันใหม่/);
+  assert.match(prompt, /ถ้อยคำเชื่อมโยง/);
+  assert.match(prompt, /ห้ามแต่งข้อมูล/);
+  assert.match(prompt, /ห้ามสร้างตัวเลข/);
+  assert.match(prompt, /ผู้พูดเป็นผู้ชาย/);
+});
+
+test('narrator prompt matches feminine speech particles to the selected voice profile', async () => {
+  let prompt = '';
+  await generateNarration(context(), config({ tts: { profile: 'female-friendly' } }), {
+    fetchImpl: async (_url, options) => {
+      prompt = JSON.parse(options.body).contents[0].parts[0].text;
+      return response({ sections: sections() });
+    },
+  });
+  assert.match(prompt, /ผู้พูดเป็นผู้หญิง/);
+  assert.match(prompt, /ค่ะ และ นะคะ/);
+});
+
+test('quota-safe fallback greets listeners, summarizes, wishes them well, and says goodbye', () => {
+  const result = buildQuotaSafeNarration(context());
+  assert.match(result.sections[0].text, /สวัสดี/);
+  assert.match(result.sections[3].text, /สรุปสั้น/);
+  assert.match(result.sections[3].text, /ขอให้/);
+  assert.match(result.sections[3].text, /ขอบคุณ/);
+  assert.match(result.sections[3].text, /พบกันใหม่/);
+});
+
+test('quota-safe fallback uses feminine Thai particles for the female-friendly profile', () => {
+  const result = buildQuotaSafeNarration(context(), 'female-friendly');
+  assert.match(result.sections[0].text, /สวัสดีตอนเช้าค่ะ/);
+  assert.match(result.sections[3].text, /ขอให้.*นะคะ/);
+  assert.match(result.sections[3].text, /พบกันใหม่.*นะคะ/);
+  assert.doesNotMatch(result.spokenText, /นะค่ะ/);
+});
+
 test('narrator uses the configured fallback model when the primary returns 429', async () => {
   const calls = [];
   const result = await generateNarration(context(), config(), {

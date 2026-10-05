@@ -141,7 +141,7 @@ async function runPipeline(config, overrides = {}) {
     let safetyErrors = narrationFirewall(narration);
     if (safetyErrors.length) {
       mark('content.safety', 'degraded', { errors: safetyErrors, fallback: 'quota-safe-fallback' });
-      narration = buildQuotaSafeNarration(narrationContext);
+      narration = buildQuotaSafeNarration(narrationContext, config.tts.profile);
       safetyErrors = narrationFirewall(narration);
       if (safetyErrors.length) {
         mark('content.safety', 'failure', { errors: safetyErrors });

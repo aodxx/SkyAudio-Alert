@@ -48,7 +48,7 @@ Production ต้องมี:
 
 ## TTS
 
-เสียงสร้างแยกจาก Flex โดยใช้บท 4 ช่วงที่เพิ่มรายละเอียดใหม่โดยไม่ทวนซ้ำ จากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เป้าหมายคือ 3–5 นาที โดยไม่เติมคำซ้ำเพื่อให้ครบเวลา เสียงต้องอบอุ่น เป็นกันเอง ชัดเจน และเหมาะกับผู้สูงอายุ
+เสียงสร้างแยกจาก Flex โดยใช้บท 4 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เป้าหมายคือ 3–5 นาที โดยไม่เติมคำซ้ำเพื่อให้ครบเวลา บทควรฟังเหมือนคนเล่าให้เพื่อนบ้านฟัง เปิดด้วยคำทักทาย มีคำเชื่อมธรรมชาติ สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และกล่าวพบกันใหม่ได้ โดยคำพูดอบอุ่นเหล่านี้ห้ามเพิ่มข้อเท็จจริงของสถานการณ์ เสียงต้องชัดเจนและเหมาะกับผู้สูงอายุ
 
 Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 

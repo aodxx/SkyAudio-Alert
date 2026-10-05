@@ -10,6 +10,12 @@ function extractText(json) {
   return json?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim() || '';
 }
 
+function voiceEnding(profile) {
+  return profile === 'female-friendly'
+    ? { greeting: 'สวัสดีตอนเช้าค่ะ', polite: 'ค่ะ', gentle: 'นะคะ' }
+    : { greeting: 'สวัสดีตอนเช้าครับ', polite: 'ครับ', gentle: 'นะครับ' };
+}
+
 function narrationSchema() {
   return {
     type: 'OBJECT',
@@ -78,10 +84,11 @@ function weatherSummary(weather = {}) {
   return `${details.join(' ')} ข้อมูลส่วนนี้ช่วยวางแผนด้านอากาศ และควรแยกจากสถานการณ์น้ำที่ตรวจวัดได้`;
 }
 
-function buildQuotaSafeNarration(context = {}) {
+function buildQuotaSafeNarration(context = {}, profile = 'male-friendly') {
   const flood = context.floodSituation || {};
   const location = context.location || {};
   const factsUsed = context.factsSnapshot?.factIds || [];
+  const ending = voiceEnding(profile);
   const severityText = ({
     normal: 'สถานการณ์น้ำอยู่ในระดับปกติ',
     watch: 'สถานการณ์น้ำอยู่ในระดับเฝ้าระวัง',
@@ -101,10 +108,10 @@ function buildQuotaSafeNarration(context = {}) {
   const actions = Array.isArray(flood.actions) ? flood.actions.filter(Boolean).join(' ') : '';
   const place = [location.name, location.province].filter(Boolean).join(' จังหวัด');
   const sections = [
-    { id: 'opening', title: 'เปิดรายงาน', text: `สวัสดีครับ${place ? ` พี่น้อง${place}` : ''} วันนี้ขอสรุปข้อมูลที่ตรวจสอบได้ก่อนนะครับ ${severityText} ${summary}`, factsUsed },
-    { id: 'water', title: 'สถานการณ์น้ำ', text: `${stationDetails ? `จุดข้อมูลที่มีรายงานคือ ${stationDetails}` : 'รอบนี้ไม่มีรายละเอียดสถานีหรือจุดวัดเพิ่มเติมให้ยืนยัน'} ${trendText} ${freshnessText}`.trim(), factsUsed },
-    { id: 'weather', title: 'อากาศประกอบ', text: weatherSummary(context.weatherAnalysis), factsUsed },
-    { id: 'next-steps', title: 'สิ่งที่ควรติดตาม', text: `${actions ? `คำแนะนำจากข้อมูลที่ได้รับคือ ${actions}` : 'โปรดติดตามข้อมูลล่าสุดจากหน่วยงานในพื้นที่ก่อนตัดสินใจเรื่องสำคัญ'} พยากรณ์อากาศเป็นข้อมูลประกอบเท่านั้น ไม่ใช้ยืนยันสถานการณ์น้ำ ขอบคุณที่ติดตามรายงาน และขอให้ตรวจข้อมูลล่าสุดเมื่อมีการอัปเดต`, factsUsed },
+    { id: 'opening', title: 'เปิดรายงาน', text: `${ending.greeting}${place ? ` พี่น้อง${place}` : ' ทุกคน'} น้องจุ่นจ้านมาเล่าสถานการณ์เช้านี้ให้ฟัง${ending.gentle} ${severityText} ${summary}`, factsUsed },
+    { id: 'water', title: 'สถานการณ์น้ำ', text: `ค่อย ๆ ดูข้อมูลเรื่องน้ำกัน${ending.gentle} ${stationDetails ? `จุดข้อมูลที่มีรายงานคือ ${stationDetails}` : 'รอบนี้ไม่มีรายละเอียดสถานีหรือจุดวัดเพิ่มเติมให้ยืนยัน'} ${trendText} ${freshnessText}`.trim(), factsUsed },
+    { id: 'weather', title: 'อากาศประกอบ', text: `ส่วนเรื่องอากาศ ${weatherSummary(context.weatherAnalysis)}`, factsUsed },
+    { id: 'next-steps', title: 'สิ่งที่ควรติดตาม', text: `${actions ? `คำแนะนำจากข้อมูลที่ได้รับคือ ${actions}` : 'โปรดติดตามข้อมูลล่าสุดจากหน่วยงานในพื้นที่ก่อนตัดสินใจเรื่องสำคัญ'} พยากรณ์อากาศเป็นข้อมูลประกอบเท่านั้น ไม่ใช้ยืนยันสถานการณ์น้ำ สรุปสั้น ๆ คือขอให้ติดตามข้อมูลน้ำที่ยืนยันได้ และใช้พยากรณ์เพื่อวางแผนด้านอากาศเท่านั้น${ending.gentle} ขอให้ทุกคนมีวันที่ราบรื่น ดูแลตัวเองและคนที่บ้านด้วย${ending.gentle} ขอบคุณที่รับฟัง${ending.polite} แล้วพบกันใหม่ในรายงานครั้งหน้า${ending.gentle}`, factsUsed },
   ];
   const spokenText = sections.map((section) => section.text).join('\n');
   return { sections, spokenText, totalCharacters: spokenText.length, provider: 'quota-safe-fallback' };
@@ -127,7 +134,7 @@ async function generateNarration(context, config, opts = {}) {
     if (config?.mode === 'production' && !config.dryRun) {
       throw Object.assign(new Error('GEMINI_API_KEY is not configured for narration'), { stage: 'content.narration', retryable: false });
     }
-    return { ...buildQuotaSafeNarration(context), provider: 'fallback' };
+    return { ...buildQuotaSafeNarration(context, config.tts?.profile), provider: 'fallback' };
   }
 
   const input = buildGeminiReportInput({
@@ -137,8 +144,11 @@ async function generateNarration(context, config, opts = {}) {
     date: context.date,
   });
   const prompt = [
-    'คุณคือ “นักเล่าข่าวประจำหมู่บ้าน” ของน้องจุ่นจ้าน พูดภาษาไทยอย่างอบอุ่น ชัดเจน เป็นธรรมชาติ และเหมาะกับผู้สูงอายุ',
+    'คุณคือน้องจุ่นจ้าน ผู้เล่าข่าวประจำชุมชน พูดภาษาไทยอย่างอบอุ่น ชัดเจน และเหมาะกับผู้สูงอายุ เหมือนกำลังเล่าให้เพื่อนบ้านฟัง ไม่ใช่อ่านรายการข้อมูล',
     'สร้างบทเสียงรายงานเช้าบ้านลำพายความยาวเป้าหมาย 3–5 นาที มีรายละเอียดพอให้เข้าใจ แต่ห้ามยืดด้วยข้อความซ้ำหรือสรุปซ้ำ',
+    'ทำให้ฟังเหมือนคนจริง: เปิดด้วยคำทักทายสวัสดี ใช้คำเชื่อมและจังหวะสนทนาที่เป็นธรรมชาติ มีสรุปสั้น ๆ ก่อนจบ ฝากความปรารถนาดีทั่วไป ขอบคุณผู้ฟัง บอกลา และพูดว่าพบกันใหม่ในรายงานครั้งหน้า',
+    config.tts?.profile === 'female-friendly' ? 'ผู้พูดเป็นผู้หญิง ใช้คำลงท้ายให้เป็นธรรมชาติ เช่น ค่ะ และ นะคะ ตลอดทั้งบท' : 'ผู้พูดเป็นผู้ชาย ใช้คำลงท้ายให้เป็นธรรมชาติ เช่น ครับ และ นะครับ ตลอดทั้งบท',
+    'ใช้คำทักทาย คำขอบคุณ คำอวยพร และถ้อยคำเชื่อมโยงที่อบอุ่นได้ แม้ไม่ใช่ facts; แต่ห้ามแต่งข้อมูล เหตุการณ์ คำแนะนำเฉพาะ ตัวเลข หรือคำยืนยันสถานการณ์ที่ไม่มีใน JSON',
     'สร้าง 4 ช่วงตามลำดับเท่านั้น: (1) เปิดรายงานและสถานะน้ำ (2) รายละเอียดน้ำ แนวโน้มและความสดของข้อมูล (3) พยากรณ์อากาศวันนี้ในฐานะข้อมูลประกอบ (4) สิ่งที่ควรติดตาม ข้อจำกัด และปิดสั้น ๆ',
     'แต่ละช่วงต้องเพิ่มข้อมูลหรือคำอธิบายใหม่ ห้ามนำข้อเท็จจริงหรือประโยคเดิมกลับมาพูดซ้ำ หากข้อมูลไม่พอให้พูดตรง ๆ อย่างกระชับ ห้ามเติมข้อความเพื่อให้ครบเวลา',
     'ใช้เฉพาะ facts JSON ที่ให้มา ห้ามสร้างตัวเลข ชื่อสถานี ถนน พื้นที่ เวลา เหตุการณ์ หรือระดับความรุนแรงใหม่ และให้ใส่ factsUsed เฉพาะ fact ID ที่ใช้จริง',
