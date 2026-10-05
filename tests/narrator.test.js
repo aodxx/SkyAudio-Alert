@@ -112,6 +112,8 @@ test('narrator prompt asks Gemini for a human greeting, summary, well-wish, and 
   assert.match(prompt, /ถ้อยคำเชื่อมโยง/);
   assert.match(prompt, /ห้ามแต่งข้อมูล/);
   assert.match(prompt, /ห้ามสร้างตัวเลข/);
+  assert.match(prompt, /ตัวเลขทุกตัวในบทพูดต้องปรากฏอยู่ใน facts JSON เท่านั้น/);
+  assert.match(prompt, /ห้ามเติมตัวเลขอื่น/);
   assert.match(prompt, /ผู้พูดเป็นผู้ชาย/);
 });
 
