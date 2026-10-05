@@ -30,5 +30,7 @@
 - [x] Run `node --test tests/statusReport.test.js` and confirm it fails because the current status writer commits/pushes during dry-run and omits payload content.
 - [x] Add preview fields only for dry-run reports and return before Git config/add/commit/push when `config.dryRun` is true.
 - [x] Add an always-run artifact upload step gated by `inputs.dry_run`; upload `public/status/last-run.json` plus only the Bangkok-date MP3, with seven-day retention.
-- [ ] Run focused tests, full `npm test`, syntax checks, and `git diff --check`; confirm the workflow artifact path and dry-run gate.
-- [ ] Push the update to PR #35, wait for both CI workflows, dispatch `Manual Flood-first test` on the feature branch with `dry_run=true`, then download and validate the preview artifact. Confirm no LINE request and no branch commit/push occurred.
+- [x] Run focused tests, full `npm test` (122 passed), syntax checks, and `git diff --check`; confirm the workflow artifact path and dry-run gate. Both PR CI workflows passed.
+- [x] Push the update to PR #35, wait for both CI workflows, dispatch `Manual Flood-first test` on the feature branch with `dry_run=true`, then download and validate the preview artifact. Run `37348411728` recorded `line.send: skipped`; PR head SHA stayed unchanged. Audio validation rejected 101,088 ms (<180,000 ms), so the job ended degraded and no MP3 was included.
+
+**Outcome:** Preview-only run completed without any LINE request or Git mutation. Flex rendered and passed its four-card lint; the safety-checked fallback narration reached TTS, but the resulting audio was too short for the selected 3–5 minute contract. The exact Flex and script are available in the workflow artifact for review; no send approval has been requested or acted upon yet.
