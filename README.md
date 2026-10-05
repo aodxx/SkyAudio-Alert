@@ -9,14 +9,15 @@
 ทุกเช้า 06:00 น. (เวลาไทย) ระบบจะ:
 1. รวบรวม/รายงานสถานการณ์น้ำท่วมและระดับน้ำของพัทลุงตามแหล่งข้อมูลที่กำหนด
 2. ดึงพยากรณ์อากาศจาก Open-Meteo และวิเคราะห์ด้วยกฎแบบ deterministic
-3. สร้าง LINE Flex แบบ flood-first จากข้อมูลที่ตรวจสอบแล้ว โดยแยกจากบทพูดเสียง
+3. สร้าง LINE Flex carousel 4 ใบ: สรุปอากาศแบบไม่มีภาพ → ภาพระดับน้ำ → แผนที่ → CCTV; ค่าพยากรณ์ดึงจาก FactsSnapshot และแยกจากบทพูดเสียง
 4. สร้าง narration เสียงจากข้อมูลน้ำ/อากาศโดยอิสระ ผ่าน safety check แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
 5. ส่ง Flex แล้วตามด้วย LINE Audio Message เข้า LINE กลุ่มบ้านลำพาย
 
-ลิงก์สำหรับผู้ใช้ใน Flex:
-- [ดูสถานะน้ำ / CCTV](https://cctv.maholan.net/)
-- [สถานการณ์น้ำพัทลุง / แหล่งข้อมูล](https://chachoengsao-flood.vercel.app/phatthalung)
-- [พยากรณ์อากาศ / เรดาร์ฝน](https://chachoengsao-flood.vercel.app/phatthalung/weather)
+ปุ่มท้ายการ์ดใน Flex:
+- การ์ด 1 — [ศูนย์ช่วยเหลือพัทลุง](https://chachoengsao-flood.vercel.app/phatthalung)
+- การ์ด 2 — [แผนที่ระดับน้ำพัทลุง](https://chachoengsao-flood.vercel.app/phatthalung/map)
+- การ์ด 3 — [พยากรณ์อากาศ / เรดาร์](https://chachoengsao-flood.vercel.app/phatthalung/weather)
+- การ์ด 4 — [ภาพสด / CCTV](https://chachoengsao-flood.vercel.app/phatthalung/weather)
 
 > ราคาปาล์ม ราคายาง และข่าวสารทั่วไปถูกตัดออกจากรายงาน production ใหม่แล้ว
 
@@ -72,7 +73,7 @@ npm test
 
 แผนปรับผลิตภัณฑ์จากรายงานราคา/ข่าวสารเป็น **สถานการณ์น้ำท่วมเป็นหลัก + พยากรณ์อากาศ** อยู่ที่ [`docs/REFACTOR_PLAN_FLOOD_WEATHER.md`](docs/REFACTOR_PLAN_FLOOD_WEATHER.md) โดยยังคงช่องทาง LINE Flex และ Audio Message ไว้ แต่กำหนดให้รื้อเนื้อหาและ layout ใหม่
 
-รายละเอียดการออกแบบเสียงรายวัน (โปรไฟล์หญิง/ชาย) และ Flex แบบกะทัดรัดแบ่งกลุ่มด้วยไล่เฉดสีอยู่ที่ [`docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md`](docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md)
+รายละเอียดเสียงรายวันอยู่ที่ [`docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md`](docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md); Flex ตามเอกสารเก่าเป็นประวัติและถูกแทนที่ด้วยสเปก 4 ใบใน Decision 024
 
 ## 🌿 บริบทสถานที่จริงและ Design Reference
 

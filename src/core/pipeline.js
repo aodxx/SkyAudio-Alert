@@ -10,7 +10,6 @@ const { analyzeWeather } = require('../weather/analyzer');
 const { generateLongFormNarration, buildQuotaSafeLongFormNarration } = require('../content/narrator');
 const { validateGeneratedFacts } = require('../content/safetyFirewall');
 const { buildFactsSnapshot } = require('../presentation/facts');
-const { buildVisualPlan } = require('../presentation/visualPlan');
 const { buildFlexV2 } = require('../flex/builder');
 const { lintFlexMessage } = require('../flex/lint');
 const { synthesizeLongFormSpeech } = require('../audio/tts');
@@ -91,11 +90,10 @@ async function runPipeline(config, overrides = {}) {
 
   const dateInfo = new Intl.DateTimeFormat('th-TH', { timeZone: config.location.timezone, dateStyle: 'long' }).format(new Date());
   const factsSnapshot = buildFactsSnapshot({ floodSituation, weatherAnalysis, location: config.location, dateInfo: { date: dateInfo } });
-  const visualPlan = buildVisualPlan(factsSnapshot);
   mark('flex.render', 'start');
   let flexMessage;
   try {
-    flexMessage = buildFlexV2({ factsSnapshot, visualPlan });
+    flexMessage = buildFlexV2({ factsSnapshot });
   } catch (error) {
     mark('flex.render', 'failure', { message: error.message });
     result.lastError = { stage: error.stage || 'flex.render', message: error.message };
@@ -182,14 +180,14 @@ async function runPipeline(config, overrides = {}) {
 
   if (config.dryRun) {
     mark('line.send', 'skipped', { dryRun: true, reason: 'DRY_RUN=true; LINE API was not called', messageCount: messages.length });
-    const dryResult = { ...result, dryRun: true, floodSituation, factsSnapshot, visualPlan, flexMessage, narration, messages, audioInfo };
+    const dryResult = { ...result, dryRun: true, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo };
     writeStatus(dryResult, config);
     return dryResult;
   }
   mark('line.send', 'start');
   await withRetry(() => sendMessages(messages, config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
   mark('line.send', 'success', { messageCount: messages.length });
-  const finalResult = { ...result, floodSituation, factsSnapshot, visualPlan, flexMessage, narration, messages, audioInfo };
+  const finalResult = { ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo };
   writeStatus(finalResult, config);
   return finalResult;
 }

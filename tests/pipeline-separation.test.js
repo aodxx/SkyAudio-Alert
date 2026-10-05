@@ -65,7 +65,7 @@ test('pipeline builds Flex independently and delivers it before the separately g
   assert.equal(result.messages[1].type, 'audio');
   assert.equal(result.presentationPlan, undefined);
   assert.equal(result.reportData, undefined);
-  assert.equal(state.narrationContext.visualPlan, undefined);
+  assert.equal(state.narrationContext.flexMessage, undefined);
   assert.equal(state.narrationContext.presentationPlan, undefined);
   assert.equal(state.narrationContext.factsSnapshot.severity, 'watch');
   assert.equal(result.stages['content.generate'], undefined);

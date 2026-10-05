@@ -115,11 +115,21 @@
 ## Runtime Simplification — 2026-10-05
 
 - [x] Removed the shared PresentationPlan runtime contract.
-- [x] Flex renders from verified FactsSnapshot/VisualPlan independently of narration.
+- [x] Flex renders directly from verified FactsSnapshot, independently of narration; the former severity-specific VisualPlan runtime was removed in the later four-card refactor.
 - [x] Narration is generated independently and safety-checked before TTS.
 - [x] Kept the ten-section narration and measured >600-second audio gate unchanged.
 - [x] Preserved Flex-first then Audio LINE ordering and DRY_RUN behavior.
 - [x] Added pipeline integration coverage for separation and safety fallback.
 - [ ] Human review of Flex/audio and remaining release gates.
 
-**Production remains NO-GO.** This cleanup does not decide the next compact-card visual details.
+**Production remains NO-GO.** The compact-card visual details were subsequently set by Decision 024 below.
+
+## Flex Four-Card Layout — 2026-10-05
+
+- [x] Replaced the severity-driven visual plan renderer with a fixed four-card carousel.
+- [x] Card 1 is image-free and displays the date, community hall, and available forecast by time band.
+- [x] Cards 2–4 use the requested image assets and each has its own allow-listed footer button.
+- [x] Added structural lint and regression tests for card count, order, assets, buttons, and missing forecast data.
+- [ ] Human review in LINE mobile client.
+
+**Known asset caveat:** the user approved the provided CCTV image even though the infographic labels locations outside Phatthalung; the repository images are static and are not refreshed by the weather/flood adapters. Production remains NO-GO pending existing release gates and human review.

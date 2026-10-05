@@ -10,7 +10,7 @@ GitHub Actions → src/index.js → src/core/pipeline.js
 
 1. src/flood/phatthalungCenter.js → FloodSituation → normalize + freshness + severity
 2. src/weather/openMeteo.js → WeatherData → normalize + deterministic analysis
-3. src/presentation/facts.js → FactsSnapshot → src/presentation/visualPlan.js → Flex V2 + lint
+3. src/presentation/facts.js → FactsSnapshot → fixed four-card Flex renderer + lint
 4. src/content/narrator.js → narration from flood/weather facts → safety firewall
 5. src/audio/tts.js → Gemini TTS audio
 6. src/audio/validate.js + storage.js → validated public HTTPS audio URL
@@ -24,7 +24,7 @@ Weather provides supporting forecast facts. It must never promote forecast rainf
 
 Gemini receives normalized safe facts only. It is not a source of truth and must not browse for facts.
 
-Flex renders a deterministic flood-first visual brief directly from verified fact IDs; it does not consume generated narration text.
+Flex renders a deterministic four-card carousel directly from FactsSnapshot: a text-only daily-weather card, then three user-specified images with footer buttons. It does not depend on a severity-specific VisualPlan or generated narration text. Only the forecast facts on card 1 are updated dynamically; the three image assets are static repository files.
 
 Audio narration is generated independently from the same source facts, then safety-checked, synthesized, validated, stored and exposed. It does not consume Flex cards or their text. The current measured-duration gate is >600 seconds.
 

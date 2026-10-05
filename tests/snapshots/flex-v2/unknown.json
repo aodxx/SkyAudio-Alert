@@ -1,6 +1,6 @@
 {
   "type": "flex",
-  "altText": "น้ำบ้านลำพาย · ยังยืนยันไม่ได้ · ↗ เพิ่มขึ้น · ยังไม่ทราบความสดใหม่ · ข้อมูลยังยืนยันไม่ได้",
+  "altText": "พยากรณ์อากาศพัทลุง · 4 ตุลาคม 2569",
   "contents": {
     "type": "carousel",
     "contents": [
@@ -10,284 +10,44 @@
         "body": {
           "type": "box",
           "layout": "vertical",
-          "paddingAll": "md",
-          "backgroundColor": "#F8FAFC",
+          "paddingAll": "lg",
+          "backgroundColor": "#FFFFFF",
           "contents": [
             {
               "type": "text",
-              "text": "น้องจุ่นจ้าน · บ้านลำพาย · ต.โคกชะงาย · 4 ตุลาคม 2569",
-              "size": "xs",
-              "color": "#334155",
+              "text": "4 ตุลาคม 2569",
+              "size": "md",
+              "weight": "bold",
+              "color": "#075985",
               "wrap": true
             },
             {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "width": "32px",
-                  "height": "32px",
-                  "cornerRadius": "16px",
-                  "backgroundColor": "#E2E8F0",
-                  "justifyContent": "center",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "❔",
-                      "size": "md",
-                      "color": "#0F172A",
-                      "wrap": true,
-                      "align": "center"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "text": "ยังยืนยันไม่ได้",
-                  "size": "lg",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "xs",
-              "contents": [
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "paddingAll": "xs",
-                  "cornerRadius": "md",
-                  "backgroundColor": "#E2E8F0",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "↗ เพิ่มขึ้น",
-                      "size": "xs",
-                      "weight": "bold",
-                      "color": "#334155",
-                      "wrap": true
-                    }
-                  ]
-                },
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "paddingAll": "xs",
-                  "cornerRadius": "md",
-                  "backgroundColor": "#F1F5F9",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "ยังไม่ทราบเวลาข้อมูล",
-                      "size": "xs",
-                      "weight": "bold",
-                      "color": "#334155",
-                      "wrap": true
-                    }
-                  ]
-                }
-              ]
-            },
-            {
               "type": "text",
-              "text": "ยังยืนยันสถานการณ์น้ำล่าสุดไม่ได้",
+              "text": "ศาลาอเนกประสงค์ บ้านลำพาย",
               "size": "sm",
               "weight": "bold",
               "color": "#0F172A",
               "wrap": true
             },
             {
-              "type": "box",
-              "layout": "vertical",
-              "spacing": "sm",
-              "margin": "md",
-              "contents": [
-                {
-                  "type": "button",
-                  "style": "primary",
-                  "height": "sm",
-                  "color": "#475569",
-                  "action": {
-                    "type": "uri",
-                    "label": "เปิด CCTV",
-                    "uri": "https://cctv.maholan.net/"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        "type": "bubble",
-        "size": "kilo",
-        "body": {
-          "type": "box",
-          "layout": "vertical",
-          "paddingAll": "md",
-          "backgroundColor": "#F8FAFC",
-          "contents": [
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "ตรวจสอบข้อมูลต้นทาง",
-                  "size": "md",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true,
-                  "flex": 1
-                },
-                {
-                  "type": "text",
-                  "text": "ข้อจำกัดข้อมูล",
-                  "size": "xs",
-                  "color": "#475569",
-                  "wrap": true,
-                  "align": "end"
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "width": "32px",
-                  "height": "32px",
-                  "cornerRadius": "16px",
-                  "backgroundColor": "#E2E8F0",
-                  "justifyContent": "center",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "❔",
-                      "size": "md",
-                      "color": "#0F172A",
-                      "wrap": true,
-                      "align": "center"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "text": "ยังยืนยันไม่ได้",
-                  "size": "lg",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true
-                }
-              ]
+              "type": "separator",
+              "margin": "sm",
+              "color": "#DBEAFE"
             },
             {
               "type": "text",
-              "text": "ข้อมูลยังยืนยันไม่ได้",
-              "size": "sm",
+              "text": "พยากรณ์อากาศประจำวันนี้",
+              "size": "lg",
               "weight": "bold",
-              "color": "#0F172A",
+              "color": "#0C4A6E",
               "wrap": true
             },
             {
               "type": "text",
-              "text": "แหล่งข้อมูล: ศูนย์ข้อมูลน้ำพัทลุง",
-              "size": "xs",
+              "text": "สภาพอากาศ · มีเมฆบางส่วน",
+              "size": "sm",
               "color": "#334155",
               "wrap": true
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "paddingAll": "xs",
-              "cornerRadius": "md",
-              "backgroundColor": "#E2E8F0",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "ยังไม่ทราบเวลาข้อมูล",
-                  "size": "xs",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "spacing": "sm",
-              "margin": "md",
-              "contents": [
-                {
-                  "type": "button",
-                  "style": "secondary",
-                  "height": "sm",
-                  "action": {
-                    "type": "uri",
-                    "label": "ดูสถานการณ์น้ำ",
-                    "uri": "https://chachoengsao-flood.vercel.app/phatthalung"
-                  }
-                },
-                {
-                  "type": "button",
-                  "style": "primary",
-                  "height": "sm",
-                  "color": "#475569",
-                  "action": {
-                    "type": "uri",
-                    "label": "เปิด CCTV",
-                    "uri": "https://cctv.maholan.net/"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        "type": "bubble",
-        "size": "kilo",
-        "body": {
-          "type": "box",
-          "layout": "vertical",
-          "paddingAll": "md",
-          "backgroundColor": "#F8FAFC",
-          "contents": [
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "อากาศวันนี้",
-                  "size": "md",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true,
-                  "flex": 1
-                },
-                {
-                  "type": "text",
-                  "text": "อากาศ",
-                  "size": "xs",
-                  "color": "#475569",
-                  "wrap": true,
-                  "align": "end"
-                }
-              ]
             },
             {
               "type": "box",
@@ -300,43 +60,21 @@
                   "flex": 1,
                   "paddingAll": "sm",
                   "cornerRadius": "md",
-                  "backgroundColor": "#F8FAFC",
+                  "backgroundColor": "#EFF6FF",
                   "contents": [
                     {
-                      "type": "box",
-                      "layout": "horizontal",
-                      "spacing": "xs",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "🌡️",
-                          "size": "sm",
-                          "color": "#0F172A",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "อุณหภูมิ",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#334155",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
                       "type": "text",
-                      "text": "28°C",
-                      "size": "md",
-                      "weight": "bold",
-                      "color": "#0F172A",
+                      "text": "อุณหภูมิ",
+                      "size": "xs",
+                      "color": "#334155",
                       "wrap": true
                     },
                     {
                       "type": "text",
-                      "text": "ต่ำ 24° · สูง 32°",
-                      "size": "xs",
-                      "color": "#475569",
+                      "text": "ต่ำ 24° · สูง 32°C",
+                      "size": "sm",
+                      "weight": "bold",
+                      "color": "#0C4A6E",
                       "wrap": true
                     }
                   ]
@@ -347,130 +85,21 @@
                   "flex": 1,
                   "paddingAll": "sm",
                   "cornerRadius": "md",
-                  "backgroundColor": "#F8FAFC",
+                  "backgroundColor": "#EFF6FF",
                   "contents": [
                     {
-                      "type": "box",
-                      "layout": "horizontal",
-                      "spacing": "xs",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "🌧️",
-                          "size": "sm",
-                          "color": "#0F172A",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "โอกาสฝนสูงสุด",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#334155",
-                          "wrap": true
-                        }
-                      ]
+                      "type": "text",
+                      "text": "โอกาสฝนสูงสุดวันนี้",
+                      "size": "xs",
+                      "color": "#334155",
+                      "wrap": true
                     },
                     {
                       "type": "text",
                       "text": "70%",
-                      "size": "md",
+                      "size": "sm",
                       "weight": "bold",
-                      "color": "#0F172A",
-                      "wrap": true
-                    },
-                    {
-                      "type": "text",
-                      "text": "ช่วงบ่าย",
-                      "size": "xs",
-                      "color": "#475569",
-                      "wrap": true
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "flex": 1,
-                  "paddingAll": "sm",
-                  "cornerRadius": "md",
-                  "backgroundColor": "#F8FAFC",
-                  "contents": [
-                    {
-                      "type": "box",
-                      "layout": "horizontal",
-                      "spacing": "xs",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "💧",
-                          "size": "sm",
-                          "color": "#0F172A",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "ความชื้น",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#334155",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "text": "72%",
-                      "size": "md",
-                      "weight": "bold",
-                      "color": "#0F172A",
-                      "wrap": true
-                    }
-                  ]
-                },
-                {
-                  "type": "box",
-                  "layout": "vertical",
-                  "flex": 1,
-                  "paddingAll": "sm",
-                  "cornerRadius": "md",
-                  "backgroundColor": "#F8FAFC",
-                  "contents": [
-                    {
-                      "type": "box",
-                      "layout": "horizontal",
-                      "spacing": "xs",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "💨",
-                          "size": "sm",
-                          "color": "#0F172A",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "ลม",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#334155",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "text": "11 กม./ชม.",
-                      "size": "md",
-                      "weight": "bold",
-                      "color": "#0F172A",
+                      "color": "#0C4A6E",
                       "wrap": true
                     }
                   ]
@@ -479,12 +108,133 @@
             },
             {
               "type": "text",
-              "text": "พยากรณ์อากาศไม่ใช่หลักฐานยืนยันน้ำท่วม",
+              "text": "ช่วงเวลา",
+              "size": "sm",
+              "weight": "bold",
+              "color": "#075985",
+              "wrap": true,
+              "margin": "md"
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "paddingAll": "xs",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ช่วงเช้า",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#334155",
+                  "wrap": true,
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "ฝน 25%",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#0C4A6E",
+                  "wrap": true,
+                  "align": "end"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "paddingAll": "xs",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ช่วงบ่าย",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#334155",
+                  "wrap": true,
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "ฝน 70% · 2.2 มม.",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#0C4A6E",
+                  "wrap": true,
+                  "align": "end"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "spacing": "sm",
+              "paddingAll": "xs",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "ช่วงเย็น/ค่ำ",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#334155",
+                  "wrap": true,
+                  "flex": 1
+                },
+                {
+                  "type": "text",
+                  "text": "ฝน 15%",
+                  "size": "xs",
+                  "weight": "bold",
+                  "color": "#0C4A6E",
+                  "wrap": true,
+                  "align": "end"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "อื่นๆ",
+              "size": "sm",
+              "weight": "bold",
+              "color": "#075985",
+              "wrap": true,
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "ขณะนี้ 28°C · รู้สึกเหมือน 30°C · ความชื้น 72% · ลม 11 กม./ชม.",
               "size": "xs",
               "color": "#334155",
               "wrap": true
             }
           ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "margin": "md",
+          "contents": [
+            {
+              "type": "button",
+              "style": "primary",
+              "color": "#1769AA",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "ศูนย์ช่วยเหลือพัทลุง",
+                "uri": "https://chachoengsao-flood.vercel.app/phatthalung"
+              }
+            }
+          ]
+        },
+        "styles": {
+          "footer": {
+            "separator": true,
+            "backgroundColor": "#FFFFFF"
+          }
         }
       },
       {
@@ -493,109 +243,45 @@
         "body": {
           "type": "box",
           "layout": "vertical",
-          "paddingAll": "md",
-          "backgroundColor": "#F8FAFC",
+          "paddingAll": "none",
+          "backgroundColor": "#FFFFFF",
           "contents": [
             {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "แหล่งข้อมูลและเวลาอัปเดต",
-                  "size": "md",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true,
-                  "flex": 1
-                },
-                {
-                  "type": "text",
-                  "text": "แหล่งข้อมูล",
-                  "size": "xs",
-                  "color": "#475569",
-                  "wrap": true,
-                  "align": "end"
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "paddingAll": "sm",
-              "cornerRadius": "md",
-              "backgroundColor": "#FFFFFF",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "แหล่ง · ศูนย์ข้อมูลน้ำพัทลุง",
-                  "size": "xs",
-                  "color": "#334155",
-                  "wrap": true
-                },
-                {
-                  "type": "text",
-                  "text": "ผู้เผยแพร่ · ศูนย์ข้อมูลน้ำ",
-                  "size": "xs",
-                  "color": "#334155",
-                  "wrap": true
-                },
-                {
-                  "type": "text",
-                  "text": "เวลาสังเกต · 4 ต.ค. 19:30",
-                  "size": "xs",
-                  "color": "#334155",
-                  "wrap": true
-                },
-                {
-                  "type": "text",
-                  "text": "เวลาดึงข้อมูล · 4 ต.ค. 19:30",
-                  "size": "xs",
-                  "color": "#334155",
-                  "wrap": true
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "spacing": "sm",
-              "margin": "md",
-              "contents": [
-                {
-                  "type": "button",
-                  "style": "secondary",
-                  "height": "sm",
-                  "action": {
-                    "type": "uri",
-                    "label": "ดูสถานการณ์น้ำ",
-                    "uri": "https://chachoengsao-flood.vercel.app/phatthalung"
-                  }
-                },
-                {
-                  "type": "button",
-                  "style": "secondary",
-                  "height": "sm",
-                  "action": {
-                    "type": "uri",
-                    "label": "เปิด CCTV",
-                    "uri": "https://cctv.maholan.net/"
-                  }
-                },
-                {
-                  "type": "button",
-                  "style": "secondary",
-                  "height": "sm",
-                  "action": {
-                    "type": "uri",
-                    "label": "ดูเรดาร์ฝน",
-                    "uri": "https://chachoengsao-flood.vercel.app/phatthalung/weather"
-                  }
-                }
-              ]
+              "type": "image",
+              "url": "https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/2_20261005_193645_0003.jpg",
+              "size": "full",
+              "aspectRatio": "4:5",
+              "aspectMode": "fit",
+              "align": "center",
+              "gravity": "center",
+              "alt": "อัปเดตระดับน้ำจังหวัดพัทลุง"
             }
           ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "margin": "md",
+          "contents": [
+            {
+              "type": "button",
+              "style": "primary",
+              "color": "#1769AA",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "แผนที่ระดับน้ำพัทลุง",
+                "uri": "https://chachoengsao-flood.vercel.app/phatthalung/map"
+              }
+            }
+          ]
+        },
+        "styles": {
+          "footer": {
+            "separator": true,
+            "backgroundColor": "#FFFFFF"
+          }
         }
       },
       {
@@ -604,209 +290,92 @@
         "body": {
           "type": "box",
           "layout": "vertical",
-          "paddingAll": "md",
-          "backgroundColor": "#F8FAFC",
+          "paddingAll": "none",
+          "backgroundColor": "#FFFFFF",
           "contents": [
             {
-              "type": "box",
-              "layout": "horizontal",
-              "spacing": "sm",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "พื้นที่และเส้นทาง",
-                  "size": "md",
-                  "weight": "bold",
-                  "color": "#334155",
-                  "wrap": true,
-                  "flex": 1
-                },
-                {
-                  "type": "text",
-                  "text": "พื้นที่และเส้นทาง",
-                  "size": "xs",
-                  "color": "#475569",
-                  "wrap": true,
-                  "align": "end"
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "vertical",
-              "margin": "md",
-              "contents": [
-                {
-                  "type": "box",
-                  "layout": "horizontal",
-                  "spacing": "sm",
-                  "contents": [
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "flex": 1,
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "📍 สถานี",
-                          "size": "sm",
-                          "weight": "bold",
-                          "color": "#0F172A",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "คลอง1",
-                          "size": "xs",
-                          "color": "#475569",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "ปกติ",
-                          "size": "xs",
-                          "color": "#334155",
-                          "wrap": true
-                        },
-                        {
-                          "type": "text",
-                          "text": "↗ เพิ่มขึ้น",
-                          "size": "xs",
-                          "color": "#475569",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "ต่ำกว่าตลิ่ง 0.42 เมตร",
-                          "size": "sm",
-                          "weight": "bold",
-                          "color": "#0F172A",
-                          "wrap": true,
-                          "align": "end"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "box",
-                  "layout": "horizontal",
-                  "spacing": "xs",
-                  "margin": "sm",
-                  "contents": [
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "paddingAll": "xs",
-                      "cornerRadius": "md",
-                      "backgroundColor": "#CCFBF1",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "ปกติ",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#115E59",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "paddingAll": "xs",
-                      "cornerRadius": "md",
-                      "backgroundColor": "#F1F5F9",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "น้ำมาก",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#475569",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "paddingAll": "xs",
-                      "cornerRadius": "md",
-                      "backgroundColor": "#F1F5F9",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "ใกล้ล้นตลิ่ง",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#475569",
-                          "wrap": true
-                        }
-                      ]
-                    },
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "paddingAll": "xs",
-                      "cornerRadius": "md",
-                      "backgroundColor": "#F1F5F9",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "ล้นตลิ่ง",
-                          "size": "xs",
-                          "weight": "bold",
-                          "color": "#475569",
-                          "wrap": true
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "paddingAll": "sm",
-              "cornerRadius": "sm",
-              "backgroundColor": "#F8FAFC",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "📍 พื้นที่ · ชุมชนริมน้ำ",
-                  "size": "sm",
-                  "weight": "bold",
-                  "color": "#0F172A",
-                  "wrap": true
-                }
-              ]
-            },
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "paddingAll": "sm",
-              "cornerRadius": "sm",
-              "backgroundColor": "#EFF6FF",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "🛣️ ถนน · ถนนตัวอย่าง",
-                  "size": "sm",
-                  "weight": "bold",
-                  "color": "#0F172A",
-                  "wrap": true
-                }
-              ]
+              "type": "image",
+              "url": "https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/4_20261005_193645_0004.jpg",
+              "size": "full",
+              "aspectRatio": "4:5",
+              "aspectMode": "fit",
+              "align": "center",
+              "gravity": "center",
+              "alt": "แผนที่ระดับน้ำจังหวัดพัทลุง"
             }
           ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "margin": "md",
+          "contents": [
+            {
+              "type": "button",
+              "style": "primary",
+              "color": "#1769AA",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "พยากรณ์ / เรดาร์",
+                "uri": "https://chachoengsao-flood.vercel.app/phatthalung/weather"
+              }
+            }
+          ]
+        },
+        "styles": {
+          "footer": {
+            "separator": true,
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "paddingAll": "none",
+          "backgroundColor": "#FFFFFF",
+          "contents": [
+            {
+              "type": "image",
+              "url": "https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/6_20261005_193645_0005.jpg",
+              "size": "full",
+              "aspectRatio": "4:5",
+              "aspectMode": "fit",
+              "align": "center",
+              "gravity": "center",
+              "alt": "ภาพสด CCTV สำหรับติดตามสถานการณ์น้ำ"
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "margin": "md",
+          "contents": [
+            {
+              "type": "button",
+              "style": "primary",
+              "color": "#1769AA",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "ภาพสด / CCTV",
+                "uri": "https://chachoengsao-flood.vercel.app/phatthalung/weather"
+              }
+            }
+          ]
+        },
+        "styles": {
+          "footer": {
+            "separator": true,
+            "backgroundColor": "#FFFFFF"
+          }
         }
       }
     ]

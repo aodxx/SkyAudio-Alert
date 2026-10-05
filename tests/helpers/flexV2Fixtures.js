@@ -1,6 +1,5 @@
 const { normalizeFloodSituation } = require('../../src/flood/contract');
 const { buildFactsSnapshot } = require('../../src/presentation/facts');
-const { buildVisualPlan } = require('../../src/presentation/visualPlan');
 
 const FIXED_NOW = '2026-10-04T12:30:00.000Z';
 const LOCATION = { name: 'บ้านลำพาย', district: 'ต.โคกชะงาย', province: 'พัทลุง', timezone: 'Asia/Bangkok' };
@@ -50,8 +49,7 @@ function createFlexInput({ severity = 'watch', stale = false, stationVariant = '
     } },
   } : {};
   const factsSnapshot = buildFactsSnapshot({ floodSituation, weatherAnalysis, location: LOCATION, dateInfo: { date: '4 ตุลาคม 2569' } });
-  const visualPlan = buildVisualPlan(factsSnapshot);
-  return { factsSnapshot, visualPlan, floodSituation, weatherAnalysis, location: LOCATION };
+  return { factsSnapshot, floodSituation, weatherAnalysis, location: LOCATION };
 }
 
 module.exports = { FIXED_NOW, LOCATION, createFlexInput };

@@ -14,7 +14,7 @@
 น้องจุ่นจ้านเป็นผู้ช่วยรายงานสถานการณ์น้ำสำหรับชุมชนบ้านลำพาย โดยมี **สถานการณ์น้ำท่วมเป็นข้อมูลหลัก** และใช้พยากรณ์อากาศเป็นข้อมูลประกอบ
 
 ทุกเช้าประมาณ 06:00 Asia/Bangkok ระบบสร้างและส่ง:
-1. LINE Flex Message — flood-first, compact
+1. LINE Flex Message — carousel 4 ใบขนาดกะทัดรัด โดยการ์ดแรกเป็นพยากรณ์อากาศ
 2. LINE Audio Message — บทพูดภาษาไทยที่ปรับตามสถานการณ์ของวัน
 
 Production runtime ต้องทำงานอัตโนมัติผ่าน GitHub Actions และไม่พึ่ง Manus/AI Agent
@@ -43,13 +43,14 @@ Gemini เป็น narrative layer เท่านั้น:
 ### Gemini TTS
 รองรับ profile male-friendly (default) และ female-friendly โดย model/voice มาจาก configuration และต้องตรวจ availability กับ API key จริงก่อน production
 
-### Flex
-ต้อง compact และอ่านง่ายบนมือถือ: identity strip, flood status hero, update/freshness, key facts/action, gradient groups พร้อม solid fallback, weather เฉพาะข้อมูลที่จำเป็น, footer/source/audio cue
+### Flex — current four-card layout (Decision 024)
+แสดง carousel 4 ใบเรียงตามแนวนอน ทุกใบใช้ขนาด `kilo`:
+1. **พยากรณ์อากาศวันนี้** — ไม่มีภาพ; วันที่, ศาลาอเนกประสงค์ บ้านลำพาย, สภาพอากาศ/อุณหภูมิ, ความน่าจะเป็นฝนแยกเช้า/บ่าย/เย็น และข้อมูลอื่นเท่าที่มีใน FactsSnapshot; ปิดท้ายด้วยปุ่มศูนย์ช่วยเหลือพัทลุง → https://chachoengsao-flood.vercel.app/phatthalung
+2. **ภาพสรุประดับน้ำพัทลุง** (`2_20261005_193645_0003.jpg`) + ปุ่มแผนที่ระดับน้ำ → https://chachoengsao-flood.vercel.app/phatthalung/map
+3. **ภาพแผนที่ระดับน้ำ** (`4_20261005_193645_0004.jpg`) + ปุ่มพยากรณ์/เรดาร์ → https://chachoengsao-flood.vercel.app/phatthalung/weather
+4. **ภาพ CCTV** (`6_20261005_193645_0005.jpg`) + ปุ่มภาพสด/CCTV → https://chachoengsao-flood.vercel.app/phatthalung/weather
 
-ปุ่มหลัก:
-1. ดูสถานะน้ำ / CCTV → https://cctv.maholan.net/
-2. สถานการณ์น้ำพัทลุง / แหล่งข้อมูล → https://chachoengsao-flood.vercel.app/phatthalung
-3. พยากรณ์อากาศ / เรดาร์ฝน → https://chachoengsao-flood.vercel.app/phatthalung/weather (secondary)
+ใบที่ 1 ไม่มี image component; ใบ 2–4 มีภาพสัดส่วนเดิม 4:5 และมีปุ่มใน footer. ค่า forecast ที่ไม่มีต้องละเว้นหรือแจ้งว่าไม่มีข้อมูล ห้ามแต่งขึ้น. ภาพทั้งสามเป็น static assets ไม่ได้ refresh โดย adapter; ข้อความสถานที่บนภาพ CCTV ไม่ตรงพัทลุง เป็น asset ที่ผู้ใช้เลือกให้ใช้ตามต้นฉบับและไม่ใช่ข้อมูลยืนยันตำแหน่งกล้อง.
 
 ### Safety
 ห้าม fabricate ตัวเลข เวลา จุดวัด ถนน หรือเหตุการณ์; ห้าม infer actual flooding from forecast alone; ห้ามพูดราคาปาล์ม/ยางหรือข่าวทั่วไป; ห้ามอ้างว่า “ปลอดภัยแน่นอน”; ห้ามให้ Gemini browse web เพื่อสร้าง facts; ห้ามพูด URL ยาวในเสียง
@@ -89,7 +90,7 @@ Gemini เป็น narrative layer เท่านั้น:
 
 ## 6. Authoritative pipeline
 
-Flood source → adapter/normalize/freshness/severity → Weather source → normalize/analyze → verified flood/weather facts → { FactsSnapshot → VisualPlan → Flex V2 + lint; independent 10-section narration → safety validator → Gemini TTS → duration validation/store } → LINE Flex first → Audio
+Flood source → adapter/normalize/freshness/severity → Weather source → normalize/analyze → verified flood/weather facts → { FactsSnapshot → fixed four-card Flex + lint; independent 10-section narration → safety validator → Gemini TTS → duration validation/store } → LINE Flex first → Audio
 
 ## 7. Failure policy
 
