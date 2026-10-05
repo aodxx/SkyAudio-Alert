@@ -1,133 +1,11 @@
-// src/content/presentationPlanner.js
-// Gemini may phrase and organize the presentation; flood severity stays adapter-owned.
+// src/content/narrator.js
+// Audio narration is generated independently from the Flex visual plan.
 const { buildGeminiReportInput } = require('./reportContract');
-const { parsePresentationPlan, buildPresentationPlanFallback } = require('./presentationContract');
 const { GEMINI_BASE_URL, fetchGeminiContent, parseGeminiJsonText } = require('./geminiReport');
 
 function extractText(json) {
   return json?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim() || '';
 }
-
-function plannerSchema() {
-  return {
-    type: 'OBJECT',
-    properties: {
-      cards: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
-        id: { type: 'STRING' },
-        role: { type: 'STRING', enum: ['hero', 'action', 'facts', 'impact', 'weather', 'source', 'uncertainty'] },
-        title: { type: 'STRING' }, body: { type: 'STRING' },
-        items: { type: 'ARRAY', items: { type: 'STRING' } },
-        cta: { type: 'ARRAY', items: { type: 'OBJECT', properties: { label: { type: 'STRING' }, uri: { type: 'STRING' } }, required: ['label', 'uri'] } },
-      }, required: ['id', 'role', 'title', 'body', 'items', 'cta'] } },
-      spokenText: { type: 'STRING' },
-      spokenSections: { type: 'ARRAY', items: { type: 'STRING' } },
-      audioStyle: { type: 'OBJECT', properties: {
-        tone: { type: 'STRING', enum: ['calm', 'friendly', 'urgent'] },
-        pacing: { type: 'STRING' },
-        detailLevel: { type: 'STRING', enum: ['standard', 'detailed', 'high'] },
-        emphasis: { type: 'ARRAY', items: { type: 'STRING' } },
-      }, required: ['tone', 'pacing', 'detailLevel', 'emphasis'] },
-      actions: { type: 'ARRAY', items: { type: 'STRING' } },
-      warnings: { type: 'ARRAY', items: { type: 'STRING' } },
-      factsUsed: { type: 'ARRAY', items: { type: 'STRING' } },
-    },
-    required: ['cards', 'spokenText', 'spokenSections', 'audioStyle', 'actions', 'warnings', 'factsUsed'],
-  };
-}
-
-async function generatePresentationPlan(context, config, opts = {}) {
-  const expectedSeverity = context.floodSituation?.severity || 'unknown';
-  const fallback = () => {
-    const raw = buildPresentationPlanFallback({ floodSituation: context.floodSituation, weatherAnalysis: context.weatherAnalysis, report: context.report });
-    const parsed = parsePresentationPlan(raw, { expectedSeverity });
-    if (!parsed.ok) throw new Error(parsed.errors.join('; '));
-    return { ...parsed.plan, provider: 'fallback' };
-  };
-  if (!config?.content?.apiKey) {
-    if (config?.mode === 'production' && !config.dryRun) throw new Error('GEMINI_API_KEY is not configured');
-    return fallback();
-  }
-
-  const input = buildGeminiReportInput({
-    floodSituation: context.floodSituation,
-    weatherAnalysis: context.weatherAnalysis,
-    location: context.location,
-    date: context.date,
-  });
-  const prompt = [
-    'คุณคือ Presentation Planner ของน้องจุ่นจ้าน ไม่ใช่แหล่งข้อเท็จจริง',
-    'สร้างรายงานภาษาไทยโดยใช้เฉพาะ facts JSON ที่ให้มา ห้ามค้นเว็บ ห้ามเดา ห้ามเพิ่มตัวเลข สถานี ถนน เวลา หรือเหตุการณ์',
-    'ห้ามส่งคืน severity, priority หรือ visualVariant; ระบบจะเติมสถานะจาก flood adapter เอง',
-    'Card 1 ต้องอ่านจบได้เองและบอกสถานการณ์น้ำทันที; critical ต้องมีคำแนะนำสำคัญใน Card 1; unknown ต้องบอกความไม่แน่นอน',
-    'เลือกจำนวนการ์ดตามความสำคัญ ไม่ต้องมีจำนวนตายตัว และทำให้แต่ละการ์ดสั้นสำหรับการเลื่อนแนวนอน',
-    'เสียงยังใช้ข้อกำหนดเดิมใน P2; ห้ามพูดถึงราคาปาล์ม ราคายาง ข่าวสารทั่วไป และห้ามใช้คำยืนยันเกิน facts',
-    'CTA ใช้ได้เฉพาะ https://cctv.maholan.net/ https://chachoengsao-flood.vercel.app/phatthalung https://chachoengsao-flood.vercel.app/phatthalung/weather',
-    'ตอบ JSON ตาม schema เท่านั้น', JSON.stringify(input),
-  ].join('\n');
-  const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: {
-    responseMimeType: 'application/json',
-    thinkingConfig: { thinkingLevel: config.content.thinkingLevel },
-    responseSchema: plannerSchema(),
-  } };
-  const url = GEMINI_BASE_URL + '/' + encodeURIComponent(config.content.model) + ':generateContent';
-  const fetchImpl = opts.fetchImpl || fetch;
-  const result = await fetchGeminiContent(fetchImpl, url, {
-    method: 'POST',
-    headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  }, opts.maxAttempts || 2);
-  let response = result?.response || result;
-
-  // A 429 on the primary presentation model can be a model-specific
-  // free-tier/request quota. Keep the verified facts unchanged and retry
-  // the same presentation request on the explicitly configured fallback model.
-  if (!response.ok && response.status === 429 && config.content.fallbackModel && config.content.fallbackModel !== config.content.model) {
-    const fallbackUrl = GEMINI_BASE_URL + '/' + encodeURIComponent(config.content.fallbackModel) + ':generateContent';
-    const fallbackResult = await fetchGeminiContent(fetchImpl, fallbackUrl, {
-      method: 'POST',
-      headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }, opts.fallbackMaxAttempts || 1);
-    const fallbackResponse = fallbackResult?.response || fallbackResult;
-    if (fallbackResponse.ok) {
-      const fallbackPlan = parsePresentationPlan(
-        parseGeminiJsonText(extractText(await fallbackResponse.json())),
-        { expectedSeverity },
-      );
-      if (!fallbackPlan.ok) {
-        throw Object.assign(new Error('Gemini presentation fallback model validation failed: ' + fallbackPlan.errors.join('; ')), {
-          stage: 'content.presentation',
-        });
-      }
-      return {
-        ...fallbackPlan.plan,
-        factsUsed: fallbackPlan.plan.factsUsed.length ? fallbackPlan.plan.factsUsed : (context.report?.factsUsed || []),
-        provider: 'gemini-fallback',
-      };
-    }
-    // Keep the pipeline usable when both presentation models are unavailable
-    // for a retryable provider error. The deterministic plan is still checked
-    // against the verified adapter facts by the pipeline firewall.
-    if (fallbackResponse.status === 429 || fallbackResponse.status >= 500) return fallback();
-  }
-
-  if (!response.ok && response.status === 503) {
-    const recoveryBody = { contents: [{ role: 'user', parts: [{ text: prompt + '\nหาก schema ไม่ได้ ให้ตอบ JSON ธรรมดาเท่านั้น ห้ามใส่ markdown' }] }] };
-    const recovery = await fetchGeminiContent(fetchImpl, url, {
-      method: 'POST',
-      headers: { 'x-goog-api-key': config.content.apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify(recoveryBody),
-    }, opts.recoveryAttempts || 1);
-    response = recovery?.response || recovery;
-  }
-  if (!response.ok) throw Object.assign(new Error('Gemini presentation plan request failed: ' + response.status), {
-    stage: 'content.presentation', retryable: response.status === 429 || response.status >= 500,
-  });
-  const parsed = parsePresentationPlan(parseGeminiJsonText(extractText(await response.json())), { expectedSeverity });
-  if (!parsed.ok) throw Object.assign(new Error('Gemini presentation plan validation failed: ' + parsed.errors.join('; ')), { stage: 'content.presentation' });
-  return { ...parsed.plan, factsUsed: parsed.plan.factsUsed.length ? parsed.plan.factsUsed : (context.report?.factsUsed || []), provider: 'gemini' };
-}
-
 
 function narrationSchema() {
   return {
@@ -144,9 +22,9 @@ function narrationSchema() {
   };
 }
 
-function buildQuotaSafeLongFormNarration(context, plan) {
+function buildQuotaSafeLongFormNarration(context) {
   const flood = context?.floodSituation || {};
-  const base = String(plan?.spokenText || context?.report?.spokenText || flood.summary || 'รายงานสถานการณ์น้ำบ้านลำพายวันนี้').trim();
+  const base = String(flood.summary || 'รายงานสถานการณ์น้ำบ้านลำพายวันนี้').trim();
   const actions = Array.isArray(flood.actions) ? flood.actions.filter(Boolean).join(' ') : '';
   const freshness = flood.freshness?.state === 'stale'
     ? 'ข้อมูลสถานการณ์น้ำที่ใช้ในรอบนี้มีความสดใหม่ไม่เพียงพอ จึงควรอ่านผลด้วยความระมัดระวังและตรวจสอบแหล่งข้อมูลล่าสุดเพิ่มเติม'
@@ -182,16 +60,16 @@ function buildQuotaSafeLongFormNarration(context, plan) {
     id: 'section-' + (index + 1),
     title: ['เปิดรายการ', 'สถานการณ์น้ำ', 'ข้อมูลสำคัญ', 'แนวโน้ม', 'ข้อจำกัดข้อมูล', 'อากาศวันนี้', 'ทำความเข้าใจพยากรณ์', 'สิ่งที่ควรทำ', 'สรุป', 'ปิดรายการ'][index],
     text: text + ' ' + storytellerExpansions[index % storytellerExpansions.length] + ' ' + storytellerExpansions[(index + 1) % storytellerExpansions.length],
-    factsUsed: plan?.factsUsed || [],
+    factsUsed: context?.factsSnapshot?.factIds || [],
   }));
   const spokenText = sections.map((section) => section.text).join('\n');
   return { sections, spokenText, totalCharacters: spokenText.length, provider: 'quota-safe-fallback' };
 }
 
-async function generateLongFormNarration(context, plan, config, opts = {}) {
+async function generateLongFormNarration(context, config, opts = {}) {
   if (!config?.content?.apiKey) {
     if (config?.mode === 'production' && !config.dryRun) throw Object.assign(new Error('GEMINI_API_KEY is not configured for long-form narration'), { stage: 'content.narration' });
-    const base = String(plan?.spokenText || context?.report?.spokenText || 'รายงานสถานการณ์น้ำบ้านลำพายวันนี้');
+    const base = String(context?.floodSituation?.summary || 'รายงานสถานการณ์น้ำบ้านลำพายวันนี้');
     const explainers = [
       'ช่วงนี้เราจะค่อย ๆ ทำความเข้าใจข้อมูลที่มีอยู่ โดยย้ำว่าข้อมูลสถานการณ์น้ำต้องอ่านจากแหล่งที่ตรวจสอบได้ และข้อมูลพยากรณ์อากาศเป็นข้อมูลประกอบ ไม่ใช่หลักฐานยืนยันน้ำท่วม',
       'การติดตามสถานการณ์ที่ดีไม่ใช่การรีบสรุปจากข้อมูลเพียงอย่างเดียว แต่ควรดูเวลาอัปเดต แนวโน้ม และข้อมูลจากจุดตรวจร่วมกัน แล้วค่อยตัดสินใจตามสิ่งที่แหล่งข้อมูลยืนยัน',
@@ -202,7 +80,7 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
       id: 'section-' + (index + 1),
       title: ['เปิดรายการ', 'สถานการณ์น้ำ', 'ข้อมูลสำคัญ', 'แนวโน้ม', 'ข้อจำกัดข้อมูล', 'อากาศวันนี้', 'ทำความเข้าใจพยากรณ์', 'สิ่งที่ควรทำ', 'สรุป', 'ปิดรายการ'][index],
       text: (index === 0 ? 'สวัสดีครับพี่น้องบ้านลำพาย วันนี้น้องจุ่นจ้านจะมาเล่าให้ฟังแบบค่อย ๆ เป็นค่อย ๆ ไปครับ ' : '') + base + ' ' + explainers[index % explainers.length] + ' ' + explainers[(index + 1) % explainers.length] + ' ' + base,
-      factsUsed: plan?.factsUsed || [],
+      factsUsed: context?.factsSnapshot?.factIds || [],
     }));
     return { sections, spokenText: sections.map((section) => section.text).join('\n'), totalCharacters: sections.reduce((sum, section) => sum + section.text.length, 0), provider: 'fallback' };
   }
@@ -273,7 +151,7 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
     // announcement. This covers quota (429) and transient provider errors
     // (5xx) from the fallback model.
     if (fallbackResponse.status === 429 || fallbackResponse.status >= 500) {
-      return buildQuotaSafeLongFormNarration(context, plan);
+      return buildQuotaSafeLongFormNarration(context);
     }
   }
 
@@ -301,4 +179,4 @@ async function generateLongFormNarration(context, plan, config, opts = {}) {
   return { sections, spokenText: combined, totalCharacters: combined.length, provider: 'gemini' };
 }
 
-module.exports = { generatePresentationPlan, generateLongFormNarration, buildQuotaSafeLongFormNarration, plannerSchema, narrationSchema };
+module.exports = { generateLongFormNarration, buildQuotaSafeLongFormNarration, narrationSchema };

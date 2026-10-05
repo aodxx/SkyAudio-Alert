@@ -10,8 +10,8 @@ GitHub Actions → src/index.js → src/core/pipeline.js
 
 1. src/flood/phatthalungCenter.js → FloodSituation → normalize + freshness + severity
 2. src/weather/openMeteo.js → WeatherData → normalize + deterministic analysis
-3. src/content/geminiReport.js → validated ReportDraft
-4. src/flex/builder.js → compact flood-first Flex
+3. src/presentation/facts.js → FactsSnapshot → src/presentation/visualPlan.js → Flex V2 + lint
+4. src/content/narrator.js → narration from flood/weather facts → safety firewall
 5. src/audio/tts.js → Gemini TTS audio
 6. src/audio/validate.js + storage.js → validated public HTTPS audio URL
 7. src/line/messagingApi.js → LINE Flex → LINE Audio
@@ -24,9 +24,9 @@ Weather provides supporting forecast facts. It must never promote forecast rainf
 
 Gemini receives normalized safe facts only. It is not a source of truth and must not browse for facts.
 
-Flex renders the flood-first visual report and keeps water-status actions primary.
+Flex renders a deterministic flood-first visual brief directly from verified fact IDs; it does not consume generated narration text.
 
-Audio synthesizes, validates, stores and exposes the spoken report. Duration is adaptive; there is no fixed target.
+Audio narration is generated independently from the same source facts, then safety-checked, synthesized, validated, stored and exposed. It does not consume Flex cards or their text. The current measured-duration gate is >600 seconds.
 
 LINE sends Flex first and Audio second.
 
@@ -38,6 +38,7 @@ LINE sends Flex first and Audio second.
 4. Market/news content cannot enter the production report.
 5. Production success is not recorded if a required stage fails.
 6. Test/dry-run must not send LINE.
+7. Unsafe narration is replaced by a deterministic safe fallback or stopped before TTS.
 
 ## External services
 
