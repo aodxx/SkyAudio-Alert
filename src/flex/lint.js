@@ -69,7 +69,7 @@ function lintFlexMessage(message, { factsSnapshot } = {}) {
   const allowedImages = new Set(Object.values(CARD_IMAGE_URLS));
   for (const image of nodesOfType(message, 'image')) {
     if (!allowedImages.has(image.url)) errors.push('image URL is not allow-listed: ' + String(image.url));
-    if (!image.alt) errors.push('image must have descriptive alt text');
+    if (Object.prototype.hasOwnProperty.call(image, 'alt')) errors.push('image component contains unsupported alt field');
   }
   const allowedCtas = new Set(Object.values(CTA_URLS));
   for (const uri of collectUris(message)) {
@@ -108,7 +108,6 @@ function lintFlexMessage(message, { factsSnapshot } = {}) {
     if (index === 0 && !textNodes.some((node) => String(node.text || '').includes('พยากรณ์อากาศประจำวันนี้'))) {
       errors.push('card 1 needs a readable weather heading');
     }
-    if (index > 0 && !images[0]?.alt) errors.push(`card ${index + 1} needs accessible image text`);
     for (const node of textNodes) {
       const value = String(node.text ?? '').trim();
       if (!value) errors.push('bubble ' + index + ' contains an empty text node');

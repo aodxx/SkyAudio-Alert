@@ -9,9 +9,9 @@ const PERIODS = Object.freeze([
   ['evening', 'ช่วงเย็น/ค่ำ'],
 ]);
 const IMAGE_CARDS = Object.freeze([
-  { imageUrl: CARD_IMAGE_URLS.floodStatus, alt: 'อัปเดตระดับน้ำจังหวัดพัทลุง', ctaId: 'water-map' },
-  { imageUrl: CARD_IMAGE_URLS.waterMap, alt: 'แผนที่ระดับน้ำจังหวัดพัทลุง', ctaId: 'weather-radar' },
-  { imageUrl: CARD_IMAGE_URLS.cctv, alt: 'ภาพสด CCTV สำหรับติดตามสถานการณ์น้ำ', ctaId: 'cctv' },
+  { imageUrl: CARD_IMAGE_URLS.floodStatus, ctaId: 'water-map' },
+  { imageUrl: CARD_IMAGE_URLS.waterMap, ctaId: 'weather-radar' },
+  { imageUrl: CARD_IMAGE_URLS.cctv, ctaId: 'cctv' },
 ]);
 
 function fact(snapshot, id) {
@@ -115,7 +115,7 @@ function renderWeatherCard(snapshot) {
   contents.push(text(extras || 'ยังไม่มีข้อมูลเพิ่มเติม', { size: 'xs', color: TOKENS.text.secondary }));
   return makeBubble(contents, 'flood-source');
 }
-function renderImageCard({ imageUrl, alt, ctaId }) {
+function renderImageCard({ imageUrl, ctaId }) {
   return makeBubble([{
     type: 'image',
     url: imageUrl,
@@ -124,7 +124,6 @@ function renderImageCard({ imageUrl, alt, ctaId }) {
     aspectMode: 'fit',
     align: 'center',
     gravity: 'center',
-    alt,
   }], ctaId, { padding: 'none' });
 }
 function altText(snapshot) {

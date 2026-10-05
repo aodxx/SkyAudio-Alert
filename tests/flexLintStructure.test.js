@@ -23,8 +23,14 @@ test('Flex linter rejects an image hidden in the first card hero', () => {
     type: 'box', layout: 'vertical', contents: [{
       type: 'image',
       url: 'https://raw.githubusercontent.com/aodxx/SkyAudio-Alert/main/2_20261005_193645_0003.jpg',
-      size: 'full', aspectRatio: '4:5', aspectMode: 'fit', alt: 'ภาพระดับน้ำ',
+      size: 'full', aspectRatio: '4:5', aspectMode: 'fit',
     }],
   };
   assert.ok(lintFlexMessage(message).some((error) => error.includes('card 1 must not contain an image')));
+});
+
+test('Flex linter rejects the unsupported alt field on an image component', () => {
+  const message = buildFlexV2(createFlexInput({ severity: 'watch' }));
+  message.contents.contents[1].body.contents[0].alt = 'ภาพระดับน้ำ';
+  assert.ok(lintFlexMessage(message).some((error) => error.includes('unsupported alt field')));
 });

@@ -253,8 +253,7 @@
               "aspectRatio": "4:5",
               "aspectMode": "fit",
               "align": "center",
-              "gravity": "center",
-              "alt": "อัปเดตระดับน้ำจังหวัดพัทลุง"
+              "gravity": "center"
             }
           ]
         },
@@ -300,8 +299,7 @@
               "aspectRatio": "4:5",
               "aspectMode": "fit",
               "align": "center",
-              "gravity": "center",
-              "alt": "แผนที่ระดับน้ำจังหวัดพัทลุง"
+              "gravity": "center"
             }
           ]
         },
@@ -347,8 +345,7 @@
               "aspectRatio": "4:5",
               "aspectMode": "fit",
               "align": "center",
-              "gravity": "center",
-              "alt": "ภาพสด CCTV สำหรับติดตามสถานการณ์น้ำ"
+              "gravity": "center"
             }
           ]
         },
