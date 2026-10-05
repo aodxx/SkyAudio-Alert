@@ -34,3 +34,10 @@
 - [x] Push the update to PR #35, wait for both CI workflows, dispatch `Manual Flood-first test` on the feature branch with `dry_run=true`, then download and validate the preview artifact. Run `37348411728` recorded `line.send: skipped`; PR head SHA stayed unchanged. Audio validation rejected 101,088 ms (<180,000 ms), so the job ended degraded and no MP3 was included.
 
 **Outcome:** Preview-only run completed without any LINE request or Git mutation. Flex rendered and passed its four-card lint; the safety-checked fallback narration reached TTS, but the resulting audio was too short for the selected 3–5 minute contract. The exact Flex and script are available in the workflow artifact for review; no send approval has been requested or acted upon yet.
+
+
+## Follow-up — Gemini API fallback — 2026-10-06
+
+- Run `37361023956` did not reach TTS: Gemini content returned 503 on retries followed by 429, so the dry-run skipped LINE and produced status only.
+- The dry-run workflow lacked `GEMINI_CONTENT_FALLBACK_MODEL` even though the LINE TEST acceptance workflow already defines a fallback. Add the same safe default (`gemini-3.7-flash`) to the preview workflow, retain the numeric facts firewall, then retry dry-run.
+- Production remains NO-GO; any live delivery is limited to LINE TEST and must use a reviewed payload.
