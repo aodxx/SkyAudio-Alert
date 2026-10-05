@@ -52,6 +52,7 @@ function writeStatusReport(result, config, { repoRoot = process.cwd() } = {}) {
     dryRun: config.dryRun,
     stages: result.stages,
     lastError: result.lastError || null,
+    audioWithheld: result.audioWithheld === true,
     audio: result.audioInfo || null,
     generatedAt: new Date().toISOString(),
   };

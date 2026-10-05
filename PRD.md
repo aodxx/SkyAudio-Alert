@@ -33,8 +33,9 @@ Production runtime ต้องทำงานอัตโนมัติผ่�
 Gemini เป็น narrative layer เท่านั้น:
 - รับ normalized flood/weather facts
 - สร้าง spokenText และ shortSummary แบบ adaptive
-- Audio เป็น narrative แบบ "นักเล่าข่าวประจำหมู่บ้าน" 10 ช่วง และ **ต้องยาวกว่า 10 นาที (วัดจริงหลัง TTS; ≤ 600 วินาทีถือว่า FAIL และไม่ส่ง Audio)** — ดู Decision 022
-- ความยาวที่เพิ่มต้องมาจากคำอธิบาย/บริบท/สรุปที่ไม่สร้างข้อเท็จจริงใหม่ ห้ามแต่งตัวเลข สถานี ถนน เวลา หรือเหตุการณ์
+- Audio เป็น narrative แบบ "นักเล่าข่าวประจำหมู่บ้าน" 4 ช่วงที่เพิ่มรายละเอียดใหม่โดยไม่ทวนซ้ำ และมีเป้าหมาย **3–5 นาที** (วัดจริงหลัง TTS ด้วย ffprobe; ช่วงที่ยอมรับคือ 180,000–300,000 ms รวมขอบ)
+- ห้ามยืดบทด้วยข้อความซ้ำหรือเติมเพื่อให้ครบเวลา; หากเสียงสั้น/ยาวเกินช่วง หรือการสร้าง/ตรวจ/จัดเก็บ Audio ล้มเหลว ให้ withheld เฉพาะ Audio และยังส่ง Flex ที่ผ่าน lint ได้
+- ความยาวที่เพิ่มต้องมาจากคำอธิบาย/บริบทที่ไม่สร้างข้อเท็จจริงใหม่ ห้ามแต่งตัวเลข สถานี ถนน เวลา หรือเหตุการณ์
 - Flex เป็น visual brief (icon/สี/ตัวเลข/label มาก่อนข้อความ) และไม่ใช้ข้อความชุดเดียวกับ Audio
 - ห้ามสร้าง facts ที่ไม่มีใน input
 
@@ -90,16 +91,16 @@ Gemini เป็น narrative layer เท่านั้น:
 
 ## 6. Authoritative pipeline
 
-Flood source → adapter/normalize/freshness/severity → Weather source → normalize/analyze → verified flood/weather facts → { FactsSnapshot → fixed four-card Flex + lint; independent 10-section narration → safety validator → Gemini TTS → duration validation/store } → LINE Flex first → Audio
+Flood source → adapter/normalize/freshness/severity → Weather source → normalize/analyze → verified flood/weather facts → { FactsSnapshot → fixed four-card Flex + lint; independent four-topic narration → safety validator → one Gemini TTS call → ffprobe duration validation/store } → separate LINE Flex push → optional separate Audio push
 
 ## 7. Failure policy
 
 - flood fetch/parse failure → unknown flood state; do not fabricate
 - weather failure → do not fabricate weather
-- Gemini content failure/invalid output → deterministic short safety fallback
-- required TTS/audio validation failure → fail closed; do not claim success
+- narration/TTS/audio validation/storage failure → withhold Audio, preserve the failure stage, and deliver valid Flex alone; mark the run degraded/non-zero rather than full success
+- audio outside 180,000–300,000 ms → withhold Audio; do not clamp or misreport measured duration
 - LINE transient failure → retry according to retry policy
-- duplicate successful production run on same Bangkok date → skip
+- Flex already delivered on the same Bangkok date → skip another production run to avoid duplicate Flex, even if Audio was withheld; a run that failed before Flex delivery may be retried
 
 ## 8. Production gate
 

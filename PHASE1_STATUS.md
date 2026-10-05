@@ -117,12 +117,22 @@
 - [x] Removed the shared PresentationPlan runtime contract.
 - [x] Flex renders directly from verified FactsSnapshot, independently of narration; the former severity-specific VisualPlan runtime was removed in the later four-card refactor.
 - [x] Narration is generated independently and safety-checked before TTS.
-- [x] Kept the ten-section narration and measured >600-second audio gate unchanged.
+- [x] At this milestone, kept the ten-section narration and measured >600-second audio gate unchanged; this historical audio contract is superseded by Decision 025 in `DECISIONS.md`.
 - [x] Preserved Flex-first then Audio LINE ordering and DRY_RUN behavior.
 - [x] Added pipeline integration coverage for separation and safety fallback.
 - [ ] Human review of Flex/audio and remaining release gates.
 
-**Production remains NO-GO.** The compact-card visual details were subsequently set by Decision 024 below.
+**Production remains NO-GO.** The compact-card visual details were subsequently set by Decision 024 in `DECISIONS.md`.
+
+## Medium Audio — 2026-10-05
+
+- [x] Reduced narration to four distinct topics and one TTS request; no repeated filler to reach duration.
+- [x] Changed actual MP3 duration acceptance to 180–300 seconds measured by ffprobe.
+- [x] Isolated audio-stage failure: record `audio.withheld`, keep a valid Flex deliverable, and mark the run degraded/non-zero.
+- [x] Preserved dry-run behavior: local audio validation/storage only; never call LINE and do not require a public audio URL.
+- [ ] Human listening review and remaining LINE acceptance/release gates.
+
+**Production remains NO-GO; this runtime simplification does not grant release approval.**
 
 ## Flex Four-Card Layout — 2026-10-05
 
