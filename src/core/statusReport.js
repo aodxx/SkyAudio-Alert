@@ -1,9 +1,7 @@
 // src/core/statusReport.js
 // Writes a small, non-secret JSON status file after every run and commits
-// it to the repo. This exists so run diagnostics can be read back through
-// the GitHub Contents API (or by anyone browsing the repo) even in
-// environments where the raw Actions log endpoint isn't reachable
-// (it redirects to Azure Blob Storage, which some sandboxed networks block).
+// it to the repo for non-dry runs. Dry-run previews remain local so previewing
+// cannot mutate the branch; workflow artifacts carry those previews for review.
 //
 // Never put secret values in this file — only stage names, statuses, and
 // error messages, which are already secret-scrubbed at the source (see
@@ -56,10 +54,23 @@ function writeStatusReport(result, config, { repoRoot = process.cwd() } = {}) {
     audio: result.audioInfo || null,
     generatedAt: new Date().toISOString(),
   };
+  if (config.dryRun && result.flexMessage && result.narration) {
+    report.preview = {
+      flexMessage: result.flexMessage,
+      narration: {
+        provider: result.narration.provider,
+        sections: result.narration.sections,
+        spokenText: result.narration.spokenText,
+        totalCharacters: result.narration.totalCharacters,
+      },
+    };
+  }
 
   try {
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
     fs.writeFileSync(absPath, JSON.stringify(report, null, 2));
+
+    if (config.dryRun) return report;
 
     run('git', ['config', 'user.name', 'skyaudio-bot'], { cwd: repoRoot });
     run('git', ['config', 'user.email', 'skyaudio-bot@users.noreply.github.com'], { cwd: repoRoot });
@@ -77,6 +88,7 @@ function writeStatusReport(result, config, { repoRoot = process.cwd() } = {}) {
     // eslint-disable-next-line no-console
     console.error(JSON.stringify({ stage: 'status.report', status: 'failure', message: err.message }));
   }
+  return report;
 }
 
 module.exports = { writeStatusReport, readLastRunReport, shouldSkipDuplicateProductionRun };
