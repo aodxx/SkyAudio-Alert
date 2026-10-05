@@ -260,3 +260,21 @@ Gemini มีสิทธิ์เลือกใช้ข้อความ/ป
 **Design boundary:** This refactor does not choose the eventual small-card layout or alter card contents. Those details remain open for the user to define separately.
 
 **Reason:** The shared PresentationPlan carried card data that the deterministic Flex renderer did not use, while the narrator depended on that same plan for audio text/style. Removing the unused shared contract and route-specific planner layer reduces coupling and request/validation steps without changing the visible card design or release gates.
+
+
+## Decision 024 — Fixed four-card weather-first Flex carousel
+
+**Date:** 2026-10-05
+
+**Decision:** Supersedes the Flex layout/order portions of Decisions 021–023 and the corresponding earlier PRD design notes. The LINE Flex carousel contains exactly four `kilo` bubbles in a horizontal carousel:
+
+1. A custom-designed, image-free daily weather card: Thai date, `ศาลาอเนกประสงค์ บ้านลำพาย`, daily forecast, available morning/afternoon/evening rain information and other available weather values, followed by `ศูนย์ช่วยเหลือพัทลุง` → `https://chachoengsao-flood.vercel.app/phatthalung`.
+2. User image `2_20261005_193645_0003.jpg`, followed by `แผนที่ระดับน้ำพัทลุง` → `https://chachoengsao-flood.vercel.app/phatthalung/map`.
+3. User image `4_20261005_193645_0004.jpg`, followed by `พยากรณ์ / เรดาร์` → `https://chachoengsao-flood.vercel.app/phatthalung/weather`.
+4. User image `6_20261005_193645_0005.jpg`, followed by `ภาพสด / CCTV` → `https://chachoengsao-flood.vercel.app/phatthalung/weather`.
+
+Each image preserves its 4:5 aspect ratio, includes descriptive alt text, and is followed by a single footer CTA. Dynamic forecast values come only from FactsSnapshot; missing values are not fabricated. The runtime no longer builds a VisualPlan for this fixed layout. This UI change does not alter the independent narration path, its safety firewall, audio duration gate, or message-delivery order.
+
+**Known limitation accepted by the user:** the supplied CCTV infographic contains place labels that do not correspond to Phatthalung. It is shown unaltered because the user chose to use the supplied asset; it must not be treated as evidence that those cameras are in Phatthalung. The three image files are static repository assets and are not refreshed automatically by the source adapters.
+
+**Reason:** The user requested a simpler horizontal set of four small cards with one clear responsibility per card, rather than a severity-driven content-dependent Flex layout.

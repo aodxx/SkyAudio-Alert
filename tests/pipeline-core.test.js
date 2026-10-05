@@ -6,7 +6,6 @@ const path = require('node:path');
 const { normalizeWeather } = require('../src/weather/normalize');
 const { analyzeWeather } = require('../src/weather/analyzer');
 const { buildFactsSnapshot } = require('../src/presentation/facts');
-const { buildVisualPlan } = require('../src/presentation/visualPlan');
 const { buildFlexV2 } = require('../src/flex/builder');
 const { estimateDurationMs, parseMp3, validateAudio } = require('../src/audio/validate');
 const { edgeRate } = require('../src/audio/tts');
@@ -26,8 +25,7 @@ function flood(severity = 'watch') {
 }
 function render(floodSituation, weatherAnalysis) {
   const factsSnapshot = buildFactsSnapshot({ floodSituation, weatherAnalysis, location: LOCATION, dateInfo: { date: '4 ตุลาคม 2569' } });
-  const visualPlan = buildVisualPlan(factsSnapshot);
-  return { factsSnapshot, flex: buildFlexV2({ factsSnapshot, visualPlan }) };
+  return { factsSnapshot, flex: buildFlexV2({ factsSnapshot }) };
 }
 
 test('weather analysis still provides deterministic context', () => {
@@ -35,38 +33,40 @@ test('weather analysis still provides deterministic context', () => {
   assert.ok(['rain', 'heavy_rain'].includes(analysis.theme));
 });
 
-test('Flex v2 is compact, carousel-based, and flood-first with analyzed weather facts', () => {
+test('Flex is a four-card carousel with weather first and the requested water/radar/CCTV actions', () => {
   const analysis = analyzeWeather(loadFixture('rainy-evening.json'), THRESHOLDS);
   const { flex, factsSnapshot } = render(flood('watch'), analysis);
   const json = JSON.stringify(flex);
   assert.equal(flex.type, 'flex');
   assert.equal(flex.contents.type, 'carousel');
-  assert.ok(flex.contents.contents.length >= 2);
-  assert.match(json, /สถานการณ์น้ำ/);
-  assert.match(json, /cctv\.maholan\.net/);
+  assert.equal(flex.contents.contents.length, 4);
+  assert.match(json, /พยากรณ์อากาศประจำวันนี้/);
+  assert.match(json, /raw\.githubusercontent\.com\/aodxx\/SkyAudio-Alert/);
+  assert.match(json, /phatthalung\/map/);
   assert.match(json, /phatthalung\/weather/);
   assert.doesNotMatch(json, /ราคาปาล์ม|ราคายาง|ข่าวสารทั่วไป/);
   assert.equal(json.includes('alignItems'), false);
   assert.deepEqual(inspectFlexForDelivery(flex, factsSnapshot).passed, true);
 });
 
-test('critical Flex keeps the immediate action and water CTAs, omitting secondary weather CTA', () => {
+test('critical flood state does not change the fixed four-card weather and map presentation', () => {
   const analysis = analyzeWeather(loadFixture('sunny.json'), THRESHOLDS);
   const { flex } = render(flood('critical'), analysis);
   const json = JSON.stringify(flex);
-  assert.match(json, /cctv\.maholan\.net/);
+  assert.equal(flex.contents.contents.length, 4);
+  assert.match(json, /ภาพสด \/ CCTV/);
   assert.match(json, /chachoengsao-flood\.vercel\.app\/phatthalung/);
-  assert.doesNotMatch(json, /phatthalung\/weather/);
-  assert.match(JSON.stringify(flex.contents.contents[0]), /ทำทันที/);
+  assert.match(json, /phatthalung\/weather/);
+  assert.match(JSON.stringify(flex.contents.contents[0]), /พยากรณ์อากาศประจำวันนี้/);
 });
 
-test('unknown flood status is explicit in Flex and cannot show NORMAL token', () => {
+test('unknown flood state retains the requested layout and does not invent flood status text', () => {
   const analysis = analyzeWeather(loadFixture('sunny.json'), THRESHOLDS);
   const { flex } = render(flood('unknown'), analysis);
   const json = JSON.stringify(flex);
-  assert.match(json, /ยังยืนยันไม่ได้/);
-  assert.match(json, /ข้อจำกัดข้อมูล/);
-  assert.doesNotMatch(JSON.stringify(flex.contents.contents[0]), /✅|#CCFBF1/);
+  assert.equal(flex.contents.contents.length, 4);
+  assert.match(json, /พยากรณ์อากาศประจำวันนี้/);
+  assert.doesNotMatch(JSON.stringify(flex.contents.contents[0]), /✅|#CCFBF1|ยังยืนยันไม่ได้/);
 });
 
 test('flex.lint gate fails closed with a stage error before delivery', () => {
