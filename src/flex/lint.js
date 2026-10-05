@@ -51,11 +51,12 @@ function collectUris(node) {
 function lintFlexMessage(message, { factsSnapshot } = {}) {
   const errors = [];
   const bubbles = bubblesOf(message);
+  const carouselItems = message?.contents?.contents;
   if (message?.type !== 'flex') errors.push('message type must be flex');
   if (!message?.altText || !String(message.altText).startsWith('พยากรณ์อากาศพัทลุง')) errors.push('altText must identify the Phatthalung forecast');
   if (codepoints(message?.altText) > TOKENS.budget.maxAltTextCodePoints) errors.push('altText exceeds character budget');
   if (message?.contents?.type !== 'carousel') errors.push('contents must be a carousel');
-  if (bubbles.length !== CARD_CONTRACTS.length) errors.push('carousel must contain exactly 4 bubbles');
+  if (bubbles.length !== CARD_CONTRACTS.length || carouselItems?.length !== CARD_CONTRACTS.length) errors.push('carousel must contain exactly 4 bubbles');
   if (Buffer.byteLength(JSON.stringify(message || {}), 'utf8') >= TOKENS.budget.maxPayloadBytes) errors.push('Flex payload exceeds byte budget');
 
   if (bubbles.length) {
@@ -77,15 +78,19 @@ function lintFlexMessage(message, { factsSnapshot } = {}) {
 
   for (const [index, bubble] of bubbles.entries()) {
     const contract = CARD_CONTRACTS[index];
-    const images = nodesOfType(bubble.body, 'image');
+    const images = nodesOfType(bubble, 'image');
+    const bodyImages = nodesOfType(bubble.body, 'image');
     const bodyChildren = bubble.body?.contents || [];
     if (index === 0 && images.length) errors.push('card 1 must not contain an image');
     if (index > 0 && images.length !== 1) errors.push(`card ${index + 1} must contain exactly one image`);
     if (contract?.imageUrl && images.length === 1 && images[0].url !== contract.imageUrl) errors.push(`card ${index + 1} image URL/order is invalid`);
     if (index > 0 && bodyChildren.length !== 1) errors.push(`card ${index + 1} body must contain only its image`);
+    if (index > 0 && bodyImages.length !== images.length) errors.push(`card ${index + 1} image must be in its body`);
     if (images.length && images[0].aspectRatio !== '4:5') errors.push(`card ${index + 1} image must preserve the 4:5 aspect ratio`);
     if (images.length && images[0].aspectMode !== 'fit') errors.push(`card ${index + 1} image must use fit mode`);
 
+    const cardButtons = nodesOfType(bubble, 'button');
+    if (cardButtons.length !== 1) errors.push(`card ${index + 1} must contain exactly one button`);
     const buttons = nodesOfType(bubble.footer, 'button');
     if (buttons.length !== 1) errors.push(`card ${index + 1} must contain exactly one footer button`);
     const button = buttons[0];
