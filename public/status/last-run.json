@@ -2,29 +2,12 @@
   "runId": "2026-10-05-lampai-test",
   "mode": "test",
   "dryRun": false,
-  "stages": {
-    "flood.fetch": "success",
-    "weather.fetch": "success",
-    "weather.normalize": "success",
-    "weather.analyze": "success",
-    "content.generate": "success",
-    "content.presentation": "success",
-    "content.safety": "success",
-    "flex.render": "success",
-    "flex.lint": "success",
-    "content.narration": "success",
-    "tts.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "success"
+  "stages": {},
+  "lastError": {
+    "stage": "content.generate",
+    "message": "Gemini content request failed after retry: 429",
+    "detail": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 22h33m49.513778481s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\","
   },
-  "lastError": null,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@fc0388252c6ff28b3ab9b0fe601d2bf0c69aed70/public/audio/2026-10-05.mp3",
-    "durationMs": 836520,
-    "bytes": 6692205,
-    "mimeType": "audio/mpeg",
-    "sections": 10
-  },
-  "generatedAt": "2026-10-04T20:12:09.849Z"
+  "audio": null,
+  "generatedAt": "2026-10-05T01:26:10.504Z"
 }
