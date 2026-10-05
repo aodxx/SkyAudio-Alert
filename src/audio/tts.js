@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const TTS_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
@@ -106,15 +107,42 @@ async function synthesizeLongFormSpeech(scripts, config, opts = {}) {
   if (!sections.length) throw makeError('Long-form TTS requires at least one narration section');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-longform-'));
   const files = [];
+  const cache = opts.cache || new Map();
+  const maxAttempts = Number.isInteger(opts.maxAttempts) ? Math.max(1, opts.maxAttempts) : 3;
+  async function synthesizeSection(script, sectionIndex) {
+    const key = crypto.createHash('sha256').update(JSON.stringify({ script, provider: config.provider, profile: config.profile, voice: config.voiceName, model: config.model, rate: config.speakingRate })).digest('hex');
+    if (cache.has(key)) return cache.get(key);
+    let lastError;
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const audio = await synthesizeSpeech(script, config, opts);
+        cache.set(key, audio);
+        return audio;
+      } catch (error) {
+        lastError = error;
+        if (!error.retryable || attempt === maxAttempts) throw error;
+        if (opts.onSectionRetry) opts.onSectionRetry(error, attempt, sectionIndex);
+        await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
+      }
+    }
+    throw lastError;
+  }
   try {
     for (let index = 0; index < sections.length; index += 1) {
-      const audio = await synthesizeSpeech(sections[index], config, opts);
+      const audio = await synthesizeSection(sections[index], index);
       const inputPath = path.join(dir, 'part-' + String(index).padStart(2, '0') + '.mp3');
       fs.writeFileSync(inputPath, audio);
       files.push(inputPath);
     }
+    const silencePath = path.join(dir, 'silence.mp3');
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=24000:cl=mono', '-t', '0.6', '-codec:a', 'libmp3lame', '-b:a', '64k', '-ar', '24000', '-ac', '1', silencePath], { stdio: 'pipe', timeout: 30000 });
     const concatPath = path.join(dir, 'concat.txt');
-    fs.writeFileSync(concatPath, files.map((file) => "file '" + file.replace(/'/g, "'\\''") + "'").join('\n'));
+    const concatFiles = [];
+    files.forEach((file, index) => {
+      concatFiles.push(file);
+      if (index < files.length - 1) concatFiles.push(silencePath);
+    });
+    fs.writeFileSync(concatPath, concatFiles.map((file) => "file '" + file.replace(/'/g, "'\\''") + "'").join('\n'));
     const output = path.join(dir, 'longform.mp3');
     execFileSync('ffmpeg', [
       '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concatPath,

@@ -8,8 +8,11 @@ const { fetchOpenMeteo } = require('../weather/openMeteo');
 const { normalizeWeather } = require('../weather/normalize');
 const { analyzeWeather } = require('../weather/analyzer');
 const { buildForecastData } = require('../forecast/formatter');
-const { generateGeminiReport } = require('../content/geminiReport');
-const { generatePresentationPlan, generateLongFormNarration, buildQuotaSafeLongFormNarration } = require('../content/presentationPlanner');
+const { buildFallbackReport, generateGeminiReport } = require('../content/geminiReport');
+const { generatePresentationPlan, buildQuotaSafeLongFormNarration } = require('../content/presentationPlanner');
+const { buildPresentationPlanFallback, parsePresentationPlan } = require('../content/presentationContract');
+const { buildNarrationPlan, validateNarrationPlan } = require('../presentation/narrationPlan');
+const { renderNarrationPlan } = require('../presentation/narrationRenderer');
 const { validateGeneratedFacts } = require('../content/safetyFirewall');
 const { buildFactsSnapshot } = require('../presentation/facts');
 const { buildVisualPlan } = require('../presentation/visualPlan');
@@ -83,18 +86,24 @@ async function runPipeline(config) {
   mark('weather.analyze', 'success', { theme: weatherAnalysis.theme, adviceSignals: weatherAnalysis.adviceSignals });
 
   const dateInfo = new Intl.DateTimeFormat('th-TH', { timeZone: config.location.timezone, dateStyle: 'long' }).format(new Date());
+  const factsSnapshot = buildFactsSnapshot({ floodSituation, weatherAnalysis, location: config.location, dateInfo: { date: dateInfo } });
+  const contentContext = { floodSituation, weatherAnalysis, location: config.location, date: dateInfo };
   mark('content.generate', 'start');
-  const report = await withRetry(() => generateGeminiReport({ floodSituation, weatherAnalysis, location: config.location, date: dateInfo }, config), {
-    onRetry: (err, attempt) => mark('content.generate', 'retry', { attempt, message: err.message }),
-  });
+  const report = config.content.provider === 'gemini'
+    ? await withRetry(() => generateGeminiReport(contentContext, config), {
+      onRetry: (err, attempt) => mark('content.generate', 'retry', { attempt, message: err.message }),
+    })
+    : { ...buildFallbackReport(contentContext), provider: 'deterministic' };
   mark('content.generate', 'success', { provider: report.provider, priority: report.priority, characters: report.spokenText.length });
 
   mark('content.presentation', 'start');
-  const presentationPlan = await withRetry(() => generatePresentationPlan({
-    floodSituation, weatherAnalysis, location: config.location, date: dateInfo, report,
-  }, config), {
-    onRetry: (err, attempt) => mark('content.presentation', 'retry', { attempt, message: err.message }),
-  });
+  const presentationPlan = config.content.provider === 'gemini'
+    ? await withRetry(() => generatePresentationPlan({
+      floodSituation, weatherAnalysis, location: config.location, date: dateInfo, report,
+    }, config), {
+      onRetry: (err, attempt) => mark('content.presentation', 'retry', { attempt, message: err.message }),
+    })
+    : parsePresentationPlan(buildPresentationPlanFallback({ floodSituation, weatherAnalysis, report }), { expectedSeverity: floodSituation.severity }).plan;
   if (presentationPlan.severity !== floodSituation.severity) {
     const error = new Error('Presentation planner changed verified flood severity');
     error.stage = 'content.presentation';
@@ -131,7 +140,6 @@ async function runPipeline(config) {
     priority: presentationPlan.priority,
   });
   reportData.presentationPlan = presentationPlan;
-  const factsSnapshot = buildFactsSnapshot({ floodSituation, weatherAnalysis, location: config.location, dateInfo: { date: dateInfo } });
   const visualPlan = buildVisualPlan(factsSnapshot);
   let flexMessage;
   try {
@@ -158,6 +166,13 @@ async function runPipeline(config) {
   }
 
   const messages = [flexMessage];
+  let flexSent = false;
+  if (!config.dryRun) {
+    mark('line.send', 'start', { messageCount: 1, content: 'flex' });
+    await withRetry(() => pushMessages([flexMessage], config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
+    mark('line.send', 'success', { messageCount: 1, content: 'flex' });
+    flexSent = true;
+  }
   let audioInfo;
   try {
     mark('content.narration', 'start');
@@ -176,37 +191,21 @@ async function runPipeline(config) {
         forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
       });
     };
-    // A firewall rejection is a content problem, not a fatal one: regenerate
-    // (retryable) and, if Gemini keeps failing the firewall, use the deterministic
-    // fact-safe narration instead of aborting the whole daily report.
-    let narration;
-    try {
-      narration = await withRetry(async () => {
-        const candidate = await generateLongFormNarration(narrationContext, presentationPlan, config);
-        const errors = narrationFirewall(candidate);
-        if (errors.length) {
-          const error = new Error('Long-form narration safety firewall rejected output: ' + errors.join('; '));
-          error.stage = 'content.narration';
-          error.errors = errors;
-          error.retryable = true;
-          error.firewall = true;
-          throw error;
-        }
-        return candidate;
-      }, {
-        onRetry: (err, attempt) => mark('content.narration', 'retry', { attempt, message: err.message }),
-      });
-    } catch (error) {
-      if (!error.firewall) throw error;
-      mark('content.narration', 'degraded', { reason: error.message, fallback: 'quota-safe-fallback' });
-      narration = buildQuotaSafeLongFormNarration(narrationContext, presentationPlan);
-      const fallbackErrors = narrationFirewall(narration);
-      if (fallbackErrors.length) {
-        const fatal = new Error('Fallback narration safety firewall rejected output: ' + fallbackErrors.join('; '));
-        fatal.stage = 'content.narration';
-        fatal.errors = fallbackErrors;
-        throw fatal;
-      }
+    const narrationPlan = buildNarrationPlan(factsSnapshot);
+    const narrationPlanErrors = validateNarrationPlan(narrationPlan, factsSnapshot);
+    if (narrationPlanErrors.length) {
+      const error = new Error('NarrationPlan validation failed: ' + narrationPlanErrors.join('; '));
+      error.stage = 'content.narration';
+      error.errors = narrationPlanErrors;
+      throw error;
+    }
+    const narration = renderNarrationPlan(narrationPlan, factsSnapshot);
+    const narrationErrors = narrationFirewall(narration);
+    if (narrationErrors.length) {
+      const error = new Error('Rendered narration safety firewall rejected output: ' + narrationErrors.join('; '));
+      error.stage = 'content.narration';
+      error.errors = narrationErrors;
+      throw error;
     }
     mark('content.narration', 'success', { provider: narration.provider, sections: narration.sections.length, characters: narration.totalCharacters });
 
@@ -219,8 +218,8 @@ async function runPipeline(config) {
       'detailed long-form narration',
       ...(presentationPlan.audioStyle.emphasis || []).map((x) => 'emphasize ' + x),
     ].join('; ') };
-    const audioBuffer = await withRetry(() => synthesizeLongFormSpeech(narration.sections.map((section) => section.text), ttsConfig), {
-      onRetry: (err, attempt) => mark('tts.synthesize', 'retry', { attempt, message: err.message }),
+    const audioBuffer = await synthesizeLongFormSpeech(narration.sections.map((section) => section.text), ttsConfig, {
+      onSectionRetry: (error, attempt, sectionIndex) => mark('tts.synthesize', 'retry', { attempt, section: sectionIndex, message: error.message }),
     });
     mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, sections: narration.sections.length, scriptLength: narration.totalCharacters, bytes: audioBuffer.length });
     mark('audio.validate', 'start');
@@ -235,12 +234,23 @@ async function runPipeline(config) {
     const stored = storeAudio(audioBuffer, config.storage, { dryRun: config.dryRun });
     mark('audio.store', 'success', { url: stored.url, committed: stored.committed, skipped: stored.skipped, path: stored.relPath });
     audioInfo = { url: stored.url, durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, sections: narration.sections.length };
-    if (stored.url) messages.push(buildAudioMessage(stored.url, validated.durationMs));
+    if (stored.url) {
+      const audioMessage = buildAudioMessage(stored.url, validated.durationMs);
+      messages.push(audioMessage);
+      if (!config.dryRun) {
+        mark('line.audio.send', 'start');
+        await withRetry(() => pushMessages([audioMessage], config.line), { onRetry: (err, attempt) => mark('line.audio.send', 'retry', { attempt, message: err.message }) });
+        mark('line.audio.send', 'success', { messageCount: 1 });
+      }
+    }
   } catch (error) {
     const stage = error.stage || 'tts.synthesize';
     mark(stage, 'failure', { message: error.message, detail: error.detail, errors: error.errors || [] });
     result.lastError = { stage, message: error.message, detail: error.detail, errors: error.errors || [] };
     writeStatusReport(result, config);
+    if (flexSent || config.dryRun) {
+      return { ...result, partial: true, floodSituation, factsSnapshot, visualPlan, flexMessage, messages, audioInfo: null };
+    }
     throw error;
   }
 
@@ -250,9 +260,6 @@ async function runPipeline(config) {
     writeStatusReport(dryResult, config);
     return dryResult;
   }
-  mark('line.send', 'start');
-  await withRetry(() => pushMessages(messages, config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
-  mark('line.send', 'success', { messageCount: messages.length });
   const finalResult = { ...result, floodSituation, report, presentationPlan, factsSnapshot, visualPlan, flexMessage, reportData, messages, audioInfo };
   writeStatusReport(finalResult, config);
   return finalResult;

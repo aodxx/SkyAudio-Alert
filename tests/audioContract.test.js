@@ -14,6 +14,6 @@ test('audio validator rejects empty buffers', () => {
 });
 
 test('long-form duration gate is greater than ten minutes and is not clamped to 190 seconds', () => {
-  assert.equal(LONGFORM_MIN_DURATION_MS, 600000);
+  assert.equal(LONGFORM_MIN_DURATION_MS, 601000);
   assert.ok(estimateDurationMs('ก'.repeat(10000), 1) > 190000);
 });

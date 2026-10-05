@@ -32,7 +32,7 @@ function buildConfig() {
       pageUrl: optional('WEATHER_PAGE_SOURCE_URL', 'https://chachoengsao-flood.vercel.app/phatthalung/weather'),
     },
     content: {
-      provider: optional('CONTENT_PROVIDER', 'gemini').toLowerCase(),
+      provider: optional('CONTENT_PROVIDER', 'deterministic').toLowerCase(),
       apiKey: optional('GEMINI_API_KEY', ''),
       model: optional('GEMINI_CONTENT_MODEL', 'gemini-3.8-flash'),
       fallbackModel: optional('GEMINI_CONTENT_FALLBACK_MODEL', ''),
@@ -58,7 +58,7 @@ function buildConfig() {
   if (Number.isNaN(config.location.lat) || Number.isNaN(config.location.lon)) throw new Error('WEATHER_LAT / WEATHER_LON are invalid');
   if (!Number.isFinite(config.flood.freshnessLimitMinutes) || config.flood.freshnessLimitMinutes <= 0) throw new Error('FLOOD_FRESHNESS_LIMIT_MINUTES must be positive');
   if (!['unknown-weather', 'no-send'].includes(config.flood.degradedMode)) throw new Error('FLOOD_DEGRADED_MODE must be unknown-weather or no-send');
-  if (!['gemini'].includes(config.content.provider)) throw new Error('CONTENT_PROVIDER must be gemini');
+  if (!['gemini', 'deterministic'].includes(config.content.provider)) throw new Error('CONTENT_PROVIDER must be gemini or deterministic');
   if (!['low', 'medium', 'high'].includes(config.content.thinkingLevel)) throw new Error('GEMINI_THINKING_LEVEL must be low, medium or high');
   if (!Number.isFinite(config.tts.speakingRate) || config.tts.speakingRate <= 0) throw new Error('TTS_SPEAKING_RATE must be positive');
   if (!['edge', 'google', 'gemini', 'mock'].includes(config.tts.provider)) throw new Error('TTS_PROVIDER must be edge, google, gemini or mock');

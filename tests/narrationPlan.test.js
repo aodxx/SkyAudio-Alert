@@ -11,6 +11,7 @@ const {
   getExplainer,
 } = require('../src/presentation/explainers/th');
 const { buildNarrationPlan, validateNarrationPlan } = require('../src/presentation/narrationPlan');
+const { renderNarrationPlan } = require('../src/presentation/narrationRenderer');
 
 function fixture(name) {
   return normalizeFloodSituation(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'flood', `${name}.json`), 'utf8')));
@@ -109,4 +110,15 @@ test('validator rejects missing, duplicated, unordered, or overlong plans', () =
   changedAllocation.segments[0].targetSeconds += 1;
   changedAllocation.targetDurationSeconds += 1;
   assert.ok(validateNarrationPlan(changedAllocation, facts).some((error) => error.includes('targetSeconds must match')));
+});
+
+test('runtime renderer consumes the ten segments, explainers, and verified station facts', () => {
+  const facts = snapshot('watch');
+  const plan = buildNarrationPlan(facts);
+  const narration = renderNarrationPlan(plan, facts);
+  assert.equal(narration.sections.length, 10);
+  assert.match(narration.sections[2].text, /ระดับน้ำ/);
+  assert.match(narration.sections[0].text, /รายการนี้จะแยกสิ่งที่ข้อมูลต้นทางยืนยันได้/);
+  assert.ok(narration.totalCharacters > 7000);
+  assert.ok(new Set(narration.sections.map((section) => section.text)).size >= 9);
 });

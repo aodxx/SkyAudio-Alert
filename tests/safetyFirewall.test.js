@@ -28,6 +28,10 @@ function facts(severity = 'watch') {
 test('rejects unsupported certainty', () => assert.ok(validateGeneratedFacts(plan('watch', 'ปลอดภัยแน่นอนครับ'), facts()).some((error) => error.includes('certainty'))));
 test('rejects severity drift', () => assert.ok(validateGeneratedFacts(plan('critical'), facts('watch')).some((error) => error.includes('severity'))));
 test('rejects generated numeric facts not in source', () => assert.ok(validateGeneratedFacts(plan('watch', 'ระดับน้ำ 999 เมตร'), facts()).some((error) => error.includes('numeric'))));
+test('rejects Thai-word numeric facts not in source', () => assert.ok(validateGeneratedFacts(plan('watch', 'ระดับน้ำสิบห้าเซนติเมตร'), facts()).some((error) => error.includes('numeric'))));
+test('rejects an invented station name', () => assert.ok(validateGeneratedFacts(plan('watch', 'สถานีคลองปลอมมีข้อมูลใหม่'), facts()).some((error) => error.includes('station'))));
+test('rejects an invented road name', () => assert.ok(validateGeneratedFacts(plan('watch', 'ถนนสายปลอมมีน้ำขัง'), facts()).some((error) => error.includes('road'))));
+test('rejects an invented event', () => assert.ok(validateGeneratedFacts(plan('watch', 'เกิดดินถล่มในพื้นที่แล้ว'), facts()).some((error) => error.includes('event'))));
 test('normalizes numeric formatting and Thai digits', () => assert.deepEqual(extractNumbers('วันที่ ๔/๑๐/๒๕๖๙ ระดับน้ำ 1.20 เมตร'), ['4', '10', '2569', '1.2']));
 test('accepts date numbers supplied as verified context', () => assert.equal(validateGeneratedFacts(plan('watch', 'วันนี้ ๔ ตุลาคม ๒๕๖๙ ระดับน้ำ 1.20 เมตร'), facts()).length, 0));
 test('rejects market/news leakage', () => assert.ok(validateGeneratedFacts(plan('watch', 'ราคาปาล์มวันนี้สูงขึ้น'), facts()).some((error) => error.includes('market/news'))));

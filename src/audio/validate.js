@@ -1,10 +1,14 @@
 // src/audio/validate.js
-// Validates the generated audio before it is sent to LINE.
-// Duration is always the measured MP3 duration. Long-form delivery can require >10 minutes.
+// Validates generated audio using container metadata before sending to LINE.
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
+
 const MIN_DURATION_MS = 10_000;
 const DEFAULT_MAX_DURATION_MS = 18 * 60 * 1000;
 const DEFAULT_MAX_FILE_BYTES = 16 * 1024 * 1024;
-const LONGFORM_MIN_DURATION_MS = 10 * 60 * 1000;
+const LONGFORM_MIN_DURATION_MS = 601_000;
 
 const MPEG1_L3_BITRATES = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
 const MPEG2_L3_BITRATES = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
@@ -17,7 +21,30 @@ function makeAudioError(message) {
   return err;
 }
 
-function parseMp3(buffer) {
+function parseWithFfprobe(buffer) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-probe-'));
+  const file = path.join(dir, 'audio.mp3');
+  try {
+    fs.writeFileSync(file, buffer);
+    const output = execFileSync('ffprobe', [
+      '-v', 'error', '-show_entries', 'format=duration:stream=codec_name,bit_rate,sample_rate',
+      '-of', 'json', file,
+    ], { encoding: 'utf8', timeout: 30000 });
+    const parsed = JSON.parse(output);
+    const duration = Number(parsed.format?.duration);
+    const stream = (parsed.streams || []).find((item) => item.codec_name === 'mp3') || parsed.streams?.[0];
+    const bitrateKbps = Number(stream?.bit_rate) > 0 ? Math.round(Number(stream.bit_rate) / 1000) : undefined;
+    const sampleRate = Number(stream?.sample_rate) > 0 ? Number(stream.sample_rate) : undefined;
+    if (!Number.isFinite(duration) || duration <= 0 || !stream) return null;
+    return { durationMs: Math.round(duration * 1000), bitrateKbps, sampleRate };
+  } catch (_) {
+    return null;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+function parseMp3ByFrame(buffer) {
   for (let i = 0; i + 4 <= buffer.length; i += 1) {
     if (buffer[i] !== 0xff || (buffer[i + 1] & 0xe0) !== 0xe0) continue;
     const versionBits = (buffer[i + 1] >> 3) & 0x03;
@@ -30,13 +57,15 @@ function parseMp3(buffer) {
     const sampleRate = SAMPLE_RATES[version][sampleIndex];
     const bitrateKbps = bitrates[bitrateIndex];
     if (!sampleRate || !bitrateKbps) continue;
-    const padding = (buffer[i + 2] >> 1) & 1;
-    const frameLength = version === 1 ? Math.floor((144 * bitrateKbps * 1000) / sampleRate) + padding : Math.floor((72 * bitrateKbps * 1000) / sampleRate) + padding;
-    if (frameLength <= 0) continue;
     const durationMs = Math.round((buffer.length - i) * 8 * 1000 / (bitrateKbps * 1000));
     return { durationMs, bitrateKbps, sampleRate };
   }
   return null;
+}
+
+function parseMp3(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length === 0) return null;
+  return parseWithFfprobe(buffer) || parseMp3ByFrame(buffer);
 }
 
 function estimateDurationMs(script, speakingRate) {
