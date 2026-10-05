@@ -110,3 +110,16 @@
 
 **Phase 5: COMPLETE. Next: Phase 6 — End-to-End LINE Acceptance.**
 **Production remains NO-GO.**
+
+
+## Runtime Simplification — 2026-10-05
+
+- [x] Removed the shared PresentationPlan runtime contract.
+- [x] Flex renders from verified FactsSnapshot/VisualPlan independently of narration.
+- [x] Narration is generated independently and safety-checked before TTS.
+- [x] Kept the ten-section narration and measured >600-second audio gate unchanged.
+- [x] Preserved Flex-first then Audio LINE ordering and DRY_RUN behavior.
+- [x] Added pipeline integration coverage for separation and safety fallback.
+- [ ] Human review of Flex/audio and remaining release gates.
+
+**Production remains NO-GO.** This cleanup does not decide the next compact-card visual details.

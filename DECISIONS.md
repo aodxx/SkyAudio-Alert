@@ -247,3 +247,16 @@ Gemini มีสิทธิ์เลือกใช้ข้อความ/ป
 **Unchanged:** Flood-first scope (Decision 019), no market/news content, forecast never establishes actual flooding, stale is a freshness condition not a severity, production remains NO-GO.
 
 **Risk recorded:** On low-information days a 10+ minute audio is mostly explanation and recap. The explainer library is drafted by the implementer and is marked *pending community review* before production.
+
+
+## Decision 023 — Runtime simplification: independent Flex and narration paths
+
+**Date:** 2026-10-05
+
+**Decision:** Implement the channel separation already required by Decision 022 with the smallest runtime shape: `verified flood/weather facts → { FactsSnapshot → VisualPlan → Flex V2 + lint, independent 10-section narration → safety firewall → long-form TTS }`. Remove the unused shared `PresentationPlan` contract and the `NarrationPlan` builder/explainer layer from runtime. Narration must not consume Flex cards or generated report text; Flex must not consume narration text. If generated narration fails the safety firewall, use the deterministic safe fallback and validate it before TTS.
+
+**Unchanged:** Flood adapter severity remains authoritative; all dynamic Flex values still come from verified fact IDs; narration still uses ten sections and the measured audio duration gate remains strictly greater than 600 seconds. Audio delivery, LINE message order, the production NO-GO state, and all source/safety constraints remain unchanged.
+
+**Design boundary:** This refactor does not choose the eventual small-card layout or alter card contents. Those details remain open for the user to define separately.
+
+**Reason:** The shared PresentationPlan carried card data that the deterministic Flex renderer did not use, while the narrator depended on that same plan for audio text/style. Removing the unused shared contract and route-specific planner layer reduces coupling and request/validation steps without changing the visible card design or release gates.

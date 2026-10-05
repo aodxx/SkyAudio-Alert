@@ -89,7 +89,7 @@ Gemini เป็น narrative layer เท่านั้น:
 
 ## 6. Authoritative pipeline
 
-Flood source → adapter/normalize/freshness/severity → Weather source → normalize/analyze → safe report context → Gemini structured narrative → safety validator → compact Flood-first Flex + Gemini TTS → validate/store → LINE Flex first → Audio
+Flood source → adapter/normalize/freshness/severity → Weather source → normalize/analyze → verified flood/weather facts → { FactsSnapshot → VisualPlan → Flex V2 + lint; independent 10-section narration → safety validator → Gemini TTS → duration validation/store } → LINE Flex first → Audio
 
 ## 7. Failure policy
 

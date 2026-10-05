@@ -9,8 +9,8 @@
 ทุกเช้า 06:00 น. (เวลาไทย) ระบบจะ:
 1. รวบรวม/รายงานสถานการณ์น้ำท่วมและระดับน้ำของพัทลุงตามแหล่งข้อมูลที่กำหนด
 2. ดึงพยากรณ์อากาศจาก Open-Meteo และวิเคราะห์ด้วยกฎแบบ deterministic
-3. สร้าง LINE Flex แบบ flood-first พร้อมปุ่มใหญ่สำหรับดูสถานะน้ำ/CCTV ศูนย์ข้อมูลน้ำพัทลุง และพยากรณ์อากาศ
-4. ใช้ Gemini สร้างเนื้อหารายงานตามข้อมูลสำคัญของวันนั้นแบบไม่ใช้โครงตายตัว แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
+3. สร้าง LINE Flex แบบ flood-first จากข้อมูลที่ตรวจสอบแล้ว โดยแยกจากบทพูดเสียง
+4. สร้าง narration เสียงจากข้อมูลน้ำ/อากาศโดยอิสระ ผ่าน safety check แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
 5. ส่ง Flex แล้วตามด้วย LINE Audio Message เข้า LINE กลุ่มบ้านลำพาย
 
 ลิงก์สำหรับผู้ใช้ใน Flex:
@@ -28,7 +28,7 @@
 Actions → **Manual Flood-first test** → Run workflow → `dry_run=true`
 
 Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
-หาก TTS, การตรวจ MP3 หรือขั้นตอนที่จำเป็นล้มเหลว job จะล้มเหลว ไม่รายงานว่าสำเร็จแบบ Flex-only
+หาก TTS หรือการตรวจ MP3 ล้มเหลว ระบบจะไม่ส่ง audio ที่ใช้ไม่ได้; เกณฑ์ audio ตาม Decision 022 ยังคงต้องยาวกว่า 10 นาที
 
 ### ทดสอบส่งเข้า LINE Test
 ตั้ง `dry_run=false` และต้องมี secrets:
@@ -47,11 +47,11 @@ Production ต้องมี:
 
 ## TTS
 
-ใช้ **Gemini** สร้างเนื้อหาตามข้อมูลสำคัญของแต่ละวันแบบไม่ใช้โครงหรือตัวกำหนดความยาวตายตัว แล้วใช้ **Gemini TTS** สร้างเสียงตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เสียงต้องอบอุ่น เป็นกันเอง ชัดเจน และเหมาะกับผู้สูงอายุ
+เสียงสร้างแยกจาก Flex โดยใช้ narration 10 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เสียงต้องอบอุ่น เป็นกันเอง ชัดเจน และเหมาะกับผู้สูงอายุ
 
 Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 
-หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ โดยไม่มี target duration แบบตายตัว แต่ต้องผ่านข้อจำกัดทางเทคนิคของ LINE สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
+หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ โดย gate ปัจจุบันกำหนด duration จริงมากกว่า 600 วินาที และต้องผ่านข้อจำกัดทางเทคนิคของ LINE สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
 
 ## ทดสอบในเครื่อง
 

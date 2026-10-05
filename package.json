@@ -2,7 +2,7 @@
   "name": "skyaudio-alert",
   "version": "0.4.0",
   "private": true,
-  "description": "Daily weather Flex + audio announcement for the บ้านลำพาย LINE group.",
+  "description": "Flood-first Flex and independent audio announcement for the บ้านลำพาย LINE group.",
   "main": "src/index.js",
   "engines": {
     "node": ">=18"
