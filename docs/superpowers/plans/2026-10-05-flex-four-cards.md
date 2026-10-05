@@ -26,3 +26,8 @@
 ## ข้อจำกัดที่บันทึกไว้
 
 ผู้ใช้ยืนยันให้ใช้ภาพ CCTV ตามต้นฉบับ แม้ป้ายชื่อสถานที่ในภาพไม่ตรงพัทลุง ภาพทั้งสามเป็น static assets และไม่ได้ refresh อัตโนมัติโดย data adapters จึงบันทึก caveat ไว้ใน `DECISIONS.md`/`PRD.md`; ต้องทบทวนความสดและบริบทภาพก่อน production. Human review ใน LINE client และ release gates ยังคงเป็นงานค้าง.
+
+
+## Post-merge QA follow-up — 2026-10-05
+
+การทดสอบ mutation หลัง PR #33 merge พบว่า linter เดิมกรอง carousel child ที่ไม่ใช่ bubble ออกก่อนนับจำนวน และตรวจจำนวนปุ่มเฉพาะ footer จึงยอมรับ non-bubble child/ปุ่มซ้ำใน body/ภาพซ่อนใน hero ได้. เพิ่ม regression tests ผ่าน public `lintFlexMessage` seam และแก้ให้ตรวจ raw item count, มีปุ่มเดียวทั้งใบ, และนับ image ทั้ง bubble; local `npm test` ผ่าน 109/109. กำลังส่ง hotfix ผ่าน Pull Request แยก.
