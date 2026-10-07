@@ -1,0 +1,11 @@
+{
+  "state": "sending",
+  "approvedRunId": "2026-10-07-lampai-test",
+  "artifactRunId": "37621337709",
+  "artifactName": "line-test-preview-37621337709-1",
+  "statusSha256": "a296cf5819124b89436f60dd0a3083359fadeea0ab728eb77297472bd8673069",
+  "audioSha256": "f9783d4834fd402342d47d9fc0cdbe9a8d161d2b7d4ab4737dc873a10b3a894b",
+  "flexAltText": "พยากรณ์อากาศพัทลุง · 7 ตุลาคม 2569",
+  "durationMs": 115536,
+  "createdAt": "2026-10-07T12:54:01.095Z"
+}
