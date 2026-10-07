@@ -1,5 +1,5 @@
 {
-  "runId": "2026-10-06-lampai-test",
+  "runId": "2026-10-07-lampai-test",
   "mode": "test",
   "dryRun": false,
   "stages": {
@@ -9,25 +9,17 @@
     "weather.analyze": "success",
     "flex.render": "success",
     "flex.lint": "success",
-    "content.narration": "success",
-    "content.safety": "success",
-    "tts.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "failure"
+    "content.narration": "retry",
+    "audio.process": "failure",
+    "audio.withheld": "degraded",
+    "line.send": "success"
   },
   "lastError": {
-    "stage": "line.send",
-    "message": "LINE push failed: 400",
-    "detail": "{\"message\":\"A message (messages[0]) in the request body is invalid\",\"details\":[{\"message\":\"unknown field\",\"property\":\"/contents/1/body/contents/0/alt\"}]}"
+    "stage": "audio.process",
+    "message": "fetch failed",
+    "errors": []
   },
-  "audioWithheld": false,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@d53c8ec39b29a4eda1c8ccc91b2d625fe3c77f63/public/audio/2026-10-06.mp3",
-    "durationMs": 116376,
-    "bytes": 1862445,
-    "mimeType": "audio/mpeg",
-    "sections": 4
-  },
-  "generatedAt": "2026-10-05T19:18:31.971Z"
+  "audioWithheld": true,
+  "audio": null,
+  "generatedAt": "2026-10-07T11:04:13.160Z"
 }
