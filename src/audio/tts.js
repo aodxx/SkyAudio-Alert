@@ -17,6 +17,16 @@ function makeError(message, retryable = false, detail) {
   return err;
 }
 
+async function fetchTtsResponse(doFetch, url, options, provider) {
+  try {
+    return await doFetch(url, options);
+  } catch (error) {
+    const cause = error?.cause;
+    const detail = [cause?.code, cause?.message, error?.message].filter(Boolean).join(': ').slice(0, 300);
+    throw makeError(`${provider} TTS network request failed`, true, detail);
+  }
+}
+
 function edgeRate(rate) {
   const pct = Math.round((rate - 1) * 100);
   return (pct >= 0 ? '+' : '') + pct + '%';
@@ -61,7 +71,7 @@ async function synthesizeWithGoogle(script, config, opts = {}) {
   const doFetch = opts.fetchImpl || fetch;
   if (!config.apiKey) throw makeError('GOOGLE_TTS_API_KEY is not configured');
   const body = { input: { text: script }, voice: { languageCode: config.languageCode, name: config.voiceName }, audioConfig: { audioEncoding: 'MP3', speakingRate: config.speakingRate } };
-  const res = await doFetch(TTS_URL + '?key=' + config.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetchTtsResponse(doFetch, TTS_URL + '?key=' + config.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, 'Google');
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw makeError('Google TTS request failed: ' + res.status, res.status >= 500 || res.status === 429, text.replace(new RegExp(config.apiKey, 'g'), '***').slice(0, 300));
@@ -81,7 +91,7 @@ async function synthesizeWithGemini(script, config, opts = {}) {
   };
   const model = config.model || 'gemini-3.8-flash-tts';
   const url = GEMINI_TTS_BASE_URL + '/' + encodeURIComponent(model) + ':generateContent';
-  const res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetchTtsResponse(doFetch, url, { method: 'POST', headers: { 'x-goog-api-key': config.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, 'Gemini');
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw makeError('Gemini TTS request failed: ' + res.status, res.status >= 500 || res.status === 429, text.slice(0, 500));
