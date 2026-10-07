@@ -2,7 +2,7 @@
 
 Decision 019 is the current scope lock. Earlier decisions remain historical unless explicitly retained by the latest decisions.
 
-> **2026-10-04 update:** Decision 022 supersedes the audio-length and presentation-contract parts of Decisions 015 and 021. See `docs/REVIEW_V1_6_PRESENTATION_REDESIGN.md`.
+> **2026-10-05 update:** Decision 025 supersedes the audio-length and narration-section count in Decision 022. Decision 024 remains the current Flex layout. Decision 022 and earlier design reviews remain historical records.
 
 # SkyAudio-Alert — Architecture Decision Record
 
@@ -278,3 +278,18 @@ Each image preserves its 4:5 aspect ratio, includes descriptive alt text, and is
 **Known limitation accepted by the user:** the supplied CCTV infographic contains place labels that do not correspond to Phatthalung. It is shown unaltered because the user chose to use the supplied asset; it must not be treated as evidence that those cameras are in Phatthalung. The three image files are static repository assets and are not refreshed automatically by the source adapters.
 
 **Reason:** The user requested a simpler horizontal set of four small cards with one clear responsibility per card, rather than a severity-driven content-dependent Flex layout.
+
+
+## Decision 025 — Medium-length, non-repetitive audio independent from Flex
+
+**Date:** 2026-10-06 (updated after LINE dry-run measurement)
+
+**Decision:** Replace the ten-section / longer-than-ten-minute audio contract in Decision 022 with a simple natural-length Thai narration. The narrator returns exactly four distinct topics in order: opening/current flood status; water details and freshness; supporting weather forecast; next steps, limitations and a concise close. The voice should feel like a real community announcer speaking to neighbors: greet listeners, use natural conversational transitions, give a brief summary, offer a general well-wish, thank listeners, say goodbye and close with a friendly “พบกันใหม่” for the next report. These human touches may go beyond the supplied facts only as non-factual social language; they must not add or alter situation claims, advice, numbers or events. Each topic must add information, and the script must not repeat or pad content to reach a time target. Let Gemini speak only as long as the verified facts and human phrasing need; the pipeline joins the four topics and calls the selected TTS adapter once.
+
+**Duration and delivery:** Validate the generated MP3's actual duration with `ffprobe`; use only a 10-second technical floor and a 5-minute ceiling, plus the existing 16 MiB size ceiling. These are file-validity guardrails, not a narration target. Never clamp or estimate the measured duration. If narration, TTS, duration validation, storage, or public-URL validation fails, withhold only Audio, retain the failed stage in status, and deliver a valid lint-passed Flex by itself. Record `audio.withheld`, surface the run as degraded/non-zero, and do not call it a full success. A test/dry-run may validate and store a local MP3 without a public URL and must not call LINE.
+
+**Safety:** Continue to use verified flood/weather facts only; forecast is supporting context and never evidence of an observed flood. Keep the deterministic safety firewall before TTS and retain the current production NO-GO/human-acceptance gates.
+
+**Relationship to earlier decisions:** This supersedes Decision 022 only for narration section count, repetition policy, duration target and the associated required-audio failure handling. Decision 024 remains authoritative for the four-card Flex design. Facts provenance, flood-first scope, source constraints, LINE message order (Flex before optional Audio), and release gates remain unchanged. The same-day duplicate guard treats a successful Flex push as already announced even if Audio was withheld, avoiding duplicate Flex on a rerun.
+
+**Reason:** The previous long report encouraged repeated explanations and coupled Audio availability to the user-visible Flex alert. A medium, non-repetitive voice report is easier to follow; independently withholding Audio lets a valid Flex alert remain useful when TTS or audio delivery fails.

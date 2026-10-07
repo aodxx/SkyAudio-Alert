@@ -7,12 +7,12 @@ const { createUnknownFloodSituation } = require('../flood/contract');
 const { fetchOpenMeteo } = require('../weather/openMeteo');
 const { normalizeWeather } = require('../weather/normalize');
 const { analyzeWeather } = require('../weather/analyzer');
-const { generateLongFormNarration, buildQuotaSafeLongFormNarration } = require('../content/narrator');
+const { generateNarration, buildQuotaSafeNarration } = require('../content/narrator');
 const { validateGeneratedFacts } = require('../content/safetyFirewall');
 const { buildFactsSnapshot } = require('../presentation/facts');
 const { buildFlexV2 } = require('../flex/builder');
 const { lintFlexMessage } = require('../flex/lint');
-const { synthesizeLongFormSpeech } = require('../audio/tts');
+const { synthesizeSpeech } = require('../audio/tts');
 const { validateAudio } = require('../audio/validate');
 const { storeAudio } = require('../audio/storage');
 const { pushMessages, buildAudioMessage } = require('../line/messagingApi');
@@ -39,8 +39,8 @@ function inspectFlexForDelivery(flexMessage, factsSnapshot) {
 async function runPipeline(config, overrides = {}) {
   const fetchFlood = overrides.fetchFlood || fetchPhatthalungFlood;
   const fetchWeather = overrides.fetchWeather || fetchOpenMeteo;
-  const generateNarration = overrides.generateLongFormNarration || generateLongFormNarration;
-  const synthesizeSpeech = overrides.synthesizeLongFormSpeech || synthesizeLongFormSpeech;
+  const generateNarrationImpl = overrides.generateNarration || generateNarration;
+  const synthesizeSpeechImpl = overrides.synthesizeSpeech || synthesizeSpeech;
   const checkAudio = overrides.validateAudio || validateAudio;
   const saveAudio = overrides.storeAudio || storeAudio;
   const sendMessages = overrides.pushMessages || pushMessages;
@@ -51,7 +51,7 @@ async function runPipeline(config, overrides = {}) {
   const mark = (stage, status, extra) => { log(runId, stage, status, extra); result.stages[stage] = status; };
 
   if (skipDuplicate(config)) {
-    mark('run', 'skipped', { reason: 'production announcement already delivered successfully today (Asia/Bangkok)' });
+    mark('run', 'skipped', { reason: 'Flex announcement already delivered today; skip to avoid a duplicate alert (Asia/Bangkok)' });
     const skippedResult = { ...result, skipped: true, skipReason: 'duplicate-production-run' };
     writeStatus(skippedResult, config);
     return skippedResult;
@@ -118,6 +118,7 @@ async function runPipeline(config, overrides = {}) {
   const messages = [flexMessage];
   let audioInfo;
   let narration;
+  let audioWithheld = false;
   try {
     mark('content.narration', 'start');
     const narrationContext = { floodSituation, weatherAnalysis, location: config.location, date: dateInfo, factsSnapshot };
@@ -132,7 +133,7 @@ async function runPipeline(config, overrides = {}) {
         forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
       });
     };
-    narration = await withRetry(() => generateNarration(narrationContext, config), {
+    narration = await withRetry(() => generateNarrationImpl(narrationContext, config), {
       onRetry: (err, attempt) => mark('content.narration', 'retry', { attempt, message: err.message }),
     });
     mark('content.narration', 'success', { provider: narration.provider, sections: narration.sections.length, characters: narration.totalCharacters });
@@ -140,7 +141,7 @@ async function runPipeline(config, overrides = {}) {
     let safetyErrors = narrationFirewall(narration);
     if (safetyErrors.length) {
       mark('content.safety', 'degraded', { errors: safetyErrors, fallback: 'quota-safe-fallback' });
-      narration = buildQuotaSafeLongFormNarration(narrationContext);
+      narration = buildQuotaSafeNarration(narrationContext, config.tts.profile);
       safetyErrors = narrationFirewall(narration);
       if (safetyErrors.length) {
         mark('content.safety', 'failure', { errors: safetyErrors });
@@ -153,41 +154,61 @@ async function runPipeline(config, overrides = {}) {
     mark('content.safety', 'success');
 
     mark('tts.synthesize', 'start');
-    const audioBuffer = await withRetry(() => synthesizeSpeech(narration.sections.map((section) => section.text), config.tts), {
+    const audioBuffer = await withRetry(() => synthesizeSpeechImpl(narration.spokenText, config.tts), {
       onRetry: (err, attempt) => mark('tts.synthesize', 'retry', { attempt, message: err.message }),
     });
-    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, sections: narration.sections.length, scriptLength: narration.totalCharacters, bytes: audioBuffer.length });
+    mark('tts.synthesize', 'success', { provider: config.tts.provider, profile: config.tts.profile, calls: 1, scriptLength: narration.totalCharacters, bytes: audioBuffer.length });
     mark('audio.validate', 'start');
-    const validated = checkAudio(audioBuffer, narration.spokenText, config.tts.speakingRate, {
-      longForm: true,
-      minDurationMs: 600000,
-      maxDurationMs: 18 * 60 * 1000,
-      maxFileBytes: 16 * 1024 * 1024,
-    });
-    mark('audio.validate', 'success', { durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, bitrateKbps: validated.bitrateKbps, sampleRate: validated.sampleRate, longForm: true });
+    const validated = checkAudio(audioBuffer, narration.spokenText, config.tts.speakingRate, { maxFileBytes: 16 * 1024 * 1024 });
+    mark('audio.validate', 'success', { durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, bitrateKbps: validated.bitrateKbps, sampleRate: validated.sampleRate });
     mark('audio.store', 'start');
     const stored = saveAudio(audioBuffer, config.storage, { dryRun: config.dryRun });
+    if (!stored?.url && !config.dryRun) throw Object.assign(new Error('Audio storage did not return a public URL'), { stage: 'audio.store', retryable: false });
     mark('audio.store', 'success', { url: stored.url, committed: stored.committed, skipped: stored.skipped, path: stored.relPath });
-    audioInfo = { url: stored.url, durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, sections: narration.sections.length };
+    audioInfo = { url: stored.url || null, durationMs: validated.durationMs, bytes: validated.byteLength, mimeType: validated.mimeType, sections: narration.sections.length };
     if (stored.url) messages.push(buildAudioMessage(stored.url, validated.durationMs));
   } catch (error) {
-    const stage = error.stage || 'tts.synthesize';
+    const stage = error.stage || 'audio.process';
     mark(stage, 'failure', { message: error.message, detail: error.detail, errors: error.errors || [] });
     result.lastError = { stage, message: error.message, detail: error.detail, errors: error.errors || [] };
-    writeStatus(result, config);
-    throw error;
+    result.audioWithheld = true;
+    audioWithheld = true;
+    mark('audio.withheld', 'degraded', { failedStage: stage, reason: error.message });
   }
 
   if (config.dryRun) {
     mark('line.send', 'skipped', { dryRun: true, reason: 'DRY_RUN=true; LINE API was not called', messageCount: messages.length });
-    const dryResult = { ...result, dryRun: true, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo };
+    const dryResult = { ...result, dryRun: true, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld };
     writeStatus(dryResult, config);
     return dryResult;
   }
   mark('line.send', 'start');
-  await withRetry(() => sendMessages(messages, config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
-  mark('line.send', 'success', { messageCount: messages.length });
-  const finalResult = { ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo };
+  try {
+    await withRetry(() => sendMessages([flexMessage], config.line), { onRetry: (err, attempt) => mark('line.send', 'retry', { attempt, message: err.message }) });
+    mark('line.send', 'success', { messageCount: 1, messageType: 'flex' });
+    result.flexDelivered = true;
+  } catch (error) {
+    mark('line.send', 'failure', { message: error.message, detail: error.detail });
+    result.lastError = { stage: 'line.send', message: error.message, detail: error.detail };
+    writeStatus({ ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld }, config);
+    throw error;
+  }
+  if (messages.length > 1) {
+    mark('line.audio.send', 'start');
+    try {
+      await withRetry(() => sendMessages([messages[1]], config.line), { onRetry: (err, attempt) => mark('line.audio.send', 'retry', { attempt, message: err.message }) });
+      mark('line.audio.send', 'success', { messageCount: 1, messageType: 'audio' });
+      audioInfo = { ...audioInfo, delivered: true };
+    } catch (error) {
+      mark('line.audio.send', 'failure', { message: error.message, detail: error.detail });
+      result.lastError = { stage: 'line.audio.send', message: error.message, detail: error.detail };
+      result.audioWithheld = true;
+      audioWithheld = true;
+      audioInfo = { ...audioInfo, delivered: false };
+      mark('audio.withheld', 'degraded', { failedStage: 'line.audio.send', reason: error.message });
+    }
+  }
+  const finalResult = { ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld };
   writeStatus(finalResult, config);
   return finalResult;
 }

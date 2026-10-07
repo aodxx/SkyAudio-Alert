@@ -11,7 +11,7 @@
 2. ดึงพยากรณ์อากาศจาก Open-Meteo และวิเคราะห์ด้วยกฎแบบ deterministic
 3. สร้าง LINE Flex carousel 4 ใบ: สรุปอากาศแบบไม่มีภาพ → ภาพระดับน้ำ → แผนที่ → CCTV; ค่าพยากรณ์ดึงจาก FactsSnapshot และแยกจากบทพูดเสียง
 4. สร้าง narration เสียงจากข้อมูลน้ำ/อากาศโดยอิสระ ผ่าน safety check แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
-5. ส่ง Flex แล้วตามด้วย LINE Audio Message เข้า LINE กลุ่มบ้านลำพาย
+5. ส่ง Flex แล้วจึงส่ง LINE Audio Message ด้วยคำขอแยกเข้า LINE กลุ่มบ้านลำพาย เมื่อเสียงผ่าน gate
 
 ปุ่มท้ายการ์ดใน Flex:
 - การ์ด 1 — [ศูนย์ช่วยเหลือพัทลุง](https://chachoengsao-flood.vercel.app/phatthalung)
@@ -29,7 +29,7 @@
 Actions → **Manual Flood-first test** → Run workflow → `dry_run=true`
 
 Dry run จะดึงอากาศจริง สร้าง Flex และ MP3 จริง แต่ไม่ส่ง LINE และไม่ commit audio
-หาก TTS หรือการตรวจ MP3 ล้มเหลว ระบบจะไม่ส่ง audio ที่ใช้ไม่ได้; เกณฑ์ audio ตาม Decision 022 ยังคงต้องยาวกว่า 10 นาที
+ระบบวัดระยะ MP3 จริงด้วย `ffprobe`; ไม่มีเป้าหมายเวลาและไม่ยืดเสียงให้ครบความยาว ใช้เพียง guard ทางเทคนิค 10 วินาที–5 นาทีและขนาดไฟล์ไม่เกิน 16 MiB หากเสียงสังเคราะห์/ตรวจสอบ/จัดเก็บไม่ผ่าน จะไม่ส่ง Audio ที่ใช้ไม่ได้ แต่ Flex ที่ผ่าน lint ยังส่งได้ พร้อมบันทึก `audio.withheld` และทำให้ workflow จบแบบ degraded/non-zero
 
 ### ทดสอบส่งเข้า LINE Test
 ตั้ง `dry_run=false` และต้องมี secrets:
@@ -42,17 +42,17 @@ Production ต้องมี:
 - `LINE_CHANNEL_ACCESS_TOKEN_PROD`
 - `LINE_GROUP_ID_PROD`
 
-ระบบมี duplicate guard สำหรับ Production: หากมีการส่งสำเร็จแล้วในวันเดียวกันตามเวลา Asia/Bangkok การรัน Production ซ้ำจะถูกข้าม เพื่อป้องกันประกาศซ้ำ ส่วน run ที่ล้มเหลวหรือส่งไม่สำเร็จยังสามารถรันซ้ำได้
+ระบบมี duplicate guard สำหรับ Production: เมื่อ Flex ถูกส่งสำเร็จแล้วในวันเดียวกันตามเวลา Asia/Bangkok จะข้ามการรันซ้ำเพื่อป้องกัน Flex ซ้ำ แม้ Audio จะถูก withheld; หากล้มเหลวก่อนส่ง Flex จึงจะรันซ้ำได้
 
 ไม่ต้องมี `GOOGLE_TTS_API_KEY` สำหรับค่าเริ่มต้น
 
 ## TTS
 
-เสียงสร้างแยกจาก Flex โดยใช้ narration 10 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy เสียงต้องอบอุ่น เป็นกันเอง ชัดเจน และเหมาะกับผู้สูงอายุ
+เสียงสร้างแยกจาก Flex โดยใช้บท 4 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy ให้ความยาวเป็นไปตามข้อมูลจริง ไม่กำหนด target นาทีและไม่เติมคำซ้ำ บทควรฟังเหมือนคนเล่าให้เพื่อนบ้านฟัง เปิดด้วยคำทักทาย มีคำเชื่อมธรรมชาติ สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และกล่าวพบกันใหม่ได้ โดยคำพูดอบอุ่นเหล่านี้ห้ามเพิ่มข้อเท็จจริงของสถานการณ์ เสียงต้องชัดเจนและเหมาะกับผู้สูงอายุ
 
 Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 
-หลังสร้างเสียง ระบบตรวจ MPEG frame และ duration ของ MP3 จริงก่อนจัดเก็บ โดย gate ปัจจุบันกำหนด duration จริงมากกว่า 600 วินาที และต้องผ่านข้อจำกัดทางเทคนิคของ LINE สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
+หลังสร้างเสียง ระบบตรวจ MPEG frame, ffprobe-measured duration จริง 180–300 วินาที (รวมขอบ) และขนาดไฟล์ไม่เกิน 16 MiB ก่อนจัดเก็บ สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
 
 ## ทดสอบในเครื่อง
 

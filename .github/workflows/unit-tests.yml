@@ -13,5 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Install audio probe tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Run Node test suite
         run: npm test

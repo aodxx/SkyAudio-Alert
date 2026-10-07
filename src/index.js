@@ -24,6 +24,11 @@ async function main() {
 
   try {
     const result = await runPipeline(config);
+    if (result.audioWithheld) {
+      log(config.runId, 'run', 'degraded', { audioWithheld: true, stages: result.stages, lastError: result.lastError });
+      process.exitCode = 1;
+      return;
+    }
     log(config.runId, 'run', 'success', { stages: result.stages });
     process.exit(0);
   } catch (err) {

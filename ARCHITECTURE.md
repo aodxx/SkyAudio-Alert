@@ -11,10 +11,10 @@ GitHub Actions → src/index.js → src/core/pipeline.js
 1. src/flood/phatthalungCenter.js → FloodSituation → normalize + freshness + severity
 2. src/weather/openMeteo.js → WeatherData → normalize + deterministic analysis
 3. src/presentation/facts.js → FactsSnapshot → fixed four-card Flex renderer + lint
-4. src/content/narrator.js → narration from flood/weather facts → safety firewall
-5. src/audio/tts.js → Gemini TTS audio
-6. src/audio/validate.js + storage.js → validated public HTTPS audio URL
-7. src/line/messagingApi.js → LINE Flex → LINE Audio
+4. src/content/narrator.js → four distinct narration topics from flood/weather facts → safety firewall
+5. src/audio/tts.js → one Gemini TTS call with the joined narration script
+6. src/audio/validate.js → MP3 validity + ffprobe-measured 180–300 second gate; storage.js exposes a validated public HTTPS URL
+7. src/line/messagingApi.js → LINE Flex first; Audio is an optional second message
 
 ## Domain boundaries
 
@@ -26,9 +26,9 @@ Gemini receives normalized safe facts only. It is not a source of truth and must
 
 Flex renders a deterministic four-card carousel directly from FactsSnapshot: a text-only daily-weather card, then three user-specified images with footer buttons. It does not depend on a severity-specific VisualPlan or generated narration text. Only the forecast facts on card 1 are updated dynamically; the three image assets are static repository files.
 
-Audio narration is generated independently from the same source facts, then safety-checked, synthesized, validated, stored and exposed. It does not consume Flex cards or their text. The current measured-duration gate is >600 seconds.
+Audio narration is generated independently from the same source facts, then safety-checked, synthesized once, validated, stored and exposed. It does not consume Flex cards or their text. The measured-duration gate is 180–300 seconds inclusive. If narration, TTS, validation or storage fails, the Audio message is withheld while a lint-passed Flex remains deliverable; the run is marked degraded rather than fully successful.
 
-LINE sends Flex first and Audio second.
+LINE sends Flex first and, when available, sends Audio in a separate second request so an Audio push failure cannot undo Flex delivery. Test/dry-run validates and stores a local MP3 but never sends LINE; no public URL is expected in dry-run.
 
 ## Safety invariants
 
@@ -36,7 +36,7 @@ LINE sends Flex first and Audio second.
 2. Unknown flood data is represented as unknown, not normal.
 3. Forecast does not equal observed flood.
 4. Market/news content cannot enter the production report.
-5. Production success is not recorded if a required stage fails.
+5. Audio failure cannot suppress a valid Flex; an audio-withheld run is visible as degraded/non-zero and is not reported as full success.
 6. Test/dry-run must not send LINE.
 7. Unsafe narration is replaced by a deterministic safe fallback or stopped before TTS.
 

@@ -17,9 +17,37 @@ function makeError(message, retryable = false, detail) {
   return err;
 }
 
+async function fetchTtsResponse(doFetch, url, options, provider) {
+  try {
+    return await doFetch(url, options);
+  } catch (error) {
+    const cause = error?.cause;
+    const detail = [cause?.code, cause?.message, error?.message].filter(Boolean).join(': ').slice(0, 300);
+    throw makeError(`${provider} TTS network request failed`, true, detail);
+  }
+}
+
 function edgeRate(rate) {
   const pct = Math.round((rate - 1) * 100);
   return (pct >= 0 ? '+' : '') + pct + '%';
+}
+
+function buildGeminiTtsStyle(config = {}) {
+  const speakingRate = Number.isFinite(config.speakingRate) ? config.speakingRate : 1;
+  return [
+    config.profile === 'female-friendly' ? 'Thai female village loudspeaker announcer' : 'Thai male village loudspeaker announcer',
+    'warm, familiar, friendly and human',
+    'sounds like a real local community morning announcement, not a studio commercial',
+    'speak as if warmly addressing familiar neighbors, with a natural greeting and gentle conversational sign-off',
+    'clear Thai pronunciation for older listeners',
+    speakingRate < 0.9 ? 'slow and relaxed pacing' : speakingRate < 1 ? 'moderately slow and relaxed pacing' : speakingRate > 1.1 ? 'brisk but clear pacing' : 'natural conversational pacing',
+    'natural breathing and short pauses between topics',
+    'slightly cheerful but calm',
+    'gentle emphasis on flood status, temperatures, rain chances and safety advice',
+    'do not sound like a television newsreader',
+    'do not rush or read every sentence with the same rhythm',
+    'keep the tone conversational and reassuring',
+  ].join('; ');
 }
 
 function synthesizeWithEdge(script, config) {
@@ -43,7 +71,7 @@ async function synthesizeWithGoogle(script, config, opts = {}) {
   const doFetch = opts.fetchImpl || fetch;
   if (!config.apiKey) throw makeError('GOOGLE_TTS_API_KEY is not configured');
   const body = { input: { text: script }, voice: { languageCode: config.languageCode, name: config.voiceName }, audioConfig: { audioEncoding: 'MP3', speakingRate: config.speakingRate } };
-  const res = await doFetch(TTS_URL + '?key=' + config.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetchTtsResponse(doFetch, TTS_URL + '?key=' + config.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, 'Google');
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw makeError('Google TTS request failed: ' + res.status, res.status >= 500 || res.status === 429, text.replace(new RegExp(config.apiKey, 'g'), '***').slice(0, 300));
@@ -56,26 +84,14 @@ async function synthesizeWithGoogle(script, config, opts = {}) {
 async function synthesizeWithGemini(script, config, opts = {}) {
   const doFetch = opts.fetchImpl || fetch;
   if (!config.apiKey) throw makeError('GEMINI_API_KEY is not configured');
-  const style = config.style || [
-    config.profile === 'female-friendly' ? 'Thai female village loudspeaker announcer' : 'Thai male village loudspeaker announcer',
-    'warm, familiar, friendly and human',
-    'sounds like a real local community morning announcement, not a studio commercial',
-    'clear Thai pronunciation for older listeners',
-    config.speakingRate < 0.9 ? 'slow and relaxed pacing' : config.speakingRate < 1 ? 'moderately slow and relaxed pacing' : config.speakingRate > 1.1 ? 'brisk but clear pacing' : 'natural conversational pacing',
-    'natural breathing and short pauses between topics',
-    'slightly cheerful but calm',
-    'gentle emphasis on flood status, temperatures, rain chances and safety advice',
-    'do not sound like a television newsreader',
-    'do not rush or read every sentence with the same rhythm',
-    'keep the tone conversational and reassuring',
-  ].join('; ');
+  const style = config.style || buildGeminiTtsStyle(config);
   const body = {
     contents: [{ role: 'user', parts: [{ text: script, speech_metadata: { style } }] }],
     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { voice: config.voiceName } } },
   };
   const model = config.model || 'gemini-3.8-flash-tts';
   const url = GEMINI_TTS_BASE_URL + '/' + encodeURIComponent(model) + ':generateContent';
-  const res = await doFetch(url, { method: 'POST', headers: { 'x-goog-api-key': config.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetchTtsResponse(doFetch, url, { method: 'POST', headers: { 'x-goog-api-key': config.apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, 'Gemini');
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw makeError('Gemini TTS request failed: ' + res.status, res.status >= 500 || res.status === 429, text.slice(0, 500));
@@ -101,38 +117,6 @@ async function synthesizeWithGemini(script, config, opts = {}) {
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
-async function synthesizeLongFormSpeech(scripts, config, opts = {}) {
-  const sections = Array.isArray(scripts) ? scripts.map((value) => String(value || '').trim()).filter(Boolean) : [];
-  if (!sections.length) throw makeError('Long-form TTS requires at least one narration section');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skyaudio-longform-'));
-  const files = [];
-  try {
-    for (let index = 0; index < sections.length; index += 1) {
-      const audio = await synthesizeSpeech(sections[index], config, opts);
-      const inputPath = path.join(dir, 'part-' + String(index).padStart(2, '0') + '.mp3');
-      fs.writeFileSync(inputPath, audio);
-      files.push(inputPath);
-    }
-    const concatPath = path.join(dir, 'concat.txt');
-    fs.writeFileSync(concatPath, files.map((file) => "file '" + file.replace(/'/g, "'\\''") + "'").join('\n'));
-    const output = path.join(dir, 'longform.mp3');
-    execFileSync('ffmpeg', [
-      '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concatPath,
-      '-af', 'aresample=24000,loudnorm=I=-16:TP=-1.5:LRA=11',
-      '-codec:a', 'libmp3lame', '-b:a', '64k', '-ar', '24000', '-ac', '1', output,
-    ], { stdio: 'pipe', timeout: 300000 });
-    if (!fs.existsSync(output)) throw makeError('FFmpeg did not create long-form MP3');
-    const result = fs.readFileSync(output);
-    if (!result.length) throw makeError('Long-form MP3 is empty');
-    return result;
-  } catch (err) {
-    if (err.stage) throw err;
-    throw makeError('Long-form TTS assembly failed', true, String(err.stderr || err.message || '').slice(0, 500));
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-}
-
 function synthesizeWithMock(config) {
   const file = config.mockFile || 'public/audio/2026-10-03.mp3';
   if (!fs.existsSync(file)) throw makeError('TTS mock file does not exist: ' + file);
@@ -147,4 +131,4 @@ async function synthesizeSpeech(script, config, opts = {}) {
   return synthesizeWithEdge(script, config);
 }
 
-module.exports = { synthesizeSpeech, synthesizeLongFormSpeech, edgeRate };
+module.exports = { synthesizeSpeech, edgeRate, buildGeminiTtsStyle };

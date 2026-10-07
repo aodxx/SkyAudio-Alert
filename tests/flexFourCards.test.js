@@ -50,11 +50,14 @@ test('Flex contains the four requested cards, in order, with approved image and 
     [CARD_IMAGE_URLS.waterMap],
     [CARD_IMAGE_URLS.cctv],
   ]);
+  const imageNodes = cards.flatMap((card) => nodesOfType(card.body, 'image'));
+  assert.equal(imageNodes.length, 3);
+  assert.ok(imageNodes.every((image) => !Object.prototype.hasOwnProperty.call(image, 'alt')));
   assert.deepEqual(cards.map(actionOf).map(({ label, uri }) => ({ label, uri })), [
     { label: 'ศูนย์ช่วยเหลือพัทลุง', uri: CTA_URLS['flood-source'] },
     { label: 'แผนที่ระดับน้ำพัทลุง', uri: CTA_URLS['water-map'] },
     { label: 'พยากรณ์ / เรดาร์', uri: CTA_URLS['weather-radar'] },
-    { label: 'ภาพสด / CCTV', uri: CTA_URLS.cctv },
+    { label: 'ภาพสด / CCTV', uri: 'https://cctv.maholan.net/' },
   ]);
   assert.deepEqual(lintFlexMessage(message, { factsSnapshot: input.factsSnapshot }), []);
 });
@@ -108,7 +111,7 @@ test('first card cannot gain an image even when all other card contracts stay va
   const { message } = render({ severity: 'watch' });
   const changed = structuredClone(message);
   changed.contents.contents[0].body.contents.unshift({
-    type: 'image', url: CARD_IMAGE_URLS.floodStatus, size: 'full', aspectRatio: '4:5', aspectMode: 'fit', alt: 'ภาพ',
+    type: 'image', url: CARD_IMAGE_URLS.floodStatus, size: 'full', aspectRatio: '4:5', aspectMode: 'fit',
   });
   assert.ok(lintFlexMessage(changed).some((error) => error.includes('card 1 must not contain an image')));
 });

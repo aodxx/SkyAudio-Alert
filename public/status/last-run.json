@@ -9,14 +9,23 @@
     "weather.analyze": "success",
     "flex.render": "success",
     "flex.lint": "success",
-    "content.narration": "retry",
-    "tts.synthesize": "failure"
+    "content.narration": "success",
+    "content.safety": "success",
+    "tts.synthesize": "success",
+    "audio.validate": "success",
+    "audio.store": "success",
+    "line.send": "success",
+    "line.audio.send": "success"
   },
-  "lastError": {
-    "stage": "tts.synthesize",
-    "message": "fetch failed",
-    "errors": []
+  "lastError": null,
+  "audioWithheld": false,
+  "audio": {
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@d08c49eb18839d7b418af79cf3415ce0aa90e9ed/public/audio/2026-10-07.mp3",
+    "durationMs": 112968,
+    "bytes": 1807917,
+    "mimeType": "audio/mpeg",
+    "sections": 4,
+    "delivered": true
   },
-  "audio": null,
-  "generatedAt": "2026-10-07T02:01:00.575Z"
+  "generatedAt": "2026-10-07T11:25:09.926Z"
 }

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (build flood/weather/Flex/audio, do not push LINE or commit audio)'
+        description: 'Dry run (build preview artifact; do not push LINE or commit audio)'
         type: boolean
         default: true
 
@@ -36,6 +36,7 @@ jobs:
           CONTENT_PROVIDER: gemini
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_CONTENT_MODEL: ${{ secrets.GEMINI_CONTENT_MODEL }}
+          GEMINI_CONTENT_FALLBACK_MODEL: ${{ secrets.GEMINI_CONTENT_FALLBACK_MODEL || 'gemini-3.7-flash' }}
           TTS_PROVIDER: gemini
           GEMINI_TTS_MODEL: ${{ secrets.GEMINI_TTS_MODEL }}
           TTS_PROFILE: male-friendly
@@ -45,3 +46,20 @@ jobs:
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
         run: node src/index.js
+      - name: Select Bangkok-date preview audio
+        if: ${{ always() && inputs.dry_run }}
+        id: preview
+        shell: bash
+        run: |
+          PREVIEW_DATE=$(node -e "console.log(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()))")
+          echo "date=$PREVIEW_DATE" >> "$GITHUB_OUTPUT"
+      - name: Upload dry-run preview
+        if: ${{ always() && inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: line-test-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            public/status/last-run.json
+            public/audio/${{ steps.preview.outputs.date }}.mp3
+          if-no-files-found: warn
+          retention-days: 7
