@@ -1,5 +1,5 @@
 {
-  "runId": "2026-10-06-lampai-test",
+  "runId": "2026-10-07-lampai-test",
   "mode": "test",
   "dryRun": false,
   "stages": {
@@ -9,13 +9,14 @@
     "weather.analyze": "success",
     "flex.render": "success",
     "flex.lint": "success",
-    "content.narration": "failure"
+    "content.narration": "retry",
+    "tts.synthesize": "failure"
   },
   "lastError": {
-    "stage": "content.narration",
-    "message": "Gemini long-form narration request failed: 429",
+    "stage": "tts.synthesize",
+    "message": "fetch failed",
     "errors": []
   },
   "audio": null,
-  "generatedAt": "2026-10-06T02:37:02.133Z"
+  "generatedAt": "2026-10-07T02:01:00.575Z"
 }
