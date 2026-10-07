@@ -21,6 +21,24 @@ function testConfig(dryRun = true) {
   };
 }
 
+function productionConfig() {
+  const config = testConfig(false);
+  config.mode = 'production';
+  config.requireAudioForSend = true;
+  config.flood.degradedMode = 'no-send';
+  return config;
+}
+
+function productionOverrides(state) {
+  const deps = overrides(state);
+  deps.fetchFlood = async () => ({
+    ...floodFixture,
+    stations: [{ name: 'สถานีทดสอบ', waterway: 'คลองทดสอบ', trend: 'stable' }],
+    freshness: { state: 'fresh', ageMinutes: 15 },
+  });
+  return deps;
+}
+
 function narration(factsSnapshot, textOverride) {
   const texts = textOverride ? [textOverride, 'รายละเอียดข้อมูลน้ำและเวลาอัปเดต', 'พยากรณ์อากาศเป็นข้อมูลประกอบเท่านั้น', 'ติดตามคำแนะนำจากแหล่งข้อมูลล่าสุด'] : [
     'สวัสดีครับ วันนี้รายงานสถานการณ์น้ำตามข้อมูลที่ตรวจสอบได้',
@@ -131,6 +149,52 @@ test('live delivery pushes Flex and then Audio in separate LINE requests', async
   assert.equal(result.flexDelivered, true);
   assert.equal(result.audioInfo.delivered, true);
   assert.equal(result.audioWithheld, false);
+});
+
+test('production no-send blocks Flex and Audio when required TTS/audio fails', async () => {
+  const state = {};
+  const deps = productionOverrides(state);
+  deps.synthesizeSpeech = async () => {
+    throw Object.assign(new Error('TTS unavailable'), { stage: 'audio.synthesize', retryable: false });
+  };
+
+  const result = await runPipeline(productionConfig(), deps);
+
+  assert.equal(state.sentMessages, undefined);
+  assert.equal(result.audioWithheld, true);
+  assert.equal(result.stages['line.send'], 'skipped');
+  assert.equal(result.stages['line.audio.send'], 'skipped');
+  assert.equal(state.statusResult.stages['line.send'], 'skipped');
+});
+
+test('production sends Flex and Audio together in one LINE request when both are ready', async () => {
+  const state = { batches: [] };
+  const deps = productionOverrides(state);
+  deps.pushMessages = async (batch) => { state.batches.push(batch.map((message) => message.type)); };
+
+  const result = await runPipeline(productionConfig(), deps);
+
+  assert.deepEqual(state.batches, [['flex', 'audio']]);
+  assert.equal(result.stages['line.send'], 'success');
+  assert.equal(result.stages['line.audio.send'], 'success');
+  assert.equal(result.audioInfo.delivered, true);
+  assert.equal(result.audioWithheld, false);
+});
+
+test('production batch failure records both messages as undelivered without a second request', async () => {
+  const state = { batches: [] };
+  const deps = productionOverrides(state);
+  deps.pushMessages = async (batch) => {
+    state.batches.push(batch.map((message) => message.type));
+    throw Object.assign(new Error('LINE unavailable'), { stage: 'line.send', retryable: false });
+  };
+
+  await assert.rejects(() => runPipeline(productionConfig(), deps), (error) => error.stage === 'line.send');
+
+  assert.deepEqual(state.batches, [['flex', 'audio']]);
+  assert.equal(state.statusResult.stages['line.send'], 'failure');
+  assert.equal(state.statusResult.stages['line.audio.send'], 'failure');
+  assert.equal(state.statusResult.flexDelivered, undefined);
 });
 
 test('unsafe narration is replaced by a safe concise fallback before TTS', async () => {

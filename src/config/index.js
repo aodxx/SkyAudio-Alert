@@ -12,16 +12,29 @@ function optional(name, fallback) {
 function bangkokDate() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
+function isAuthorizedDailyHtmlProductionException() {
+  return process.env.ALLOW_DAILY_HTML_PRODUCTION_EXCEPTION === 'true'
+    && process.env.GITHUB_WORKFLOW === 'Daily Flood-first announcement (PROD target)'
+    && process.env.GITHUB_WORKFLOW_REF === 'aodxx/SkyAudio-Alert/.github/workflows/weather-daily.yml@refs/heads/main'
+    && process.env.GITHUB_EVENT_NAME === 'schedule'
+    && process.env.GITHUB_REPOSITORY === 'aodxx/SkyAudio-Alert'
+    && process.env.GITHUB_REF === 'refs/heads/main'
+    && process.env.FLOOD_SOURCE_URL === 'https://chachoengsao-flood.vercel.app/phatthalung'
+    && process.env.FLOOD_DEGRADED_MODE === 'no-send';
+}
 function buildConfig() {
   const mode = optional('RUN_MODE', 'test').toLowerCase();
   const isProd = mode === 'production' || mode === 'prod';
-  if (isProd) throw new Error('Production is locked until an official machine-readable flood API adapter and verified Phatthalung station mapping are implemented');
+  if (isProd && !isAuthorizedDailyHtmlProductionException()) {
+    throw new Error('Production is locked until an official machine-readable flood API adapter and verified Phatthalung station mapping are implemented; only the authorized daily HTML schedule on main may use the temporary exception');
+  }
   const dryRun = optional('DRY_RUN', 'false').toLowerCase() === 'true';
   const lineTokenName = isProd ? 'LINE_CHANNEL_ACCESS_TOKEN_PROD' : 'LINE_CHANNEL_ACCESS_TOKEN_TEST';
   const lineGroupName = isProd ? 'LINE_GROUP_ID_PROD' : 'LINE_GROUP_ID_TEST';
   const ttsProfile = optional('TTS_PROFILE', 'male-friendly').toLowerCase();
   const config = {
     mode: isProd ? 'production' : 'test', dryRun,
+    requireAudioForSend: isProd,
     location: { name: optional('LOCATION_NAME', 'บ้านลำพาย'), district: optional('DISTRICT_NAME', 'ต.โคกชะงาย'), province: optional('PROVINCE_NAME', 'พัทลุง'), lat: parseFloat(optional('WEATHER_LAT', '7.619729')), lon: parseFloat(optional('WEATHER_LON', '100.005932')), timezone: optional('WEATHER_TIMEZONE', 'Asia/Bangkok') },
     thresholds: { hotApparent: parseFloat(optional('THRESH_HOT_APPARENT', '35')), coolMorning: parseFloat(optional('THRESH_COOL_MORNING', '23')), rainProbNotable: parseFloat(optional('THRESH_RAIN_PROB_NOTABLE', '40')), rainProbHigh: parseFloat(optional('THRESH_RAIN_PROB_HIGH', '65')), strongWindKmh: parseFloat(optional('THRESH_STRONG_WIND_KMH', '35')), heavyRainMm: parseFloat(optional('THRESH_HEAVY_RAIN_MM', '10')) },
     flood: {

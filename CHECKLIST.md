@@ -1,26 +1,28 @@
 # SkyAudio-Alert — Production Readiness Checklist
 
 **อัปเดต:** 2026-10-07
-**สถานะรวม:** **NO-GO สำหรับ Production** — ต้องมี official flood API ก่อน และมี production hard-lock ใน config
+
+**สถานะ:** **LIMITED-GO สำหรับ daily Production ภายใต้ Decision 028**; ยังไม่ถือว่า official flood API พร้อมใช้งาน
 
 ## ยืนยันแล้ว
 
-- [x] Flood-first runtime; อากาศเป็นข้อมูลประกอบ; ไม่มี market/news ใน runtime
-- [x] **B2 — no-send เมื่อยืนยันข้อมูลน้ำไม่ได้:** ผู้ใช้เลือกนโยบายนี้แล้ว. เมื่อ fetch ล้มเหลว, freshness ไม่ใช่ `fresh`, severity เป็น `unknown` หรือไม่มีสถานีที่ตรวจสอบได้ ระบบหยุดก่อน weather/Flex/TTS/LINE
-- [x] **B3 — Gemini contract:** live Gemini Content → Gemini TTS/audio validation ผ่าน 2026-10-04 (Decision 020)
-- [x] LINE TEST run `37612281724` ส่ง Flex และ Audio สำเร็จ; run นี้ใช้ `quota-safe-fallback` สำหรับ narration แต่ Gemini TTS สร้าง MP3 จริง 112.968 วินาทีและ LINE รับ Audio
-- [x] Daily workflow ใช้ `RUN_MODE=test` และ TEST secrets เท่านั้น
-- [x] `RUN_MODE=production` ถูกล็อกใน config จนกว่าจะ implement/validate official flood API adapter และ station mapping
+- [x] Flood-first runtime; พยากรณ์อากาศเป็นข้อมูลประกอบ ไม่ใช้ยืนยันสถานการณ์น้ำ
+- [x] **B2 — no-send เมื่อข้อมูลน้ำยืนยันไม่ได้:** หยุดเมื่อ fetch ล้มเหลว, freshness ไม่ใช่ `fresh`, severity เป็น `unknown` หรือไม่มีสถานีที่ตรวจสอบได้
+- [x] ผู้ใช้อนุญาตข้อยกเว้นรายวัน: ใช้ HTML adapter ปัจจุบันเมื่อ flood gate ผ่าน และยอมรับว่า GitHub Actions อาจเริ่มช้า/คลาดเวลา
+- [x] Daily workflow ใช้ Production secrets เฉพาะจาก schedule บน `main`; ไม่มี manual dispatch สำหรับ Production
+- [x] Production ต้องมี narration, TTS, audio validation และ public audio URL พร้อมก่อนส่ง; ถ้า Audio ไม่ผ่านจะไม่ส่งทั้ง Flex และ Audio
+- [x] เมื่อพร้อม ส่ง Flex+Audio ใน LINE push request เดียว เพื่อลดการส่งแบบมีแต่ Flex
+- [x] One-time preview delivery: workflow run `37624288064` ตอบรับ LINE API `HTTP 200` สำหรับ 2 messages; ใช้ asset ที่ตรึง checksum ไว้
 
-## Gates ที่ยังเปิด
+## ยังเปิด / ข้อจำกัด
 
-- [ ] **B1 — official flood API:** รอ provider Base URL, access method/terms และ station IDs/mapping ที่ตรวจสอบได้สำหรับพัทลุง. ThaiWater Standard ระบุ `A002.1 /Runoff` แต่ Base URL เป็นของแต่ละผู้ให้บริการ. HTML source ปัจจุบันใช้ได้เฉพาะ TEST; ยังไม่ยอมรับเป็น Production source
-- [ ] **B4 — docs/tests/workflow alignment:** โค้ดและเอกสาร no-send กำลังอัปเดตใน PR นี้; ปิดเมื่อ full tests และ GitHub CI ผ่าน
-- [ ] **Human acceptance:** ตรวจ Flex บน LINE มือถือจริง, ลำดับ Flex ก่อน Audio, กดเล่นเสียง และตรวจเนื้อหา
-- [ ] **Production enablement:** ห้ามเปิด schedule/ส่ง PROD จนกว่า B1, B4 และ Human acceptance ปิดครบ. PROD secrets เพียงอย่างเดียวไม่ปลดล็อกการส่ง
+- [ ] **B1 — official flood API:** ยังไม่มี official machine-readable API และ verified Phatthalung station mapping; HTML adapter เป็นข้อยกเว้นที่ผู้ใช้อนุญาตสำหรับ daily schedule เท่านั้น ไม่ได้ปิด B1
+- [ ] **ความเสถียร TTS:** scheduled run ล่าสุด `37559334882` ล้มเหลวเมื่อ Gemini ตอบ `503`/TTS fetch error; ตามนโยบายปัจจุบันจะ no-send แทนการส่งข้อความไม่ครบ
+- [ ] **เวลา:** ตั้ง cron `23:00 UTC` (= `06:00 Asia/Bangkok`) แต่ GitHub Actions เป็น best-effort; run ล่าสุดเริ่มราว 08:53 ICT จึงรับประกัน 06:00 ตรงเวลาไม่ได้
+- [ ] **Human review:** ควรตรวจ Flex และเล่น Audio บน LINE client จริงหลังส่ง; การตอบรับ `HTTP 200` ยืนยันการรับคำขอจาก LINE API ไม่ใช่การยืนยันว่าอุปกรณ์ปลายทางเล่นเสียงแล้ว
 
-## หลักฐานล่าสุด
+## Production exception
 
-- Gemini live acceptance: 2026-10-04, Decision 020
-- LINE TEST delivery: run `37612281724`, 2026-10-07
-- อ่านรายละเอียดที่ [Phase 3 Status](docs/PHASE3_STATUS.md), [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md) และ [DECISIONS.md](DECISIONS.md)
+อนุญาตเฉพาะ `.github/workflows/weather-daily.yml` บน `aodxx/SkyAudio-Alert` branch `main` เมื่อ event เป็น `schedule`, source URL ตรงกับ HTML adapter ที่อนุมัติ และ `FLOOD_DEGRADED_MODE=no-send`. Production config ยังคงปฏิเสธ run อื่น; exception นี้สิ้นสุดเมื่อ official API พร้อมใช้งานและผ่านการตรวจ หรือเมื่อผู้ใช้เปลี่ยนนโยบาย
+
+รายละเอียดเงื่อนไขและเหตุผลอยู่ใน [DECISIONS.md](DECISIONS.md), Decision 027–028.

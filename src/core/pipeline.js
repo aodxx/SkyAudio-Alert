@@ -195,11 +195,39 @@ async function runPipeline(config, overrides = {}) {
     mark('audio.withheld', 'degraded', { failedStage: stage, reason: error.message });
   }
 
+  if (config.requireAudioForSend && audioWithheld) {
+    mark('line.send', 'skipped', { reason: 'Required audio did not pass; production no-send policy blocked the entire report', messageCount: 0 });
+    mark('line.audio.send', 'skipped', { reason: 'Required audio did not pass; no LINE request was made' });
+    const blockedResult = { ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld: true };
+    writeStatus(blockedResult, config);
+    return blockedResult;
+  }
+
   if (config.dryRun) {
     mark('line.send', 'skipped', { dryRun: true, reason: 'DRY_RUN=true; LINE API was not called', messageCount: messages.length });
     const dryResult = { ...result, dryRun: true, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld };
     writeStatus(dryResult, config);
     return dryResult;
+  }
+  if (config.requireAudioForSend) {
+    mark('line.send', 'start');
+    try {
+      // One request keeps the approved Flex+Audio pair together and avoids Flex-only delivery.
+      await sendMessages(messages, config.line);
+      mark('line.send', 'success', { messageCount: messages.length, messageTypes: messages.map((message) => message.type), atomicWithAudio: true });
+      mark('line.audio.send', 'success', { messageCount: 1, messageType: 'audio', atomicWithFlex: true });
+      result.flexDelivered = true;
+      audioInfo = { ...audioInfo, delivered: true };
+    } catch (error) {
+      mark('line.send', 'failure', { message: error.message, detail: error.detail, messageCount: messages.length });
+      mark('line.audio.send', 'failure', { message: error.message, detail: error.detail, atomicWithFlex: true });
+      result.lastError = { stage: error.stage || 'line.send', message: error.message, detail: error.detail };
+      writeStatus({ ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld }, config);
+      throw error;
+    }
+    const atomicResult = { ...result, floodSituation, factsSnapshot, flexMessage, narration, messages, audioInfo, audioWithheld };
+    writeStatus(atomicResult, config);
+    return atomicResult;
   }
   mark('line.send', 'start');
   try {

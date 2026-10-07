@@ -320,3 +320,18 @@ This status note is superseded by the user-confirmed source policy in Decision 0
 When flood fetch fails, freshness is not `fresh`, severity is `unknown`, or there are no verified station readings, the runtime must stop before weather-only reporting, Flex construction, TTS, and LINE delivery (`no-send`). Set this as the runtime default and workflow policy. Keep `unknown-weather` only for explicit legacy/unit test coverage; do not expose it as an operator choice in send workflows.
 
 **Guard:** `RUN_MODE=production` remains hard-locked until the official API adapter and station mapping are implemented and validated. Setting PROD LINE secrets alone does not authorize or enable delivery.
+
+
+## Decision 028 — User-authorized daily Production exception using provisional HTML
+
+**Date:** 2026-10-07
+
+**User authorization:** The user explicitly authorized recurring delivery to `LINE_GROUP_ID_PROD` every day at 06:00 Asia/Bangkok using the current HTML flood adapter when the flood gate reports fresh, with no-send when flood data or Audio does not pass. The user accepts that GitHub Actions scheduling may be late.
+
+**Scope:** The exception applies only to `.github/workflows/weather-daily.yml` on `aodxx/SkyAudio-Alert` `main`, triggered by `schedule`, with the exact approved HTML source and `FLOOD_DEGRADED_MODE=no-send`. Manual production dispatch and every other `RUN_MODE=production` execution remain locked. The config checks the repository, workflow ref/name, event, branch, source URL, and no-send mode before allowing this exception.
+
+**No-send and delivery:** Flood fetch failure, stale/unknown severity, zero verified stations, narration/TTS failure, audio validation/storage failure, or missing public audio URL prevents any LINE request. When ready, Flex and Audio are sent together in one LINE push request; Production does not send Flex-only reports.
+
+**Schedule:** `0 23 * * *` UTC corresponds to 06:00 Asia/Bangkok on the following day. GitHub Actions is best-effort and not a punctual-time guarantee; this limitation was disclosed and accepted by the user.
+
+**Relationship to Decision 027:** Decision 027 remains the rule for official API readiness. The HTML adapter is still not an official source, B1 remains open, and this limited recurring exception must not be described as official API validation. The exception remains until an official source is implemented and validated or the user changes the policy.
