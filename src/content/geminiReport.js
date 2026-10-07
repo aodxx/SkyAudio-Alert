@@ -80,7 +80,17 @@ async function fetchGeminiContent(doFetch, url, options, maxAttempts = 3) {
   let lastResponse;
   let lastDetail = '';
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const res = await doFetch(url, options);
+    let res;
+    try {
+      res = await doFetch(url, options);
+    } catch (error) {
+      const cause = error?.cause;
+      lastDetail = [cause?.code, cause?.message, error?.message].filter(Boolean).join(': ').slice(0, 500);
+      if (attempt === maxAttempts) throw reportError('Gemini content network request failed', true, lastDetail);
+      const delayMs = attempt === 1 ? 5000 : 15000;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      continue;
+    }
     if (res.ok) return res;
     lastResponse = res;
     lastDetail = (await res.text().catch(() => '')).slice(0, 500);

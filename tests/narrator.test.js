@@ -162,6 +162,30 @@ test('narrator uses the configured fallback model when the primary returns 429',
   assert.equal(result.sections.length, 4);
 });
 
+test('narrator uses quota-safe speech when Gemini network fetch fails', async () => {
+  let calls = 0;
+  const result = await generateNarration(context(), config(), {
+    fetchImpl: async () => { calls += 1; throw new TypeError('fetch failed'); },
+    maxAttempts: 1,
+  });
+  assert.equal(result.provider, 'quota-safe-fallback');
+  assert.equal(result.sections.length, 4);
+  assert.match(result.spokenText, /สวัสดี/);
+  assert.equal(calls, 1);
+});
+
+test('narrator uses quota-safe speech after Gemini 503 recovery is exhausted', async () => {
+  let calls = 0;
+  const result = await generateNarration(context(), config(), {
+    fetchImpl: async () => { calls += 1; return response({ error: 'unavailable' }, 503); },
+    maxAttempts: 1,
+    recoveryAttempts: 1,
+  });
+  assert.equal(result.provider, 'quota-safe-fallback');
+  assert.equal(result.sections.length, 4);
+  assert.equal(calls, 2);
+});
+
 test('quota-safe fallback contains four distinct sections and does not pad by repeating', async () => {
   const result = await generateNarration(context(), config(), {
     fetchImpl: async () => response({ error: 'quota' }, 429),

@@ -172,26 +172,40 @@ async function generateNarration(context, config, opts = {}) {
       body: JSON.stringify(body),
     }, attempts);
   };
-  let result = await request(config.content.model, opts.maxAttempts || 2);
+  const quotaSafeFallback = () => ({ ...buildQuotaSafeNarration(context, config.tts?.profile), provider: 'quota-safe-fallback' });
+  const requestWithFallback = async (model, attempts) => {
+    try {
+      return await request(model, attempts);
+    } catch (error) {
+      if (error?.retryable) return null;
+      if (!error.stage) error.stage = 'content.narration';
+      throw error;
+    }
+  };
+  let result = await requestWithFallback(config.content.model, opts.maxAttempts || 2);
+  if (!result) return quotaSafeFallback();
   let response = result?.response || result;
   let provider = 'gemini';
 
   if (!response.ok && response.status === 429 && config.content.fallbackModel && config.content.fallbackModel !== config.content.model) {
-    result = await request(config.content.fallbackModel, opts.fallbackMaxAttempts || 1);
+    result = await requestWithFallback(config.content.fallbackModel, opts.fallbackMaxAttempts || 1);
+    if (!result) return quotaSafeFallback();
     response = result?.response || result;
     provider = 'gemini-fallback';
     if (!response.ok && (response.status === 429 || response.status >= 500)) {
-      return { ...buildQuotaSafeNarration(context), provider: 'quota-safe-fallback' };
+      return quotaSafeFallback();
     }
   }
 
   if (!response.ok && response.status === 503) {
-    result = await request(config.content.model, opts.recoveryAttempts || 1);
+    result = await requestWithFallback(config.content.model, opts.recoveryAttempts || 1);
+    if (!result) return quotaSafeFallback();
     response = result?.response || result;
   }
   if (!response.ok) {
+    if (response.status === 429 || response.status >= 500) return quotaSafeFallback();
     throw Object.assign(new Error('Gemini narration request failed: ' + response.status), {
-      stage: 'content.narration', retryable: response.status === 429 || response.status >= 500,
+      stage: 'content.narration', retryable: false,
     });
   }
   return { ...parseNarration(await response.json()), provider };
