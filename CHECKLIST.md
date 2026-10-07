@@ -1,152 +1,40 @@
-# SkyAudio-Alert — Verification Checklist
+# SkyAudio-Alert — Production Readiness Checklist
 
-> DOCUMENT LOCK — FLOOD-FIRST — 2026-10-04
->
-> Legacy weather + market/news acceptance is historical evidence only.
+**อัปเดต:** 2026-10-07
+**สถานะรวม:** **NO-GO สำหรับ Production** — Scheduled workflow ปัจจุบันใช้ LINE TEST เท่านั้น
 
-## Stage 1 — Document Lock
-- [x] Flood-first scope declared
-- [x] Market/news removed from production requirements
-- [x] Fixed 2–3 minute audio removed
-- [x] Adaptive Gemini narrative recorded
-- [x] Gemini TTS male/female configuration recorded
-- [x] Flood-first runtime order recorded
-- [x] Source-of-truth hierarchy recorded
-- [x] Production remains NO-GO
+## ยืนยันแล้ว
 
-## Stage 2 — Contracts
-- [x] FloodSituation contract
-- [x] Unknown/stale semantics
-- [x] ReportDraft contract
-- [x] Gemini no-fabrication validation
-- [ ] Real Gemini content model verified
-- [ ] Real Gemini TTS model/voice verified
-- [ ] Flood source contract accepted as stable
+- [x] ขอบเขตปัจจุบันเป็น Flood-first; พยากรณ์อากาศเป็นข้อมูลประกอบ; ไม่มี market/news ใน runtime
+- [x] เมื่อน้ำใช้ยืนยันไม่ได้ ระบบระบุสถานะ `unknown`; ไม่อนุมานว่าน้ำปกติหรือเกิดน้ำท่วมจาก forecast
+- [x] Gemini Content → Gemini TTS และการตรวจ MP3 ผ่าน live acceptance เมื่อ 2026-10-04 (ดู Decision 020 และ Scope Review Report)
+- [x] LINE TEST run `37612281724` ส่ง Flex และ Audio ถึงกลุ่ม TEST สำเร็จ; event ยืนยัน Gemini TTS, audio validation และ LINE audio delivery ผ่าน
+- [x] Flex card 4 CTA ชี้ไป `https://cctv.maholan.net/`
+- [x] Scheduled workflow `.github/workflows/weather-daily.yml` ใช้ `RUN_MODE=test` และ TEST secrets เท่านั้น
 
-## Stage 3 — Fixtures/tests
-- [x] normal/watch/affected/critical/unknown flood fixtures
-- [x] stale/source-unavailable fixtures verified against final policy
-- [x] Gemini structured-output contract tests complete
-- [x] male/female TTS configuration values documented and validated at config/contract level
-- [x] Flex compact/button/priority tests complete
-- [x] legacy market/news assertions are rejected by the current ReportDraft contract
+### หมายเหตุผลทดสอบล่าสุด
 
-## Stage 4 — Runtime acceptance
-- [x] flood-first pipeline exists
-- [x] dry-run can stop before LINE send
-- [x] duplicate guard remains
-- [x] real Gemini end-to-end test
-- [ ] real TTS playback test
-- [x] TEST LINE delivery verified
-- [ ] human review of Flex + Audio
+LINE TEST run `37612281724` ส่งบทเสียงจาก `quota-safe-fallback` เนื่องจาก Gemini Content ไม่ได้ให้ผลใน run นั้น; Gemini TTS สร้าง MP3 จริงยาว **112.968 วินาที** และ LINE รับ Audio สำเร็จ ดังนั้นผลนี้ยืนยัน TTS/การส่งเสียงและ fallback path แต่ไม่ใช่การยืนยันว่า Gemini Content ตอบสำเร็จในทุก run. การทดสอบจริงของ Gemini Content → TTS เมื่อ 2026-10-04 ยังคงเป็นหลักฐาน B3 ที่บันทึกไว้.
 
-## V1.5 — Phase 0 Baseline & Design Lock
-- [x] Runtime inventory locked
-- [x] Flood/Weather/Gemini/Flex/TTS/LINE invariants locked
-- [x] normal/watch/affected/critical/unknown/stale baseline fixtures identified
-- [x] V1.5 acceptance matrix committed
-- [x] V1.5 change boundary committed
-- [x] Production remains NO-GO
+## Gates ที่ยังต้องปิดก่อน Production
 
-## Stage 5 — Production gate
-- [ ] B1 flood source resolved/accepted
-- [ ] B2 degraded mode explicitly accepted
-- [ ] B3 Gemini contract verified
-- [ ] B4 docs/tests/workflows migration complete
-- [ ] production schedule enabled
+- [ ] **B1 — Flood source:** มี official ThaiWater Standard สำหรับ `A002.1 /Runoff` แต่ผู้ให้บริการเป็นผู้กำหนด Base URL; ยังไม่มี endpoint/access method และ station mapping ที่ยืนยันสำหรับพัทลุง. ต้องได้รายละเอียดจากผู้ให้บริการ หรือผู้ใช้ยอมรับอย่างชัดเจนให้ใช้ HTML source ปัจจุบันเป็นแหล่งชั่วคราว โดยคง strict parsing และ fail-closed.
+- [ ] **B2 — Source failure policy:** ปัจจุบันตั้ง `unknown-weather` (แจ้งว่ายืนยันสถานการณ์น้ำล่าสุดไม่ได้และส่ง forecast ประกอบ). ต้องยืนยันว่าพฤติกรรมนี้เป็นที่ยอมรับสำหรับ Production; หากไม่ยอมรับให้เลือก `no-send`.
+- [x] **B3 — Gemini contract:** live Content → TTS acceptance ผ่านแล้วตาม Decision 020; มี fallback/retry สำหรับวันที่ API มีปัญหา. Run ล่าสุดยืนยัน Gemini TTS จริง แต่ใช้ safe content fallback ตามหมายเหตุข้างต้น.
+- [ ] **B4 — Documentation/test/workflow alignment:** กำลังปรับเอกสารที่ stale ให้ตรงโค้ดและหลักฐานล่าสุดใน branch นี้; ปิดเมื่อ `npm test`, `git diff --check` และ PR CI ผ่าน.
+- [ ] **Human acceptance:** ผู้ใช้ตรวจ Flex บน LINE มือถือจริง, ยืนยันลำดับ Flex ก่อน Audio, กดเล่น/ฟัง Audio และยืนยันเนื้อหา/ความเหมาะสม.
+- [ ] **Production schedule:** ห้ามเปิดหรือเปลี่ยน workflow ไปใช้ PROD จนกว่า B1, B2, B4 และ Human acceptance จะปิดครบ.
 
-**Stage 3 test gate: PASS — GitHub Actions verified 35/35 tests.**
+## หลักฐานอ้างอิง
 
-**Milestone 4A test gate: PASS — GitHub Actions verified 40/40 tests after Gemini 503 resilience changes.**
+- [Decision 020 — Gemini Live Acceptance](DECISIONS.md)
+- [Phase 3 Status](docs/PHASE3_STATUS.md)
+- [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md)
+- [LINE TEST workflow](.github/workflows/weather-test.yml)
+- [Scheduled TEST workflow](.github/workflows/weather-daily.yml)
 
-**Gemini live diagnostic:** minimal requests returned 200 for both comparison models; shaped JSON requests returned 503 `UNAVAILABLE` during high demand. The runtime now keeps structured output as the primary path and has a lightweight JSON recovery path after 503 retries.
+## ประวัติที่ยังมีผล
 
-**Current release state: NO-GO**
-
-## Milestone 4A — Live Acceptance Update — 2026-10-04
-
-- [x] Real Gemini content generation verified
-- [x] Real Gemini TTS generation verified
-- [x] Real generated audio passed MP3/duration validation
-- [x] Gemini content → TTS live path verified
-- [x] Gemini 503 resilience remains covered by deterministic tests
-- [ ] TEST LINE acceptance — next: Milestone 4B
-- [ ] Human review of Flex + Audio
-
-### Current gates
-- **Gemini live gate: PASS ✅**
-- **Milestone 4A: PASS ✅**
-- **Milestone 4B LINE Test: PENDING 🟡**
-- **Production: NO-GO 🔴**
-
-B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 documentation/test migration is being updated by this documentation milestone.
-
-
-## Milestone 4B — LINE Test Acceptance — DELIVERY VERIFIED / HUMAN REVIEW PENDING
-
-- [x] Dedicated LINE TEST workflow created
-- [x] TEST destination is selected through *_TEST secrets
-- [x] Workflow runs the complete flood-first pipeline with DRY_RUN=false
-- [x] Gemini Content + TTS configuration included
-- [x] LINE TEST delivery verified — Flex + Audio received in TEST group
-- [ ] Flex rendering verified on real mobile LINE
-- [ ] Audio Message playback verified
-- [ ] Flex arrives before Audio
-- [ ] No market/rubber/news content observed
-- [ ] Unknown/degraded flood wording verified if exercised
-- [ ] Human acceptance recorded
-
-**Current result:** The latest real LINE TEST run successfully delivered both the Flex Message and Audio Message to the TEST group. Audio playback and human visual/content acceptance are still pending confirmation.
-
-**Important:** this workflow is TEST-only. It does not authorize production and does not use PROD LINE secrets.
-
-
-## V1.5 — Phase 1 Visual Design System — 2026-10-04
-- [x] Five severity themes defined
-- [x] Carousel/card hierarchy locked
-- [x] Card 1 self-contained rule locked
-- [x] Dynamic card-count rule locked
-- [x] Mobile readability rules locked
-- [x] Accessibility/altText rules locked
-- [x] CTA scope locked
-- [x] Stale/unknown treatment locked
-- [x] No production runtime changed
-
-**Phase 1: COMPLETE. Next: Phase 2 — Presentation Contract.**
-
-
-## V1.5 — Phase 2 Presentation Contract — 2026-10-04
-- [x] PresentationPlan contract locked
-- [x] Gemini cannot change verified facts/severity
-- [x] Card 1 self-contained rule locked
-- [x] Critical action placement locked
-- [x] Adaptive audio selection policy locked
-- [x] Spoken-text safety gate defined before TTS
-- [x] Deterministic fallback policy defined
-- [x] No production runtime changed
-
-**Phase 2: COMPLETE. Next: Phase 3 — Adaptive Flex Carousel.**
-
-
-## V1.5 Phase 5 — Safety + Quality Firewall — COMPLETE
-- [x] Final safety gate before TTS/LINE
-- [x] No-fabrication / certainty checks
-- [x] Numeric fact leakage checks
-- [x] Severity consistency gate
-- [x] factsUsed traceability
-- [x] Internal presentation quality score
-- [x] Regression tests across five flood states
-- [x] PR #17 merged to main
-
-**Next: Phase 6 — End-to-End LINE Acceptance. Production remains NO-GO.**
-
-
-## Stage V1.6 — Presentation Redesign (Decision 022)
-- [x] P0 — repository review, Decision 022, document alignment, firewall test file repaired (80/80)
-- [ ] P1 — FactsSnapshot, VisualPlan, NarrationPlan contracts + explainer library
-- [ ] P2 — Flex v2 (tokens, components, variants, text-budget lint)
-- [ ] P3 — Per-segment narrator, Thai speech normalizer, firewall v2
-- [ ] P4 — Long-form TTS, ffprobe duration gate (> 600 s), validator limits, audio-withheld behaviour
-- [ ] P5 — Cross-channel consistency, regression matrix
-- [ ] P6 — LINE TEST acceptance with human visual + listening review
-- [ ] Production GO (remains NO-GO)
+- Milestone 4A: Gemini Content + Gemini TTS live acceptance ผ่าน 2026-10-04.
+- Milestone 4B: ส่ง LINE TEST สำเร็จ 2026-10-07; การทบทวนโดยมนุษย์/การเล่นเสียงบนมือถือยังไม่ยืนยัน.
+- Production schedule: **NO-GO** จนกว่าจะปิด gates ด้านบน.

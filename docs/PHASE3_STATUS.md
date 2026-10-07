@@ -1,62 +1,54 @@
-# Phase 3 Status — Flood-first Runtime Pipeline
+# Phase 3 Status — Flood-first Runtime & Release Readiness
 
-**วันที่:** 2026-10-04  
-**สถานะ:** Implemented and verified in local dry-run; real Gemini/LINE production send remains gated by credentials and human acceptance
+**อัปเดต:** 2026-10-07
+**สถานะ:** Runtime ทำงานถึง LINE TEST ได้; **Production ยัง NO-GO**
 
-## Runtime flow
+## Runtime ปัจจุบัน
 
 ```text
-Flood center HTML
-  → weather Open-Meteo
-  → Gemini structured content (fallback only in test/dry-run without key)
-  → compact flood-first Flex
-  → Gemini TTS
-  → audio validation/storage
-  → LINE Flex + Audio
+Flood source → normalize/freshness/severity → Open-Meteo supporting weather
+→ verified facts → { fixed four-card Flex, independent four-topic narration }
+→ safety validation → Gemini TTS → ffprobe/audio storage
+→ LINE Flex push → optional LINE Audio push
 ```
 
-The production pipeline no longer imports or calls market or news modules.
+- Gemini เป็นผู้ช่วยเรียบเรียงเท่านั้น ไม่ใช่แหล่งข้อเท็จจริง; output ผ่าน validator/firewall ก่อน TTS.
+- ความยาวเสียงเป็นไปตามข้อมูล ไม่ยืดบท; validator ใช้ MP3 ที่วัดจริงด้วย `ffprobe` (10 วินาที–5 นาที, ไม่เกิน 16 MiB).
+- เมื่อ narration/TTS/audio delivery ล้มเหลว ให้ส่ง Flex ที่ผ่าน lint ได้โดยลำพังและบันทึก run เป็น degraded.
+- Flex ปัจจุบันมีสี่การ์ด; ปุ่ม CCTV ชี้ `https://cctv.maholan.net/`. ส่วนภาพ CCTV เป็น static asset ไม่ใช่ภาพสดจากกล้อง.
+- `.github/workflows/weather-daily.yml` ตั้ง `RUN_MODE=test` และใช้ `*_TEST` secrets. Production workflow/schedule ยังไม่ได้เปิด.
 
-## Implemented changes
+## Acceptance evidence
 
-`src/core/pipeline.js` now fetches and normalizes flood status first, fetches and analyzes Open-Meteo weather second, generates a validated report through `src/content/geminiReport.js`, renders the new Flex, synthesizes `report.spokenText`, validates/stores audio, and sends LINE messages. A flood-source failure uses the configured `FLOOD_DEGRADED_MODE=unknown-weather` behavior and never turns missing data into normal conditions.
+### Gemini — Milestone 4A
 
-`src/flex/components.js` and `src/flex/builder.js` now render a compact flood-first card. The card shows flood severity, summary, station highlights, freshness, weather context, and the three approved user-facing actions. The weather action is omitted in the critical compact variant so water actions remain primary.
+Decision 020 และ Scope Review Report บันทึก live Gemini Content → Gemini TTS, audio validation และ regression tests ว่าผ่านเมื่อ 2026-10-04.
 
-Market/news source directories, fixed Thai market/news script, and their legacy tests were removed from the runtime repository. Workflows no longer install OCR or pass market/news-oriented TTS instructions.
+### LINE TEST — Milestone 4B
 
-## Gemini behavior
+Run `37612281724` วันที่ 2026-10-07 ส่ง Flex และ Audio ถึงกลุ่ม TEST สำเร็จ. Event log ยืนยัน:
 
-With `GEMINI_API_KEY` and `GEMINI_CONTENT_MODEL`, the content adapter requests JSON structured output and validates it through `ReportDraft`. In local test/dry-run mode without a key, it uses a deterministic flood/weather safety fallback. Production without a Gemini key fails at `content.generate` rather than silently using fallback content.
+- Flood, weather, Flex render/lint, TTS, audio validation/storage และ LINE push ผ่าน
+- Narration ใช้ `quota-safe-fallback` ใน run นี้; Gemini TTS ใช้งานจริง
+- MP3 ยาว 112.968 วินาที; `line.audio.send` สำเร็จ
 
-`GEMINI_TTS_MODEL` and the selected voice profile are used by the existing Gemini TTS adapter. `TTS_PROVIDER=mock` is available only as a local/CI dry-run aid and reads an existing MP3; it is not a production provider.
+ดังนั้นนี่เป็นหลักฐานการส่ง Audio/TTS และ fallback ที่ทำงานได้ ไม่ได้หมายความว่า Gemini Content จะตอบสำเร็จทุกครั้ง. ยังต้องให้ผู้ใช้ตรวจ Flex บน LINE client จริงและฟังเสียงก่อนรับรองเนื้อหา.
 
-## Verification
+## Release gates
 
-The test suite passes **17/17** tests. A read-only end-to-end dry-run against the live flood center and Open-Meteo completed all stages through `line.send: skipped` without calling LINE. The run observed 6 flood stations, aggregate severity `watch`, fresh station data, generated a 302-character fallback report, validated MP3 audio, and did not commit audio because `DRY_RUN=true`.
-
-## Remaining release gates
-
-| Gate | Status |
+| Gate | สถานะปัจจุบัน |
 |---|---|
-| Flood source adapter and freshness | Implemented; HTML source remains structurally brittle |
-| Open-Meteo weather | Implemented |
-| Gemini content model ID/API key | Must be configured and verified |
-| Gemini TTS model/voice | Must be configured and verified with real API response |
-| Flex JSON and local tests | Passed |
-| LINE test-group delivery | Pending real credentials and human review |
-| Production schedule | Must remain gated until Gemini + LINE acceptance passes |
+| B1 — แหล่งข้อมูลน้ำแบบ machine-readable | **OPEN.** ThaiWater Standard กำหนด `A002.1 /Runoff`, แต่ Base URL เป็นของผู้ให้บริการ; ยังไม่มี endpoint/access method/station mapping ที่ยืนยันสำหรับแหล่งปัจจุบัน |
+| B2 — พฤติกรรมเมื่อ flood source ใช้ไม่ได้ | **รอยืนยันสำหรับ Production.** ค่าเริ่มต้นที่ implement คือ `unknown-weather`; ไม่ใช่การประกาศว่าน้ำปกติ |
+| B3 — Gemini model/API contract | **PASS** ตาม live acceptance 2026-10-04; ล่าสุดมี fallback เพื่อรับมือ API availability และยืนยัน Gemini TTS ผ่าน LINE TEST |
+| B4 — docs/tests/workflows migration | **กำลังปิดใน branch นี้.** ต้องผ่าน full tests และ PR CI |
+| Human review — Flex/Audio | **PENDING.** ต้องตรวจบน LINE มือถือจริงและกดเล่น Audio |
+| Production schedule | **NO-GO.** Daily workflow ปัจจุบันส่งเฉพาะ TEST |
 
+## B1 — สิ่งที่ยังขาด
 
-## Milestone 4A Live Acceptance Update — 2026-10-04
+ThaiWater Standard มีสัญญา API น้ำท่า (`A002.1`, `GET /Runoff`) และ filter ตามพื้นที่/สถานี แต่เอกสารมาตรฐานระบุว่าผู้ให้บริการแต่ละรายกำหนด Base URL เอง. หน้า HII/NHC อธิบายการรวบรวมข้อมูลน้ำจากหลายหน่วยงาน แต่ไม่ระบุ endpoint ที่เรียกได้, วิธีขอสิทธิ์, รหัสสถานีพัทลุง หรือการแมปเกณฑ์ระดับน้ำ.
 
-The project has progressed beyond the previous pending Gemini gate.
+จนกว่าจะได้ข้อมูลเหล่านี้หรือผู้ใช้ยอมรับความเสี่ยงของ HTML source ชั่วคราว ให้คง adapter ปัจจุบันแบบ strict และ fail-closed; ห้ามตีความ HTML source ว่าเป็น API ที่มี SLA.
 
-- Real Gemini Content: **PASS**
-- Real Gemini TTS: **PASS**
-- Generated audio validation: **PASS**
-- Unit regression suite: **40/40 PASS**
-- LINE TEST delivery: **PENDING — Milestone 4B**
-- Production schedule: **NO-GO**
-
-The current HTML flood source remains an operational risk because it is not a guaranteed machine-readable API. This remains a release gate and is not changed by Gemini acceptance.
+แหล่งอ้างอิง: [ThaiWater Standard](https://standard.thaiwater.net/), [HII — National Hydroinformatics Data Center](https://www.hii.or.th/en/research-development/rd/2020/04/15/national-hydroinformatics-data-center-nhc/).

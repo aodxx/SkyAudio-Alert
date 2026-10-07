@@ -232,6 +232,8 @@ Gemini มีสิทธิ์เลือกใช้ข้อความ/ป
 
 **Date:** 2026-10-04
 
+**Current status:** Historical design, superseded for the current audio contract by Decision 025. Its >600-second duration and ten-section requirements are not current runtime requirements.
+
 **Decision:** Supersedes the audio-length and presentation-contract parts of Decisions 015 and 021 (and the matching PRD lines).
 
 1. **Two separate presentation channels.** `Verified Facts → FactsSnapshot → Presentation Planner → { VisualPlan → Flex carousel, NarrationPlan → long-form TTS }`. Flex and Audio must not share generated text.
@@ -253,6 +255,8 @@ Gemini มีสิทธิ์เลือกใช้ข้อความ/ป
 
 **Date:** 2026-10-05
 
+**Current status:** Historical runtime design; Decision 025 supersedes its ten-section and >600-second audio requirements. The current runtime uses four distinct topics and natural duration.
+
 **Decision:** Implement the channel separation already required by Decision 022 with the smallest runtime shape: `verified flood/weather facts → { FactsSnapshot → VisualPlan → Flex V2 + lint, independent 10-section narration → safety firewall → long-form TTS }`. Remove the unused shared `PresentationPlan` contract and the `NarrationPlan` builder/explainer layer from runtime. Narration must not consume Flex cards or generated report text; Flex must not consume narration text. If generated narration fails the safety firewall, use the deterministic safe fallback and validate it before TTS.
 
 **Unchanged:** Flood adapter severity remains authoritative; all dynamic Flex values still come from verified fact IDs; narration still uses ten sections and the measured audio duration gate remains strictly greater than 600 seconds. Audio delivery, LINE message order, the production NO-GO state, and all source/safety constraints remain unchanged.
@@ -271,9 +275,9 @@ Gemini มีสิทธิ์เลือกใช้ข้อความ/ป
 1. A custom-designed, image-free daily weather card: Thai date, `ศาลาอเนกประสงค์ บ้านลำพาย`, daily forecast, available morning/afternoon/evening rain information and other available weather values, followed by `ศูนย์ช่วยเหลือพัทลุง` → `https://chachoengsao-flood.vercel.app/phatthalung`.
 2. User image `2_20261005_193645_0003.jpg`, followed by `แผนที่ระดับน้ำพัทลุง` → `https://chachoengsao-flood.vercel.app/phatthalung/map`.
 3. User image `4_20261005_193645_0004.jpg`, followed by `พยากรณ์ / เรดาร์` → `https://chachoengsao-flood.vercel.app/phatthalung/weather`.
-4. User image `6_20261005_193645_0005.jpg`, followed by `ภาพสด / CCTV` → `https://chachoengsao-flood.vercel.app/phatthalung/weather`.
+4. User image `6_20261005_193645_0005.jpg`, followed by `ภาพสด / CCTV` → `https://cctv.maholan.net/`.
 
-Each image preserves its 4:5 aspect ratio, includes descriptive alt text, and is followed by a single footer CTA. Dynamic forecast values come only from FactsSnapshot; missing values are not fabricated. The runtime no longer builds a VisualPlan for this fixed layout. This UI change does not alter the independent narration path, its safety firewall, audio duration gate, or message-delivery order.
+Each image preserves its 4:5 aspect ratio and is followed by a single footer CTA. The Flex message uses top-level `altText`; image nodes omit `alt`, which is not supported by LINE's Flex image schema. Dynamic forecast values come only from FactsSnapshot; missing values are not fabricated. The runtime no longer builds a VisualPlan for this fixed layout. This UI change does not alter the independent narration path, its safety firewall, audio duration guard, or message-delivery order.
 
 **Known limitation accepted by the user:** the supplied CCTV infographic contains place labels that do not correspond to Phatthalung. It is shown unaltered because the user chose to use the supplied asset; it must not be treated as evidence that those cameras are in Phatthalung. The three image files are static repository assets and are not refreshed automatically by the source adapters.
 
@@ -293,3 +297,15 @@ Each image preserves its 4:5 aspect ratio, includes descriptive alt text, and is
 **Relationship to earlier decisions:** This supersedes Decision 022 only for narration section count, repetition policy, duration target and the associated required-audio failure handling. Decision 024 remains authoritative for the four-card Flex design. Facts provenance, flood-first scope, source constraints, LINE message order (Flex before optional Audio), and release gates remain unchanged. The same-day duplicate guard treats a successful Flex push as already announced even if Audio was withheld, avoiding duplicate Flex on a rerun.
 
 **Reason:** The previous long report encouraged repeated explanations and coupled Audio availability to the user-visible Flex alert. A medium, non-repetitive voice report is easier to follow; independently withholding Audio lets a valid Flex alert remain useful when TTS or audio delivery fails.
+
+
+## Release Gate Status Note — 2026-10-07
+
+This is a status update, not a new source-policy approval:
+
+- **B1 remains open:** ThaiWater Standard defines `A002.1 /Runoff`, but each provider chooses its own Base URL. The provider endpoint/access method and Phatthalung station mapping have not been verified; current HTML source remains provisional.
+- **B2 awaits explicit Production acceptance:** current configured behavior is `unknown-weather`; the user has not yet confirmed whether to send that explicit unknown status with supporting weather or choose `no-send` when the flood source fails.
+- **B3 is accepted as passed:** real Gemini Content → Gemini TTS live acceptance is recorded by Decision 020; LINE TEST run `37612281724` also verified Gemini TTS/audio delivery and the safe fallback path.
+- **B4 is being closed:** current primary docs are being aligned to merged implementation and must pass full tests/PR CI.
+- **Human review remains pending:** inspect Flex and play Audio on the LINE client.
+- **Production stays NO-GO:** the scheduled daily workflow remains TEST-only.
