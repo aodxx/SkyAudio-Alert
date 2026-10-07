@@ -20,7 +20,7 @@ const APPROVED = Object.freeze({
   audioSha256: 'f9783d4834fd402342d47d9fc0cdbe9a8d161d2b7d4ab4737dc873a10b3a894b',
   audioBytes: 1849005,
   durationMs: 115536,
-  audioRelativePath: 'public/audio/2026-10-07.mp3',
+  audioRelativePath: 'public/audio/approved-preview-37621337709.mp3',
   markerRelativePath: 'public/status/production-one-time-2026-10-07.json',
   altText: 'พยากรณ์อากาศพัทลุง · 7 ตุลาคม 2569',
 });
