@@ -105,12 +105,12 @@ npm test
 
 ## 📌 Current Release Readiness — 2026-10-07
 
-**Production: NO-GO.** LINE TEST run `37612281724` ส่ง Flex และ Audio สำเร็จ; narration ใน run นั้นใช้ `quota-safe-fallback`, ส่วน Gemini TTS สร้าง MP3 จริงยาว 112.968 วินาทีและ LINE รับ Audio สำเร็จ. Live Gemini Content → TTS acceptance ผ่านก่อนหน้านี้ตาม Decision 020 แต่บริการอาจต้อง fallback เมื่อ API ขัดข้อง.
+**Production: NO-GO.** LINE TEST run `37612281724` ส่ง Flex และ Audio สำเร็จ; narration ใน run นั้นใช้ `quota-safe-fallback`, ส่วน Gemini TTS สร้าง MP3 จริงยาว 112.968 วินาทีและ LINE รับ Audio สำเร็จ. Live Gemini Content → TTS acceptance ผ่านตาม Decision 020; แต่ production ต้องรอ official flood API และ human review. Config hard-lock การส่ง production แม้ตั้ง PROD secrets แล้ว.
 
-- **B1 — OPEN:** ThaiWater มีมาตรฐาน API แต่ยังไม่มี provider Base URL, วิธีเข้าถึง และ station mapping ที่ยืนยันสำหรับพัทลุง; HTML source ปัจจุบันเป็น adapter ชั่วคราว.
-- **B2 — รอยืนยัน:** ค่า runtime ปัจจุบันคือ `unknown-weather`; ต้องยืนยันว่าการส่งสถานะน้ำ “ยังยืนยันไม่ได้” พร้อม forecast เป็นพฤติกรรมที่ยอมรับใน Production.
+- **B1 — OPEN:** รอ official API provider Base URL, access method และ station mapping สำหรับพัทลุง; HTML source ปัจจุบันใช้ได้เฉพาะ TEST.
+- **B2 — PASS:** ผู้ใช้เลือก `no-send`; flood fetch error, stale/unknown severity หรือไม่มี station readings ที่ยืนยันได้ จะหยุดก่อนส่ง LINE.
 - **B3 — PASS:** มี live Content → TTS acceptance; การ fallback ไม่เปลี่ยนข้อเท็จจริง และ run ล่าสุดยืนยัน Gemini TTS/LINE Audio.
-- **B4 — กำลังปิด:** ปรับเอกสารและ checklist ให้ตรง implementation ใน branch นี้; ต้องผ่าน tests และ PR CI.
+- **B4 — กำลังปิด:** ปรับ config, pipeline, workflows และเอกสารให้ตรงนโยบาย; ต้องผ่าน full tests และ PR CI.
 - **Human review — PENDING:** ยังต้องตรวจ Flex บน LINE client จริงและกดเล่น Audio.
 
 ไฟล์สถานะหลัก: [CHECKLIST](CHECKLIST.md), [Phase 3 Status](docs/PHASE3_STATUS.md), [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md).

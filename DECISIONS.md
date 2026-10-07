@@ -168,7 +168,7 @@ The Flex must include two prominent URI buttons:
 
 **Decision:** Production runtime order is `flood → weather → Gemini content → Flex → Gemini TTS → LINE`. Market and news modules, fixed Thai market/news script, and their runtime tests are removed rather than retained as optional stages.
 
-**Safety:** Flood-source failure uses explicit `unknown-weather` degraded mode. Gemini content is validated as structured `ReportDraft`; test/dry-run may use deterministic fallback without a key, while production without `GEMINI_API_KEY` fails at content generation. The critical Flex variant prioritizes water actions and can omit the secondary weather button.
+**Safety:** Flood-source failure follows the later user-approved `no-send` policy in Decision 027. Gemini content is validated as structured `ReportDraft`; test/dry-run may use deterministic fallback without a key, while production without `GEMINI_API_KEY` fails at content generation. The critical Flex variant prioritizes water actions and can omit the secondary weather button.
 
 **Verification:** Local dry-run against the live flood center and Open-Meteo completed the new stages through `line.send: skipped`; no LINE call was made.
 
@@ -301,11 +301,22 @@ Each image preserves its 4:5 aspect ratio and is followed by a single footer CTA
 
 ## Release Gate Status Note — 2026-10-07
 
-This is a status update, not a new source-policy approval:
+This status note is superseded by the user-confirmed source policy in Decision 027:
 
-- **B1 remains open:** ThaiWater Standard defines `A002.1 /Runoff`, but each provider chooses its own Base URL. The provider endpoint/access method and Phatthalung station mapping have not been verified; current HTML source remains provisional.
-- **B2 awaits explicit Production acceptance:** current configured behavior is `unknown-weather`; the user has not yet confirmed whether to send that explicit unknown status with supporting weather or choose `no-send` when the flood source fails.
+- **B1 remains open:** user selected waiting for an official API; provider Base URL/access method and Phatthalung station mapping are still required. The current HTML source is TEST-only and is not accepted for Production.
+- **B2 is accepted:** user selected `no-send` when the flood source fails or the returned data is not verifiable.
 - **B3 is accepted as passed:** real Gemini Content → Gemini TTS live acceptance is recorded by Decision 020; LINE TEST run `37612281724` also verified Gemini TTS/audio delivery and the safe fallback path.
-- **B4 is being closed:** current primary docs are being aligned to merged implementation and must pass full tests/PR CI.
+- **B4 is being closed:** no-send config/pipeline/workflows/docs are being aligned to the user-confirmed policy in this branch; close after the full test suite and PR CI pass.
 - **Human review remains pending:** inspect Flex and play Audio on the LINE client.
-- **Production stays NO-GO:** the scheduled daily workflow remains TEST-only.
+- **Production stays NO-GO:** the scheduled daily workflow remains TEST-only, and runtime config hard-locks Production until official API support is implemented.
+
+
+## Decision 027 — Official flood API required; no-send when water status is unverifiable
+
+**Date:** 2026-10-07
+
+**User-confirmed policy:** Wait for a provider-backed official machine-readable flood API and verified Phatthalung station mapping before enabling Production. The current server-rendered HTML adapter is permitted for TEST only and is not accepted as a Production source.
+
+When flood fetch fails, freshness is not `fresh`, severity is `unknown`, or there are no verified station readings, the runtime must stop before weather-only reporting, Flex construction, TTS, and LINE delivery (`no-send`). Set this as the runtime default and workflow policy. Keep `unknown-weather` only for explicit legacy/unit test coverage; do not expose it as an operator choice in send workflows.
+
+**Guard:** `RUN_MODE=production` remains hard-locked until the official API adapter and station mapping are implemented and validated. Setting PROD LINE secrets alone does not authorize or enable delivery.

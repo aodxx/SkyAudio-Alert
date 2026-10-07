@@ -8,12 +8,6 @@ on:
         default: 'male-friendly'
         type: choice
         options: [male-friendly, female-friendly]
-      flood_degraded_mode:
-        description: 'Flood-source degraded behavior'
-        required: true
-        default: 'unknown-weather'
-        type: choice
-        options: [unknown-weather, no-send]
 permissions:
   contents: write
 concurrency:
@@ -37,7 +31,7 @@ jobs:
           LINE_GROUP_ID_TEST: ${{ secrets.LINE_GROUP_ID_TEST }}
           FLOOD_SOURCE_URL: https://chachoengsao-flood.vercel.app/phatthalung
           WEATHER_PAGE_SOURCE_URL: https://chachoengsao-flood.vercel.app/phatthalung/weather
-          FLOOD_DEGRADED_MODE: ${{ inputs.flood_degraded_mode }}
+          FLOOD_DEGRADED_MODE: no-send
           FLOOD_FRESHNESS_LIMIT_MINUTES: '180'
           CONTENT_PROVIDER: gemini
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

@@ -492,21 +492,21 @@ Open release gates remain B1 stable flood source, B2 degraded-mode acceptance, B
 
 ## Current Release Gate Reassessment — 2026-10-07
 
-This section supersedes earlier time-stamped status statements in this report where they say Gemini/LINE acceptance is still pending. It records current evidence only; it does not authorize Production.
+This section supersedes earlier time-stamped status statements in this report where they say Gemini/LINE acceptance is still pending or B2 is undecided. It records current evidence only; it does not authorize Production.
 
 ### B1 — official API contract found; service endpoint still unresolved
 
 The official [ThaiWater Standard documentation](https://standard.thaiwater.net/docs/) defines runoff API `A002.1` (`GET /Runoff`) and its query fields (`interval`, `latest`, date range, and optional province/area/station filters). Its Base URL guidance states that each API provider chooses its own Base URL; the standard page supplies an example, not a shared public endpoint. The [HII National Hydroinformatics Data Center page](https://www.hii.or.th/en/research-development/rd/2020/04/15/national-hydroinformatics-data-center-nhc/) describes national water-data integration, but does not provide the actual service URL/access method or a verified Phatthalung station mapping.
 
-**Status: OPEN.** A stable machine-readable contract is possible in principle, but the provider-specific endpoint, access terms/credentials, and station mapping have not been verified. The current Phatthalung HTML adapter remains temporary, strict, and fail-closed. Close B1 only after obtaining the provider details and validating station IDs/units/freshness/threshold semantics, or after the user explicitly accepts the HTML adapter as a provisional source with this limitation.
+**Status: OPEN.** A stable machine-readable contract is possible in principle, but the provider-specific endpoint, access terms, and station mapping have not been verified. The user selected waiting for the official API; the current Phatthalung HTML adapter is TEST-only and is not accepted as a Production source. Close B1 after obtaining provider details and validating station IDs/units/freshness/threshold semantics, then implementing and testing the adapter.
 
 ### Current status of other gates
 
-- **B2 — pending explicit Production acceptance.** Runtime behavior is `unknown-weather`: say flood status cannot be confirmed and provide weather only as supporting forecast. If that is not acceptable, the alternative is `no-send`. Do not silently interpret source failure as normal conditions.
+- **B2 — PASS (user confirmed 2026-10-07).** Use `no-send`: flood fetch failure, stale/unknown severity, or missing station readings stops the run before weather, Flex, TTS, and LINE. Do not send a weather-only report when flood status cannot be verified.
 - **B3 — PASS with availability caveat.** Decision 020 and the 2026-10-04 live acceptance record real Gemini Content → Gemini TTS and audio validation. LINE TEST run `37612281724` on 2026-10-07 delivered Flex and Audio; the narration stage used `quota-safe-fallback`, while Gemini TTS generated a 112.968-second MP3 and LINE accepted the Audio message. This verifies delivery/TTS/fallback behavior, not that Gemini Content succeeds on every run.
-- **B4 — documentation alignment in progress.** README, PRD, Checklist, Decision 024, and Phase 3 status are being corrected to match the merged runtime; close after full tests and PR CI pass.
+- **B4 — implementation/docs alignment in progress.** README, PRD, Checklist, Decision 024/027, Phase 3 status, config, pipeline, and workflows are being aligned to the selected policy; close after full tests and PR CI pass.
 - **Human review — pending.** The user still needs to verify Flex display, Flex-before-Audio order, audio playback, and content on the real LINE client.
 
 ### Production status
 
-**NO-GO.** `.github/workflows/weather-daily.yml` is still explicitly `RUN_MODE=test` and uses TEST credentials. Do not enable PROD secrets/schedule until B1, B2, B4, and human review are complete.
+**NO-GO.** `.github/workflows/weather-daily.yml` is still explicitly `RUN_MODE=test` and uses TEST credentials. Config now hard-locks `RUN_MODE=production` until official API support is implemented. Do not enable PROD schedule until B1, B4, and human review are complete.

@@ -32,7 +32,7 @@ jobs:
           LINE_GROUP_ID_TEST: ${{ secrets.LINE_GROUP_ID_TEST }}
           FLOOD_SOURCE_URL: https://chachoengsao-flood.vercel.app/phatthalung
           WEATHER_PAGE_SOURCE_URL: https://chachoengsao-flood.vercel.app/phatthalung/weather
-          FLOOD_DEGRADED_MODE: unknown-weather
+          FLOOD_DEGRADED_MODE: no-send
           CONTENT_PROVIDER: gemini
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_CONTENT_MODEL: ${{ secrets.GEMINI_CONTENT_MODEL }}

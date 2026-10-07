@@ -106,9 +106,9 @@ Flood source → adapter/normalize/freshness/severity → Weather source → nor
 
 **Current status (2026-10-07): NO-GO**
 
-Production schedule remains closed until the remaining gates are resolved or explicitly accepted:
-- **B1 — OPEN:** ThaiWater Standard defines `A002.1 /Runoff`, but the provider-specific Base URL/access method and a verified station mapping for Phatthalung are still missing; the current HTML adapter is temporary.
-- **B2 — PENDING USER ACCEPTANCE:** runtime currently uses `unknown-weather` when flood data is unavailable; confirm this is acceptable for Production, or choose `no-send`.
+Production schedule remains closed until the remaining gates are resolved:
+- **B1 — OPEN:** ThaiWater Standard defines `A002.1 /Runoff`, but the provider-specific Base URL/access method and a verified station mapping for Phatthalung are still missing; the current HTML adapter is TEST-only and is not accepted for Production.
+- **B2 — PASS:** user selected `no-send`; flood fetch failure, stale/unknown severity, or missing station readings stop the pipeline before delivery.
 - **B3 — PASS:** real Gemini Content → TTS live acceptance is recorded in Decision 020; latest LINE TEST run used safe content fallback but verified real Gemini TTS and Audio delivery.
 - **B4 — IN PROGRESS:** align current documents/tests/workflows and confirm full tests + CI.
 - **Human acceptance — PENDING:** verify Flex on a real LINE client and play the Audio Message.
@@ -137,4 +137,4 @@ The repository records a successful real Gemini Content + Gemini TTS path and MP
 
 Delivery to the LINE TEST destination is verified: Flex and Audio were both accepted by LINE. Human review is still required to verify display, message order, playback, and content on the actual LINE client.
 
-**Production remains NO-GO** until B1, B2, B4, and Human acceptance close. The scheduled workflow currently targets TEST only.
+**Production remains NO-GO** until B1, B4, and Human acceptance close. Config hard-locks `RUN_MODE=production` until an official flood API adapter and station mapping are implemented; the scheduled workflow currently targets TEST only.
