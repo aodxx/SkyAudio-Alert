@@ -9,6 +9,8 @@
 >
 > เอกสารนี้กำหนดลำดับงานของ V1.5 ตั้งแต่ design → contract → implementation → QA → LINE acceptance → release gate เพื่อป้องกันการแก้ UI แล้วต้องรื้อ pipeline ซ้ำ
 
+> **สถานะ ณ 2026-10-07:** เอกสารนี้เป็นแผนย้อนหลัง ไม่ใช่รายการงานหรือสเปก runtime ปัจจุบัน. ให้ยึด `CHECKLIST.md`, `docs/PHASE3_STATUS.md`, Decision 024 (Flex) และ Decision 025 (Audio) แทน.
+
 ---
 
 ## 1. V1.5 จะปรับอะไร

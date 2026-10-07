@@ -76,6 +76,52 @@ test('pipeline builds Flex independently and makes one TTS call with the joined 
   assert.equal(result.stages['line.send'], 'skipped');
 });
 
+test('no-send policy stops immediately when the flood source fails', async () => {
+  const state = {};
+  const config = testConfig(false);
+  config.flood.degradedMode = 'no-send';
+  const deps = overrides(state);
+  let weatherCalls = 0;
+  deps.fetchFlood = async () => { throw Object.assign(new Error('flood source unavailable'), { stage: 'flood.fetch', retryable: false }); };
+  deps.fetchWeather = async () => { weatherCalls += 1; return weatherFixture; };
+
+  await assert.rejects(() => runPipeline(config, deps), (error) => error.stage === 'flood.fetch');
+  assert.equal(weatherCalls, 0);
+  assert.equal(state.ttsCalls, undefined);
+  assert.equal(state.sentMessages, undefined);
+  assert.equal(state.statusResult.lastError.stage, 'flood.fetch');
+});
+
+test('no-send policy blocks stale, unknown, and stationless flood responses before downstream stages', async () => {
+  const verified = {
+    ...floodFixture,
+    severity: 'watch',
+    stations: [{ name: 'สถานีทดสอบ', waterway: 'คลองทดสอบ' }],
+    freshness: { state: 'fresh', ageMinutes: 15 },
+  };
+  const invalidSituations = [
+    { ...verified, freshness: { state: 'stale', ageMinutes: 240 } },
+    { ...verified, severity: 'unknown' },
+    { ...verified, stations: [] },
+  ];
+
+  for (const situation of invalidSituations) {
+    const state = {};
+    const config = testConfig(false);
+    config.flood.degradedMode = 'no-send';
+    const deps = overrides(state);
+    let weatherCalls = 0;
+    deps.fetchFlood = async () => situation;
+    deps.fetchWeather = async () => { weatherCalls += 1; return weatherFixture; };
+
+    await assert.rejects(() => runPipeline(config, deps), (error) => error.stage === 'flood.gate' && error.retryable === false);
+    assert.equal(weatherCalls, 0);
+    assert.equal(state.ttsCalls, undefined);
+    assert.equal(state.sentMessages, undefined);
+    assert.equal(state.statusResult.lastError.stage, 'flood.gate');
+  }
+});
+
 test('live delivery pushes Flex and then Audio in separate LINE requests', async () => {
   const state = { batches: [] };
   const deps = overrides(state);

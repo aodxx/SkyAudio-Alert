@@ -5,6 +5,8 @@
 **สถานะ:** รายงานการตรวจ + design + implementation plan — **ยังไม่มีการแก้โค้ด**
 **Production:** NO-GO (ไม่เปลี่ยน)
 
+> **สถานะปัจจุบัน ณ 2026-10-07:** เอกสารนี้เป็น historical review เท่านั้น. ข้อเสนอ VisualPlan/10-section audio/>600-second duration ถูกแทนที่สำหรับ runtime ปัจจุบันโดย Decision 023–025; อย่านำไปใช้เป็น acceptance criteria. ดู `CHECKLIST.md` และ `docs/PHASE3_STATUS.md` สำหรับสถานะล่าสุด.
+
 ขอบเขตที่ตรวจจริง: `src/flex/{builder,components,themes}.js`, `src/content/{presentationPlanner,presentationContract,geminiReport,reportContract,safetyFirewall,qualityScore}.js`, `src/audio/{tts,validate,storage}.js`, `src/core/pipeline.js`, `src/flood/*`, `src/forecast/formatter.js`, `src/weather/analyzer.js`, `src/config/index.js`, `src/line/messagingApi.js`, tests ทั้งหมด, `docs/V1_5_*`, `PRD.md`, `DECISIONS.md`, `.github/workflows/*`, `public/status/last-run.json`
 
 ผลรัน baseline: `npm test` → 67 tests, **66 pass / 1 fail** (ดู D6) และมีการรัน probe สร้าง Flex จริงจาก scenario WATCH เพื่อยืนยันอาการ (ดู B)

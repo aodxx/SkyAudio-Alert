@@ -2,7 +2,7 @@
 // src/index.js — entry point.
 // Usage:
 //   RUN_MODE=test  node src/index.js     (uses *_TEST secrets)
-//   RUN_MODE=production node src/index.js (uses *_PROD secrets)
+//   RUN_MODE=production node src/index.js (currently locked until official flood API readiness)
 //   DRY_RUN=true node src/index.js        (build everything, skip LINE push
 //                                          and skip committing audio)
 

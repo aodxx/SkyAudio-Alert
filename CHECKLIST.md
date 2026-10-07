@@ -1,152 +1,26 @@
-# SkyAudio-Alert — Verification Checklist
+# SkyAudio-Alert — Production Readiness Checklist
 
-> DOCUMENT LOCK — FLOOD-FIRST — 2026-10-04
->
-> Legacy weather + market/news acceptance is historical evidence only.
+**อัปเดต:** 2026-10-07
+**สถานะรวม:** **NO-GO สำหรับ Production** — ต้องมี official flood API ก่อน และมี production hard-lock ใน config
 
-## Stage 1 — Document Lock
-- [x] Flood-first scope declared
-- [x] Market/news removed from production requirements
-- [x] Fixed 2–3 minute audio removed
-- [x] Adaptive Gemini narrative recorded
-- [x] Gemini TTS male/female configuration recorded
-- [x] Flood-first runtime order recorded
-- [x] Source-of-truth hierarchy recorded
-- [x] Production remains NO-GO
+## ยืนยันแล้ว
 
-## Stage 2 — Contracts
-- [x] FloodSituation contract
-- [x] Unknown/stale semantics
-- [x] ReportDraft contract
-- [x] Gemini no-fabrication validation
-- [ ] Real Gemini content model verified
-- [ ] Real Gemini TTS model/voice verified
-- [ ] Flood source contract accepted as stable
+- [x] Flood-first runtime; อากาศเป็นข้อมูลประกอบ; ไม่มี market/news ใน runtime
+- [x] **B2 — no-send เมื่อยืนยันข้อมูลน้ำไม่ได้:** ผู้ใช้เลือกนโยบายนี้แล้ว. เมื่อ fetch ล้มเหลว, freshness ไม่ใช่ `fresh`, severity เป็น `unknown` หรือไม่มีสถานีที่ตรวจสอบได้ ระบบหยุดก่อน weather/Flex/TTS/LINE
+- [x] **B3 — Gemini contract:** live Gemini Content → Gemini TTS/audio validation ผ่าน 2026-10-04 (Decision 020)
+- [x] LINE TEST run `37612281724` ส่ง Flex และ Audio สำเร็จ; run นี้ใช้ `quota-safe-fallback` สำหรับ narration แต่ Gemini TTS สร้าง MP3 จริง 112.968 วินาทีและ LINE รับ Audio
+- [x] Daily workflow ใช้ `RUN_MODE=test` และ TEST secrets เท่านั้น
+- [x] `RUN_MODE=production` ถูกล็อกใน config จนกว่าจะ implement/validate official flood API adapter และ station mapping
 
-## Stage 3 — Fixtures/tests
-- [x] normal/watch/affected/critical/unknown flood fixtures
-- [x] stale/source-unavailable fixtures verified against final policy
-- [x] Gemini structured-output contract tests complete
-- [x] male/female TTS configuration values documented and validated at config/contract level
-- [x] Flex compact/button/priority tests complete
-- [x] legacy market/news assertions are rejected by the current ReportDraft contract
+## Gates ที่ยังเปิด
 
-## Stage 4 — Runtime acceptance
-- [x] flood-first pipeline exists
-- [x] dry-run can stop before LINE send
-- [x] duplicate guard remains
-- [x] real Gemini end-to-end test
-- [ ] real TTS playback test
-- [x] TEST LINE delivery verified
-- [ ] human review of Flex + Audio
+- [ ] **B1 — official flood API:** รอ provider Base URL, access method/terms และ station IDs/mapping ที่ตรวจสอบได้สำหรับพัทลุง. ThaiWater Standard ระบุ `A002.1 /Runoff` แต่ Base URL เป็นของแต่ละผู้ให้บริการ. HTML source ปัจจุบันใช้ได้เฉพาะ TEST; ยังไม่ยอมรับเป็น Production source
+- [ ] **B4 — docs/tests/workflow alignment:** โค้ดและเอกสาร no-send กำลังอัปเดตใน PR นี้; ปิดเมื่อ full tests และ GitHub CI ผ่าน
+- [ ] **Human acceptance:** ตรวจ Flex บน LINE มือถือจริง, ลำดับ Flex ก่อน Audio, กดเล่นเสียง และตรวจเนื้อหา
+- [ ] **Production enablement:** ห้ามเปิด schedule/ส่ง PROD จนกว่า B1, B4 และ Human acceptance ปิดครบ. PROD secrets เพียงอย่างเดียวไม่ปลดล็อกการส่ง
 
-## V1.5 — Phase 0 Baseline & Design Lock
-- [x] Runtime inventory locked
-- [x] Flood/Weather/Gemini/Flex/TTS/LINE invariants locked
-- [x] normal/watch/affected/critical/unknown/stale baseline fixtures identified
-- [x] V1.5 acceptance matrix committed
-- [x] V1.5 change boundary committed
-- [x] Production remains NO-GO
+## หลักฐานล่าสุด
 
-## Stage 5 — Production gate
-- [ ] B1 flood source resolved/accepted
-- [ ] B2 degraded mode explicitly accepted
-- [ ] B3 Gemini contract verified
-- [ ] B4 docs/tests/workflows migration complete
-- [ ] production schedule enabled
-
-**Stage 3 test gate: PASS — GitHub Actions verified 35/35 tests.**
-
-**Milestone 4A test gate: PASS — GitHub Actions verified 40/40 tests after Gemini 503 resilience changes.**
-
-**Gemini live diagnostic:** minimal requests returned 200 for both comparison models; shaped JSON requests returned 503 `UNAVAILABLE` during high demand. The runtime now keeps structured output as the primary path and has a lightweight JSON recovery path after 503 retries.
-
-**Current release state: NO-GO**
-
-## Milestone 4A — Live Acceptance Update — 2026-10-04
-
-- [x] Real Gemini content generation verified
-- [x] Real Gemini TTS generation verified
-- [x] Real generated audio passed MP3/duration validation
-- [x] Gemini content → TTS live path verified
-- [x] Gemini 503 resilience remains covered by deterministic tests
-- [ ] TEST LINE acceptance — next: Milestone 4B
-- [ ] Human review of Flex + Audio
-
-### Current gates
-- **Gemini live gate: PASS ✅**
-- **Milestone 4A: PASS ✅**
-- **Milestone 4B LINE Test: PENDING 🟡**
-- **Production: NO-GO 🔴**
-
-B1 (stable flood source) and B2 (degraded-mode acceptance) remain open. B4 documentation/test migration is being updated by this documentation milestone.
-
-
-## Milestone 4B — LINE Test Acceptance — DELIVERY VERIFIED / HUMAN REVIEW PENDING
-
-- [x] Dedicated LINE TEST workflow created
-- [x] TEST destination is selected through *_TEST secrets
-- [x] Workflow runs the complete flood-first pipeline with DRY_RUN=false
-- [x] Gemini Content + TTS configuration included
-- [x] LINE TEST delivery verified — Flex + Audio received in TEST group
-- [ ] Flex rendering verified on real mobile LINE
-- [ ] Audio Message playback verified
-- [ ] Flex arrives before Audio
-- [ ] No market/rubber/news content observed
-- [ ] Unknown/degraded flood wording verified if exercised
-- [ ] Human acceptance recorded
-
-**Current result:** The latest real LINE TEST run successfully delivered both the Flex Message and Audio Message to the TEST group. Audio playback and human visual/content acceptance are still pending confirmation.
-
-**Important:** this workflow is TEST-only. It does not authorize production and does not use PROD LINE secrets.
-
-
-## V1.5 — Phase 1 Visual Design System — 2026-10-04
-- [x] Five severity themes defined
-- [x] Carousel/card hierarchy locked
-- [x] Card 1 self-contained rule locked
-- [x] Dynamic card-count rule locked
-- [x] Mobile readability rules locked
-- [x] Accessibility/altText rules locked
-- [x] CTA scope locked
-- [x] Stale/unknown treatment locked
-- [x] No production runtime changed
-
-**Phase 1: COMPLETE. Next: Phase 2 — Presentation Contract.**
-
-
-## V1.5 — Phase 2 Presentation Contract — 2026-10-04
-- [x] PresentationPlan contract locked
-- [x] Gemini cannot change verified facts/severity
-- [x] Card 1 self-contained rule locked
-- [x] Critical action placement locked
-- [x] Adaptive audio selection policy locked
-- [x] Spoken-text safety gate defined before TTS
-- [x] Deterministic fallback policy defined
-- [x] No production runtime changed
-
-**Phase 2: COMPLETE. Next: Phase 3 — Adaptive Flex Carousel.**
-
-
-## V1.5 Phase 5 — Safety + Quality Firewall — COMPLETE
-- [x] Final safety gate before TTS/LINE
-- [x] No-fabrication / certainty checks
-- [x] Numeric fact leakage checks
-- [x] Severity consistency gate
-- [x] factsUsed traceability
-- [x] Internal presentation quality score
-- [x] Regression tests across five flood states
-- [x] PR #17 merged to main
-
-**Next: Phase 6 — End-to-End LINE Acceptance. Production remains NO-GO.**
-
-
-## Stage V1.6 — Presentation Redesign (Decision 022)
-- [x] P0 — repository review, Decision 022, document alignment, firewall test file repaired (80/80)
-- [ ] P1 — FactsSnapshot, VisualPlan, NarrationPlan contracts + explainer library
-- [ ] P2 — Flex v2 (tokens, components, variants, text-budget lint)
-- [ ] P3 — Per-segment narrator, Thai speech normalizer, firewall v2
-- [ ] P4 — Long-form TTS, ffprobe duration gate (> 600 s), validator limits, audio-withheld behaviour
-- [ ] P5 — Cross-channel consistency, regression matrix
-- [ ] P6 — LINE TEST acceptance with human visual + listening review
-- [ ] Production GO (remains NO-GO)
+- Gemini live acceptance: 2026-10-04, Decision 020
+- LINE TEST delivery: run `37612281724`, 2026-10-07
+- อ่านรายละเอียดที่ [Phase 3 Status](docs/PHASE3_STATUS.md), [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md) และ [DECISIONS.md](DECISIONS.md)

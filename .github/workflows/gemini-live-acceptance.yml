@@ -40,6 +40,6 @@ jobs:
           LOCATION_NAME: บ้านลำพาย
           PROVINCE_NAME: พัทลุง
           DISTRICT_NAME: ต.โคกชะงาย
-          FLOOD_DEGRADED_MODE: unknown-weather
+          FLOOD_DEGRADED_MODE: no-send
           FLOOD_FRESHNESS_LIMIT_MINUTES: '180'
         run: node tests/live-gemini-smoke.js

@@ -36,6 +36,13 @@ function inspectFlexForDelivery(flexMessage, factsSnapshot) {
   };
 }
 
+function floodVerificationIssue(situation) {
+  if (!situation || situation.severity === 'unknown') return 'flood severity is unknown';
+  if (!Array.isArray(situation.stations) || situation.stations.length === 0) return 'no verified flood stations';
+  if (situation.freshness?.state !== 'fresh') return `flood data freshness is ${situation.freshness?.state || 'unknown'}`;
+  return null;
+}
+
 async function runPipeline(config, overrides = {}) {
   const fetchFlood = overrides.fetchFlood || fetchPhatthalungFlood;
   const fetchWeather = overrides.fetchWeather || fetchOpenMeteo;
@@ -74,6 +81,18 @@ async function runPipeline(config, overrides = {}) {
     }
     floodSituation = createUnknownFloodSituation({ location: config.location, source: { name: 'ศูนย์ข้อมูลน้ำพัทลุงใช้งานไม่ได้', url: config.flood.sourceUrl }, retrievedAt: new Date().toISOString() });
     mark('flood.fetch', 'degraded', { reason: error.message, mode: config.flood.degradedMode });
+  }
+
+  if (config.flood.degradedMode === 'no-send') {
+    const issue = floodVerificationIssue(floodSituation);
+    if (issue) {
+      const error = Object.assign(new Error(`Flood status is not verifiable; no-send policy stopped the report: ${issue}`), { stage: 'flood.gate', retryable: false });
+      mark('flood.gate', 'failure', { reason: issue, policy: 'no-send' });
+      result.lastError = { stage: error.stage, message: error.message };
+      writeStatus(result, config);
+      throw error;
+    }
+    mark('flood.gate', 'success', { policy: 'no-send', severity: floodSituation.severity, freshness: floodSituation.freshness.state, stations: floodSituation.stations.length });
   }
 
   mark('weather.fetch', 'start');

@@ -49,9 +49,9 @@ Gemini เป็น narrative layer เท่านั้น:
 1. **พยากรณ์อากาศวันนี้** — ไม่มีภาพ; วันที่, ศาลาอเนกประสงค์ บ้านลำพาย, สภาพอากาศ/อุณหภูมิ, ความน่าจะเป็นฝนแยกเช้า/บ่าย/เย็น และข้อมูลอื่นเท่าที่มีใน FactsSnapshot; ปิดท้ายด้วยปุ่มศูนย์ช่วยเหลือพัทลุง → https://chachoengsao-flood.vercel.app/phatthalung
 2. **ภาพสรุประดับน้ำพัทลุง** (`2_20261005_193645_0003.jpg`) + ปุ่มแผนที่ระดับน้ำ → https://chachoengsao-flood.vercel.app/phatthalung/map
 3. **ภาพแผนที่ระดับน้ำ** (`4_20261005_193645_0004.jpg`) + ปุ่มพยากรณ์/เรดาร์ → https://chachoengsao-flood.vercel.app/phatthalung/weather
-4. **ภาพ CCTV** (`6_20261005_193645_0005.jpg`) + ปุ่มภาพสด/CCTV → https://chachoengsao-flood.vercel.app/phatthalung/weather
+4. **ภาพ CCTV** (`6_20261005_193645_0005.jpg`) + ปุ่มภาพสด/CCTV → https://cctv.maholan.net/
 
-ใบที่ 1 ไม่มี image component; ใบ 2–4 มีภาพสัดส่วนเดิม 4:5 และมีปุ่มใน footer. ค่า forecast ที่ไม่มีต้องละเว้นหรือแจ้งว่าไม่มีข้อมูล ห้ามแต่งขึ้น. ภาพทั้งสามเป็น static assets ไม่ได้ refresh โดย adapter; ข้อความสถานที่บนภาพ CCTV ไม่ตรงพัทลุง เป็น asset ที่ผู้ใช้เลือกให้ใช้ตามต้นฉบับและไม่ใช่ข้อมูลยืนยันตำแหน่งกล้อง.
+ใบที่ 1 ไม่มี image component; ใบ 2–4 มีภาพสัดส่วนเดิม 4:5 และมีปุ่มใน footer. Flex ใช้ `altText` ที่ระดับ message; ห้ามใส่ `alt` ใน image component เพราะ LINE Flex schema ไม่รองรับ. ค่า forecast ที่ไม่มีต้องละเว้นหรือแจ้งว่าไม่มีข้อมูล ห้ามแต่งขึ้น. ภาพทั้งสามเป็น static assets ไม่ได้ refresh โดย adapter; ข้อความสถานที่บนภาพ CCTV ไม่ตรงพัทลุง เป็น asset ที่ผู้ใช้เลือกให้ใช้ตามต้นฉบับและไม่ใช่ข้อมูลยืนยันตำแหน่งกล้อง.
 
 ### Safety
 ห้าม fabricate ตัวเลข เวลา จุดวัด ถนน หรือเหตุการณ์; ห้าม infer actual flooding from forecast alone; ห้ามพูดราคาปาล์ม/ยางหรือข่าวทั่วไป; ห้ามอ้างว่า “ปลอดภัยแน่นอน”; ห้ามให้ Gemini browse web เพื่อสร้าง facts; ห้ามพูด URL ยาวในเสียง
@@ -104,13 +104,14 @@ Flood source → adapter/normalize/freshness/severity → Weather source → nor
 
 ## 8. Production gate
 
-**Current status: NO-GO**
+**Current status (2026-10-07): NO-GO**
 
-Production schedule remains closed until B1–B4 from docs/SCOPE_REVIEW_REPORT.md are resolved or explicitly accepted:
-- B1 stable flood source/contract
-- B2 degraded-mode decision
-- B3 real Gemini content/TTS contract verification
-- B4 document/test/workflow migration
+Production schedule remains closed until the remaining gates are resolved:
+- **B1 — OPEN:** ThaiWater Standard defines `A002.1 /Runoff`, but the provider-specific Base URL/access method and a verified station mapping for Phatthalung are still missing; the current HTML adapter is TEST-only and is not accepted for Production.
+- **B2 — PASS:** user selected `no-send`; flood fetch failure, stale/unknown severity, or missing station readings stop the pipeline before delivery.
+- **B3 — PASS:** real Gemini Content → TTS live acceptance is recorded in Decision 020; latest LINE TEST run used safe content fallback but verified real Gemini TTS and Audio delivery.
+- **B4 — IN PROGRESS:** align current documents/tests/workflows and confirm full tests + CI.
+- **Human acceptance — PENDING:** verify Flex on a real LINE client and play the Audio Message.
 
 ## 9. Source-of-truth order
 
@@ -124,16 +125,16 @@ Production schedule remains closed until B1–B4 from docs/SCOPE_REVIEW_REPORT.m
 Any document that conflicts with this order is stale and must not drive implementation.
 
 
-## Current Implementation Status — 2026-10-04
+## Current Implementation Status — 2026-10-07
 
 ### Milestone 4A — Gemini Live Acceptance
 
 **Status: PASS ✅**
 
-The current implementation has completed the real Gemini Content + Gemini TTS acceptance path. Generated audio also passes the repository audio validation layer. Gemini remains a narrative layer only; source facts remain authoritative.
+The repository records a successful real Gemini Content + Gemini TTS path and MP3 validation on 2026-10-04. The latest LINE TEST run `37612281724` delivered Flex and Audio; that run used `quota-safe-fallback` for narration while Gemini TTS generated and sent the MP3. Gemini remains a narrative layer only; source facts remain authoritative.
 
-### Next milestone — 4B LINE Test Acceptance
+### Milestone 4B — LINE Test Delivery
 
-The next acceptance is the real delivery chain into the TEST LINE destination: Flood → Weather → Gemini → Flex → Gemini TTS → LINE. This stage must verify message ordering, Flex rendering, audio playback/accessibility, and no reintroduction of historical market/news content.
+Delivery to the LINE TEST destination is verified: Flex and Audio were both accepted by LINE. Human review is still required to verify display, message order, playback, and content on the actual LINE client.
 
-**Production remains NO-GO until 4B and the remaining release gates pass.**
+**Production remains NO-GO** until B1, B4, and Human acceptance close. Config hard-locks `RUN_MODE=production` until an official flood API adapter and station mapping are implemented; the scheduled workflow currently targets TEST only.

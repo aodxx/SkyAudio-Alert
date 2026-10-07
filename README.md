@@ -13,11 +13,13 @@
 4. สร้าง narration เสียงจากข้อมูลน้ำ/อากาศโดยอิสระ ผ่าน safety check แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
 5. ส่ง Flex แล้วจึงส่ง LINE Audio Message ด้วยคำขอแยกเข้า LINE กลุ่มบ้านลำพาย เมื่อเสียงผ่าน gate
 
+**สถานะปัจจุบัน:** scheduled workflow ใช้ `RUN_MODE=test` และส่งไปยัง LINE TEST เท่านั้น ยังไม่ได้เปิด production schedule หรือ PROD destination
+
 ปุ่มท้ายการ์ดใน Flex:
 - การ์ด 1 — [ศูนย์ช่วยเหลือพัทลุง](https://chachoengsao-flood.vercel.app/phatthalung)
 - การ์ด 2 — [แผนที่ระดับน้ำพัทลุง](https://chachoengsao-flood.vercel.app/phatthalung/map)
 - การ์ด 3 — [พยากรณ์อากาศ / เรดาร์](https://chachoengsao-flood.vercel.app/phatthalung/weather)
-- การ์ด 4 — [ภาพสด / CCTV](https://chachoengsao-flood.vercel.app/phatthalung/weather)
+- การ์ด 4 — [ภาพสด / CCTV](https://cctv.maholan.net/)
 
 > ราคาปาล์ม ราคายาง และข่าวสารทั่วไปถูกตัดออกจากรายงาน production ใหม่แล้ว
 
@@ -36,13 +38,12 @@ Dry run จะดึงอากาศจริง สร้าง Flex แล�
 - `LINE_CHANNEL_ACCESS_TOKEN_TEST`
 - `LINE_GROUP_ID_TEST`
 
-### Production
-Workflow **Daily Flood-first announcement** รันที่ 23:00 UTC ซึ่งตรงกับ 06:00 Asia/Bangkok
-Production ต้องมี:
-- `LINE_CHANNEL_ACCESS_TOKEN_PROD`
-- `LINE_GROUP_ID_PROD`
+### Scheduled TEST และ Production
+Workflow `Daily Flood-first announcement (TEST target)` รันที่ 23:00 UTC (06:00 Asia/Bangkok) และใช้ `RUN_MODE=test` พร้อม `LINE_CHANNEL_ACCESS_TOKEN_TEST` / `LINE_GROUP_ID_TEST` เท่านั้น
 
-ระบบมี duplicate guard สำหรับ Production: เมื่อ Flex ถูกส่งสำเร็จแล้วในวันเดียวกันตามเวลา Asia/Bangkok จะข้ามการรันซ้ำเพื่อป้องกัน Flex ซ้ำ แม้ Audio จะถูก withheld; หากล้มเหลวก่อนส่ง Flex จึงจะรันซ้ำได้
+**Production ยังไม่เปิดใช้งาน.** ห้ามเปลี่ยน workflow ไปใช้ PROD secrets หรือเปิด schedule สำหรับกลุ่มจริง จนกว่า B1–B4 และการตรวจรับ Flex/Audio โดยมนุษย์จะผ่านครบ. เมื่อได้รับอนุมัติในอนาคต Production จะใช้ `LINE_CHANNEL_ACCESS_TOKEN_PROD` และ `LINE_GROUP_ID_PROD` แยกจาก TEST.
+
+เมื่อเปิด Production ในอนาคต duplicate guard จะป้องกันการส่ง Flex ซ้ำในวันเดียวกัน แม้ Audio จะถูก withheld; หากล้มเหลวก่อนส่ง Flex จึงจะรันซ้ำได้
 
 ไม่ต้องมี `GOOGLE_TTS_API_KEY` สำหรับค่าเริ่มต้น
 
@@ -52,7 +53,7 @@ Production ต้องมี:
 
 Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 
-หลังสร้างเสียง ระบบตรวจ MPEG frame, ffprobe-measured duration จริง 180–300 วินาที (รวมขอบ) และขนาดไฟล์ไม่เกิน 16 MiB ก่อนจัดเก็บ สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
+หลังสร้างเสียง ระบบตรวจ MPEG frame, ffprobe-measured duration จริง 10,000–300,000 ms (10 วินาที–5 นาที) และขนาดไฟล์ไม่เกิน 16 MiB ก่อนจัดเก็บ ไม่กำหนดเป้าหมายความยาว สำหรับ production จะ push ไฟล์ก่อนสร้าง jsDelivr HTTPS URL และตรวจ HTTP 200 กับ `audio/mpeg` ก่อนเรียก LINE API
 
 ## ทดสอบในเครื่อง
 
@@ -71,7 +72,7 @@ npm test
 
 รายละเอียดเพิ่มเติม: `PRD.md`, `ARCHITECTURE.md`, `API.md`, `DECISIONS.md` และ `CHANGELOG.md`
 
-แผนปรับผลิตภัณฑ์จากรายงานราคา/ข่าวสารเป็น **สถานการณ์น้ำท่วมเป็นหลัก + พยากรณ์อากาศ** อยู่ที่ [`docs/REFACTOR_PLAN_FLOOD_WEATHER.md`](docs/REFACTOR_PLAN_FLOOD_WEATHER.md) โดยยังคงช่องทาง LINE Flex และ Audio Message ไว้ แต่กำหนดให้รื้อเนื้อหาและ layout ใหม่
+เอกสาร [`docs/REFACTOR_PLAN_FLOOD_WEATHER.md`](docs/REFACTOR_PLAN_FLOOD_WEATHER.md) เป็นประวัติแผนเปลี่ยนจากราคา/ข่าวสารมาเป็น Flood-first; runtime ปัจจุบันทำงานตามขอบเขตนี้แล้ว ให้ใช้ [CHECKLIST](CHECKLIST.md) และ [Phase 3 Status](docs/PHASE3_STATUS.md) ตรวจความพร้อมล่าสุด
 
 รายละเอียดเสียงรายวันอยู่ที่ [`docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md`](docs/DESIGN_AUDIO_FLEX_FLOOD_DAILY.md); Flex ตามเอกสารเก่าเป็นประวัติและถูกแทนที่ด้วยสเปก 4 ใบใน Decision 024
 
@@ -102,46 +103,21 @@ npm test
 **ข้อควรระวัง:** ห้ามนำรูปบุคคลหรือข้อมูลส่วนบุคคลจากโฟลเดอร์ไปใช้ใน production โดยอัตโนมัติ ต้องตรวจสิทธิ์การใช้งานและความเหมาะสมก่อนเสมอ
 
 
-## 📌 Project Status — Milestone 4A Live Acceptance — 2026-10-04
+## 📌 Current Release Readiness — 2026-10-07
 
-**สถานะล่าสุด: Milestone 4A — Gemini Live Acceptance ผ่านแล้ว ✅**
+**Production: NO-GO.** LINE TEST run `37612281724` ส่ง Flex และ Audio สำเร็จ; narration ใน run นั้นใช้ `quota-safe-fallback`, ส่วน Gemini TTS สร้าง MP3 จริงยาว 112.968 วินาทีและ LINE รับ Audio สำเร็จ. Live Gemini Content → TTS acceptance ผ่านตาม Decision 020; แต่ production ต้องรอ official flood API และ human review. Config hard-lock การส่ง production แม้ตั้ง PROD secrets แล้ว.
 
-ยืนยันจากการทดสอบจริงว่า:
-- Gemini Content สามารถสร้างรายงานจาก facts ที่กำหนดได้
-- Gemini TTS สร้างเสียงภาษาไทยได้จริง
-- Audio ที่ได้ผ่านการตรวจสอบ MP3/duration ของระบบ
-- เส้นทาง Gemini Content → Gemini TTS ทำงานครบใน live acceptance
-- Unit tests ล่าสุดผ่าน **40/40**
+- **B1 — OPEN:** รอ official API provider Base URL, access method และ station mapping สำหรับพัทลุง; HTML source ปัจจุบันใช้ได้เฉพาะ TEST.
+- **B2 — PASS:** ผู้ใช้เลือก `no-send`; flood fetch error, stale/unknown severity หรือไม่มี station readings ที่ยืนยันได้ จะหยุดก่อนส่ง LINE.
+- **B3 — PASS:** มี live Content → TTS acceptance; การ fallback ไม่เปลี่ยนข้อเท็จจริง และ run ล่าสุดยืนยัน Gemini TTS/LINE Audio.
+- **B4 — กำลังปิด:** ปรับ config, pipeline, workflows และเอกสารให้ตรงนโยบาย; ต้องผ่าน full tests และ PR CI.
+- **Human review — PENDING:** ยังต้องตรวจ Flex บน LINE client จริงและกดเล่น Audio.
 
-### ขั้นถัดไป
-**Milestone 4B — LINE Test Acceptance**: ทดสอบสายงานจริง Flood → Weather → Gemini → Flex → Gemini TTS → LINE Test และตรวจ Flex บนมือถือ + การเล่น Audio จริง
+ไฟล์สถานะหลัก: [CHECKLIST](CHECKLIST.md), [Phase 3 Status](docs/PHASE3_STATUS.md), [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md).
 
-**Production: ยังเป็น NO-GO** จนกว่าจะผ่าน LINE Test, human review และ B1/B2/B4 release gates
+## Historical — V1.5 Visual & UX Execution Plan — 2026-10-04
 
-
-## 🧪 Milestone 4B — LINE Test Acceptance
-
-ใช้ GitHub Actions workflow **Milestone 4B — LINE Test Acceptance** สำหรับส่งรายงานจริงเข้า LINE TEST เท่านั้น โดย workflow จะรัน `DRY_RUN=false` และใช้ `LINE_CHANNEL_ACCESS_TOKEN_TEST` / `LINE_GROUP_ID_TEST` แยกจาก production
-
-ก่อนกด Run ต้องตรวจว่า TEST group เป็นกลุ่มทดสอบ ไม่ใช่กลุ่ม production จริง หลังส่งแล้วต้องตรวจ Flex บนมือถือและฟัง Audio จริงก่อนบันทึกผลเป็น PASS
-
-
-## 📌 Milestone 4B Delivery Update — 2026-10-04
-
-**ล่าสุด: LINE TEST delivery ผ่านแล้ว ✅**
-
-จากการรันจริง `DRY_RUN=false` ระบบส่งทั้ง **Flex Message** และ **Audio Message** เข้ากลุ่ม LINE TEST ได้สำเร็จ
-
-สิ่งที่ยังต้องตรวจเพื่อปิด Milestone 4B:
-- ตรวจการแสดงผล Flex บนมือถือจริง
-- ยืนยันว่า Flex มาก่อน Audio ตามที่ออกแบบ
-- กดเล่นและฟัง Audio จริง
-- ตรวจเนื้อหาว่าไม่มีราคาปาล์ม/ยางพารา/ข่าวทั่วไป
-- บันทึก human acceptance
-
-**Production: ยังเป็น NO-GO**
-
-## 🎨 V1.5 Visual & UX Execution Plan — 2026-10-04
+แผนด้านล่างเป็นบันทึกย้อนหลัง ไม่ใช่รายการงานปัจจุบัน; ให้ยึด production readiness gates ด้านบนและ CHECKLIST.md แทน
 
 เอกสาร `docs/V1_5_VISUAL_UX_BLUEPRINT.md` เป็นแผนลงมือทำแบบเป็นเฟส ตั้งแต่ baseline, visual design, presentation contract, adaptive Flex, adaptive Audio, safety/QA, LINE TEST จนถึง production release gate
 

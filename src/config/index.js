@@ -15,6 +15,7 @@ function bangkokDate() {
 function buildConfig() {
   const mode = optional('RUN_MODE', 'test').toLowerCase();
   const isProd = mode === 'production' || mode === 'prod';
+  if (isProd) throw new Error('Production is locked until an official machine-readable flood API adapter and verified Phatthalung station mapping are implemented');
   const dryRun = optional('DRY_RUN', 'false').toLowerCase() === 'true';
   const lineTokenName = isProd ? 'LINE_CHANNEL_ACCESS_TOKEN_PROD' : 'LINE_CHANNEL_ACCESS_TOKEN_TEST';
   const lineGroupName = isProd ? 'LINE_GROUP_ID_PROD' : 'LINE_GROUP_ID_TEST';
@@ -26,7 +27,7 @@ function buildConfig() {
     flood: {
       sourceUrl: optional('FLOOD_SOURCE_URL', ''),
       freshnessLimitMinutes: parseFloat(optional('FLOOD_FRESHNESS_LIMIT_MINUTES', '180')),
-      degradedMode: optional('FLOOD_DEGRADED_MODE', 'unknown-weather'),
+      degradedMode: optional('FLOOD_DEGRADED_MODE', 'no-send'),
     },
     weatherSources: {
       pageUrl: optional('WEATHER_PAGE_SOURCE_URL', 'https://chachoengsao-flood.vercel.app/phatthalung/weather'),
