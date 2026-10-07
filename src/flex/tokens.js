@@ -8,7 +8,7 @@ const deepFreeze = (value) => {
 
 const BASE_URL = 'https://chachoengsao-flood.vercel.app/phatthalung';
 const CTA_URLS = deepFreeze({
-  cctv: `${BASE_URL}/weather`,
+  cctv: 'https://cctv.maholan.net/',
   'flood-source': BASE_URL,
   'water-map': `${BASE_URL}/map`,
   'weather-radar': `${BASE_URL}/weather`,

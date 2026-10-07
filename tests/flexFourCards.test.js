@@ -57,7 +57,7 @@ test('Flex contains the four requested cards, in order, with approved image and 
     { label: 'ศูนย์ช่วยเหลือพัทลุง', uri: CTA_URLS['flood-source'] },
     { label: 'แผนที่ระดับน้ำพัทลุง', uri: CTA_URLS['water-map'] },
     { label: 'พยากรณ์ / เรดาร์', uri: CTA_URLS['weather-radar'] },
-    { label: 'ภาพสด / CCTV', uri: CTA_URLS.cctv },
+    { label: 'ภาพสด / CCTV', uri: 'https://cctv.maholan.net/' },
   ]);
   assert.deepEqual(lintFlexMessage(message, { factsSnapshot: input.factsSnapshot }), []);
 });

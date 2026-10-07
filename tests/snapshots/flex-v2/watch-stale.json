@@ -363,7 +363,7 @@
               "action": {
                 "type": "uri",
                 "label": "ภาพสด / CCTV",
-                "uri": "https://chachoengsao-flood.vercel.app/phatthalung/weather"
+                "uri": "https://cctv.maholan.net/"
               }
             }
           ]
