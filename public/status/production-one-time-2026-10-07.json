@@ -1,5 +1,5 @@
 {
-  "state": "sending",
+  "state": "sent",
   "approvedRunId": "2026-10-07-lampai-test",
   "artifactRunId": "37621337709",
   "artifactName": "line-test-preview-37621337709-1",
@@ -7,5 +7,8 @@
   "audioSha256": "f9783d4834fd402342d47d9fc0cdbe9a8d161d2b7d4ab4737dc873a10b3a894b",
   "flexAltText": "พยากรณ์อากาศพัทลุง · 7 ตุลาคม 2569",
   "durationMs": 115536,
-  "createdAt": "2026-10-07T12:54:01.095Z"
+  "createdAt": "2026-10-07T12:54:01.095Z",
+  "sentAt": "2026-10-07T12:54:08.253Z",
+  "audioUrl": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@8f8b20cf2d68911fecfd7d9a34cc08ce5eda76ac/public/audio/approved-preview-37621337709.mp3",
+  "lineHttpStatus": 200
 }
