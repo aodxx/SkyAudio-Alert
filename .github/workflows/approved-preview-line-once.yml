@@ -1,0 +1,61 @@
+name: One-time approved LINE PROD delivery
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Explicit one-time confirmation for the already approved preview'
+        required: true
+        type: choice
+        default: DO_NOT_SEND
+        options:
+          - DO_NOT_SEND
+          - SEND_APPROVED_PREVIEW
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: approved-line-prod-send-2026-10-07
+  cancel-in-progress: false
+
+jobs:
+  deliver-approved-preview:
+    if: ${{ inputs.confirm == 'SEND_APPROVED_PREVIEW' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install FFmpeg for exact MP3 validation
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Download the exact approved dry-run artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: line-test-preview-37621337709-1
+          run-id: 37621337709
+          github-token: ${{ github.token }}
+          path: approved-artifact
+
+      - name: Verify artifact, hashes, flood gate, Flex schema and MP3 duration
+        env:
+          APPROVED_ARTIFACT_DIR: ${{ github.workspace }}/approved-artifact
+        run: node scripts/send-approved-preview-once.js --preflight
+
+      - name: Send the approved preview once to LINE PROD
+        env:
+          APPROVED_ARTIFACT_DIR: ${{ github.workspace }}/approved-artifact
+          SEND_ONCE_CONFIRM: ${{ inputs.confirm }}
+          LINE_CHANNEL_ACCESS_TOKEN_PROD: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_PROD }}
+          LINE_GROUP_ID_PROD: ${{ secrets.LINE_GROUP_ID_PROD }}
+        run: node scripts/send-approved-preview-once.js
