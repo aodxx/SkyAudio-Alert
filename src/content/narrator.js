@@ -34,7 +34,7 @@ function normalizeSections(rawSections, { stage = 'content.narration' } = {}) {
   const sections = Array.isArray(rawSections) ? rawSections.map((section, index) => ({
     id: String(section?.id || ''),
     title: String(section?.title || ''),
-    text: String(section?.text || '').replace(/\\s+/g, ' ').trim(),
+    text: String(section?.text || '').replace(/\s+/g, ' ').trim(),
     factsUsed: Array.isArray(section?.factsUsed) ? [...new Set(section.factsUsed.filter(Boolean).map(String))] : [],
   })) : [];
   if (sections.length < 1 || sections.length > 5) {
@@ -44,7 +44,7 @@ function normalizeSections(rawSections, { stage = 'content.narration' } = {}) {
   if (sections.some((section) => !ALLOWED_SECTION_IDS.includes(section.id)) || new Set(ids).size !== ids.length) {
     throw Object.assign(new Error('Narration section IDs must be allowed and distinct'), { stage, retryable: false });
   }
-  const normalizedTexts = sections.map((section) => section.text.toLocaleLowerCase('th').replace(/[\\s\\p{P}\\p{S}]/gu, ''));
+  const normalizedTexts = sections.map((section) => section.text.toLocaleLowerCase('th').replace(/[\s\p{P}\p{S}]/gu, ''));
   if (sections.some((section) => !section.text || !section.title) || new Set(normalizedTexts).size !== sections.length) {
     throw Object.assign(new Error('Narration sections must be non-empty and must not repeat'), { stage, retryable: false });
   }
