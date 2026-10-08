@@ -3,8 +3,7 @@
 const { buildGeminiReportInput } = require('./reportContract');
 const { GEMINI_BASE_URL, fetchGeminiContent, parseGeminiJsonText } = require('./geminiReport');
 
-const SECTION_IDS = Object.freeze(['opening', 'water', 'weather', 'next-steps']);
-const SECTION_TITLES = Object.freeze(['เปิดรายงาน', 'สถานการณ์น้ำ', 'อากาศประกอบ', 'สิ่งที่ควรติดตาม']);
+const ALLOWED_SECTION_IDS = Object.freeze(['opening', 'water', 'weather', 'next-steps', 'closing']);
 
 function extractText(json) {
   return json?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim() || '';
@@ -33,23 +32,23 @@ function narrationSchema() {
 
 function normalizeSections(rawSections, { stage = 'content.narration' } = {}) {
   const sections = Array.isArray(rawSections) ? rawSections.map((section, index) => ({
-    id: String(section?.id || SECTION_IDS[index] || `section-${index + 1}`),
-    title: String(section?.title || SECTION_TITLES[index] || ''),
+    id: String(section?.id || ''),
+    title: String(section?.title || ''),
     text: String(section?.text || '').replace(/\s+/g, ' ').trim(),
     factsUsed: Array.isArray(section?.factsUsed) ? [...new Set(section.factsUsed.filter(Boolean).map(String))] : [],
   })) : [];
-  if (sections.length !== SECTION_IDS.length) {
-    throw Object.assign(new Error(`Narration must contain four distinct sections; received ${sections.length}`), { stage, retryable: false });
+  if (sections.length < 1 || sections.length > 5) {
+    throw Object.assign(new Error(`Narration must contain one to five adaptive sections; received ${sections.length}`), { stage, retryable: false });
+  }
+  const ids = sections.map((section) => section.id);
+  if (sections.some((section) => !ALLOWED_SECTION_IDS.includes(section.id)) || new Set(ids).size !== ids.length) {
+    throw Object.assign(new Error('Narration section IDs must be allowed and distinct'), { stage, retryable: false });
   }
   const normalizedTexts = sections.map((section) => section.text.toLocaleLowerCase('th').replace(/[\s\p{P}\p{S}]/gu, ''));
-  if (sections.some((section) => !section.text) || new Set(normalizedTexts).size !== sections.length) {
+  if (sections.some((section) => !section.text || !section.title) || new Set(normalizedTexts).size !== sections.length) {
     throw Object.assign(new Error('Narration sections must be non-empty and must not repeat'), { stage, retryable: false });
   }
-  return sections.map((section, index) => ({
-    ...section,
-    id: SECTION_IDS[index],
-    title: SECTION_TITLES[index],
-  }));
+  return sections;
 }
 
 function weatherSummary(weather = {}) {
@@ -150,7 +149,7 @@ async function generateNarration(context, config, opts = {}) {
     config.tts?.profile === 'female-friendly' ? 'ผู้พูดเป็นผู้หญิง ใช้คำลงท้ายให้เป็นธรรมชาติ เช่น ค่ะ และ นะคะ ตลอดทั้งบท' : 'ผู้พูดเป็นผู้ชาย ใช้คำลงท้ายให้เป็นธรรมชาติ เช่น ครับ และ นะครับ ตลอดทั้งบท',
     'ใช้คำทักทาย คำขอบคุณ คำอวยพร และถ้อยคำเชื่อมโยงที่อบอุ่นได้ แม้ไม่ใช่ facts; แต่ห้ามแต่งข้อมูล เหตุการณ์ คำแนะนำเฉพาะ ตัวเลข หรือคำยืนยันสถานการณ์ที่ไม่มีใน JSON',
     'ตัวเลขทุกตัวในบทพูดต้องปรากฏอยู่ใน facts JSON เท่านั้น ห้ามเติมตัวเลขอื่นหรือพูดจำนวนช่วง/ระยะเวลาของรายการ',
-    'สร้าง 4 ช่วงตามลำดับเท่านั้น: (1) เปิดรายงานและสถานะน้ำ (2) รายละเอียดน้ำ แนวโน้มและความสดของข้อมูล (3) พยากรณ์อากาศวันนี้ในฐานะข้อมูลประกอบ (4) สิ่งที่ควรติดตาม ข้อจำกัด และปิดสั้น ๆ',
+    'เลือกจำนวนช่วงและลำดับการเล่าเองตามข้อมูลจริงของวันนี้ โดยใช้เพียง 1 ถึง 5 ช่วง ไม่ต้องใส่ทุกหัวข้อทุกวัน หัวข้อที่อนุญาตคือ opening, water, weather, next-steps, closing และห้ามใช้ ID ซ้ำ',
     'แต่ละช่วงต้องเพิ่มข้อมูลหรือคำอธิบายใหม่ ห้ามนำข้อเท็จจริงหรือประโยคเดิมกลับมาพูดซ้ำ หากข้อมูลไม่พอให้พูดตรง ๆ อย่างกระชับ ห้ามเติมข้อความเพื่อให้ครบเวลา',
     'ใช้เฉพาะ facts JSON ที่ให้มา ห้ามสร้างตัวเลข ชื่อสถานี ถนน พื้นที่ เวลา เหตุการณ์ หรือระดับความรุนแรงใหม่ และให้ใส่ factsUsed เฉพาะ fact ID ที่ใช้จริง',
     'พยากรณ์ฝนไม่ใช่หลักฐานว่ายืนยันว่าเกิดน้ำท่วม ห้ามพูดว่า “ปลอดภัยแน่นอน” หรือ “น้ำท่วมแน่นอน”',
