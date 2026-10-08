@@ -1,9 +1,10 @@
 {
-  "runId": "2026-10-07-lampai-test",
-  "mode": "test",
+  "runId": "2026-10-08-lampai-production",
+  "mode": "production",
   "dryRun": false,
   "stages": {
     "flood.fetch": "success",
+    "flood.gate": "success",
     "weather.fetch": "success",
     "weather.normalize": "success",
     "weather.analyze": "success",
@@ -20,12 +21,12 @@
   "lastError": null,
   "audioWithheld": false,
   "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@d08c49eb18839d7b418af79cf3415ce0aa90e9ed/public/audio/2026-10-07.mp3",
-    "durationMs": 112968,
-    "bytes": 1807917,
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@f03753244b80011811d5a95079888d63ded1cb86/public/audio/2026-10-08.mp3",
+    "durationMs": 110568,
+    "bytes": 1769517,
     "mimeType": "audio/mpeg",
     "sections": 4,
     "delivered": true
   },
-  "generatedAt": "2026-10-07T11:25:09.926Z"
+  "generatedAt": "2026-10-08T02:23:12.793Z"
 }
