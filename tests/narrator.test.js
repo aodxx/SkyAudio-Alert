@@ -55,13 +55,13 @@ function sections(prefix = 'รายงาน') {
   ];
 }
 
-test('narration schema requires structured sections with fact traces', () => {
+test('narration schema requires structured sections with fact traces and supports adaptive section counts', () => {
   const schema = narrationSchema();
   assert.ok(schema.properties.sections);
   assert.deepEqual(schema.properties.sections.items.required, ['id', 'title', 'text', 'factsUsed']);
 });
 
-test('narrator accepts four distinct medium-length sections below the legacy 7000-character minimum', async () => {
+test('narrator accepts four distinct sections while adaptive outputs may be shorter', async () => {
   const result = await generateNarration(context(), config(), {
     fetchImpl: async () => response({ sections: sections() }),
   });
@@ -71,18 +71,31 @@ test('narrator accepts four distinct medium-length sections below the legacy 700
   assert.equal(result.provider, 'gemini');
 });
 
-test('narrator rejects missing sections and repeated section text', async () => {
-  await assert.rejects(() => generateNarration(context(), config(), {
-    fetchImpl: async () => response({ sections: sections().slice(0, 3) }),
-  }), /must contain four distinct sections/);
+test('narrator accepts an adaptive number of sections and rejects repeated or invalid sections', async () => {
+  const shorter = sections().slice(0, 3);
+  const result = await generateNarration(context(), config(), {
+    fetchImpl: async () => response({ sections: shorter }),
+  });
+  assert.equal(result.sections.length, 3);
+
   const repeated = sections();
   repeated[3].text = repeated[2].text;
   await assert.rejects(() => generateNarration(context(), config(), {
     fetchImpl: async () => response({ sections: repeated }),
   }), /must not repeat/);
+
+  const invalidId = sections();
+  invalidId[0].id = 'invented-topic';
+  await assert.rejects(() => generateNarration(context(), config(), {
+    fetchImpl: async () => response({ sections: invalidId }),
+  }), /IDs must be allowed/);
+
+  await assert.rejects(() => generateNarration(context(), config(), {
+    fetchImpl: async () => response({ sections: [] }),
+  }), /one to five adaptive sections/);
 });
 
-test('narrator prompt follows the available facts without a fixed time target or repeated filler', async () => {
+test('narrator prompt follows daily facts and lets Gemini choose the section order and length', async () => {
   let prompt = '';
   await generateNarration(context(), config(), {
     fetchImpl: async (_url, options) => {
