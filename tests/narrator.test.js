@@ -116,6 +116,14 @@ test('narrator rejects more than five sections', async () => {
   }), /one to five adaptive sections/);
 });
 
+test('narrator rejects fact references that are not present in the verified facts snapshot', async () => {
+  const unsupported = sections();
+  unsupported[0].factsUsed = ['flood.station.999.level'];
+  await assert.rejects(() => generateNarration(context(), config(), {
+    fetchImpl: async () => response({ sections: unsupported }),
+  }), /unknown fact IDs/);
+});
+
 test('narrator prompt follows daily facts and lets Gemini choose the section order and length', async () => {
   let prompt = '';
   await generateNarration(context(), config(), {
@@ -148,6 +156,7 @@ test('narrator prompt asks Gemini for a human greeting, summary, well-wish, and 
   assert.match(prompt, /ห้ามสร้างตัวเลข/);
   assert.match(prompt, /ตัวเลขทุกตัวในบทพูดต้องปรากฏอยู่ใน facts JSON เท่านั้น/);
   assert.match(prompt, /ห้ามเติมตัวเลขอื่น/);
+  assert.match(prompt, /availableFactIds/);
   assert.match(prompt, /ผู้พูดเป็นผู้ชาย/);
 });
 
