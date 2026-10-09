@@ -19,7 +19,7 @@
 
 ## ยังเปิด / ข้อจำกัด
 
-- [ ] **B1 — official flood API:** ยังไม่มี official machine-readable API และ verified Phatthalung station mapping; HTML adapter เป็นข้อยกเว้นที่ผู้ใช้อนุญาตสำหรับ daily schedule เท่านั้น ไม่ได้ปิด B1
+- [ ] **B1 — official flood API:** ThaiWater Standard ระบุ `GET /Runoff` แต่ provider Base URL และ station mapping สำหรับพัทลุงยังไม่ยืนยัน; data.go.th ระบุ HII station metadata CSV และผู้ติดต่อ `telem@hii.or.th`. HTML adapter เป็นข้อยกเว้นเฉพาะ daily schedule ไม่ได้ปิด B1.
 - [ ] **ความเสถียร TTS:** historical run `37559334882` failed on Gemini `503`/TTS fetch error. The newer scheduled run `37717506024` succeeded, but a single success does not prove sustained reliability; retain no-send on any narration/TTS/audio failure.
 - [ ] **เวลา:** ตั้ง cron `23:00 UTC` (= `06:00 Asia/Bangkok`) แต่ GitHub Actions เป็น best-effort; run ล่าสุดเริ่มราว 08:53 ICT จึงรับประกัน 06:00 ตรงเวลาไม่ได้
 - [ ] **Human review:** ควรตรวจ Flex และเล่น Audio บน LINE client จริงหลังส่ง; การตอบรับ `HTTP 200` ยืนยันการรับคำขอจาก LINE API ไม่ใช่การยืนยันว่าอุปกรณ์ปลายทางเล่นเสียงแล้ว
