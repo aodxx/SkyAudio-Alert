@@ -16,7 +16,7 @@
 - [x] Adaptive Gemini narration merged to `main` (`b1a542812ce8aaf001227d8f13b7fcee686d3664`); narrator accepts 1–5 distinct, allowlisted sections and keeps the safety/TTS/LINE gates.
 - [x] Post-merge `Node CI` run `37862280375` and `Phase 3 unit tests` run `37862280404` completed successfully.
 - [x] Latest post-merge commit `4202667f0938ec5fb0029c9c25b82200c35d0f95` also passed `Node CI` run `37863231410` and `Phase 3 unit tests` run `37863231341`: 144 tests passed, 0 failed, including adaptive ordering/bounds and unknown fact-ID rejection.
-- [x] Scheduled Production run `37717506024` (2026-10-08) passed the runtime gates, validated a 110.568-second MP3, and LINE API accepted one atomic Flex+Audio request (`messageCount: 2`). This confirms API acceptance, not playback on members' devices.
+- [x] Scheduled Production run `37717506024` (2026-10-08, **before** adaptive narration/fact-ID changes were merged) passed the then-current runtime gates, validated a 110.568-second MP3, and LINE API accepted one atomic Flex+Audio request (`messageCount: 2`). This confirms API acceptance, not playback on members' devices or live acceptance of the newer adaptive narrator. The next scheduled run must verify the merged code.
 
 ## ยังเปิด / ข้อจำกัด
 
