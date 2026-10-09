@@ -30,7 +30,7 @@ function narrationSchema() {
   };
 }
 
-function normalizeSections(rawSections, { stage = 'content.narration' } = {}) {
+function normalizeSections(rawSections, { stage = 'content.narration', allowedFactIds } = {}) {
   const sections = Array.isArray(rawSections) ? rawSections.map((section, index) => ({
     id: String(section?.id || ''),
     title: String(section?.title || ''),
@@ -43,6 +43,13 @@ function normalizeSections(rawSections, { stage = 'content.narration' } = {}) {
   const ids = sections.map((section) => section.id);
   if (sections.some((section) => !ALLOWED_SECTION_IDS.includes(section.id)) || new Set(ids).size !== ids.length) {
     throw Object.assign(new Error('Narration section IDs must be allowed and distinct'), { stage, retryable: false });
+  }
+  if (Array.isArray(allowedFactIds)) {
+    const allowed = new Set(allowedFactIds.map(String));
+    const unknownIds = [...new Set(sections.flatMap((section) => section.factsUsed).filter((id) => !allowed.has(id)))];
+    if (unknownIds.length) {
+      throw Object.assign(new Error('Narration references unknown fact IDs: ' + unknownIds.join(', ')), { stage, retryable: false });
+    }
   }
   const normalizedTexts = sections.map((section) => section.text.toLocaleLowerCase('th').replace(/[\s\p{P}\p{S}]/gu, ''));
   if (sections.some((section) => !section.text || !section.title) || new Set(normalizedTexts).size !== sections.length) {
@@ -116,10 +123,10 @@ function buildQuotaSafeNarration(context = {}, profile = 'male-friendly') {
   return { sections, spokenText, totalCharacters: spokenText.length, provider: 'quota-safe-fallback' };
 }
 
-function parseNarration(response) {
+function parseNarration(response, options = {}) {
   try {
     const json = JSON.parse(parseGeminiJsonText(extractText(response)));
-    const sections = normalizeSections(json?.sections);
+    const sections = normalizeSections(json?.sections, options);
     const spokenText = sections.map((section) => section.text).join('\n');
     return { sections, spokenText, totalCharacters: spokenText.length };
   } catch (error) {
@@ -142,6 +149,7 @@ async function generateNarration(context, config, opts = {}) {
     location: context.location,
     date: context.date,
   });
+  input.availableFactIds = Array.isArray(context.factsSnapshot?.factIds) ? context.factsSnapshot.factIds : [];
   const prompt = [
     'คุณคือน้องจุ่นจ้าน ผู้เล่าข่าวประจำชุมชน พูดภาษาไทยอย่างอบอุ่น ชัดเจน และเหมาะกับผู้สูงอายุ เหมือนกำลังเล่าให้เพื่อนบ้านฟัง ไม่ใช่อ่านรายการข้อมูล',
     'สร้างบทเสียงรายงานเช้าบ้านลำพายให้มีรายละเอียดพอเข้าใจตามข้อมูลจริง โดยไม่กำหนดเป้าหมายนาทีและห้ามยืดบทด้วยข้อความซ้ำหรือสรุปซ้ำ',
@@ -151,7 +159,7 @@ async function generateNarration(context, config, opts = {}) {
     'ตัวเลขทุกตัวในบทพูดต้องปรากฏอยู่ใน facts JSON เท่านั้น ห้ามเติมตัวเลขอื่นหรือพูดจำนวนช่วง/ระยะเวลาของรายการ',
     'เลือกจำนวนช่วงและลำดับการเล่าเองตามข้อมูลจริงของวันนี้ โดยใช้เพียง 1 ถึง 5 ช่วง ไม่ต้องใส่ทุกหัวข้อทุกวัน หัวข้อที่อนุญาตคือ opening, water, weather, next-steps, closing และห้ามใช้ ID ซ้ำ',
     'แต่ละช่วงต้องเพิ่มข้อมูลหรือคำอธิบายใหม่ ห้ามนำข้อเท็จจริงหรือประโยคเดิมกลับมาพูดซ้ำ หากข้อมูลไม่พอให้พูดตรง ๆ อย่างกระชับ ห้ามเติมข้อความเพื่อให้ครบเวลา',
-    'ใช้เฉพาะ facts JSON ที่ให้มา ห้ามสร้างตัวเลข ชื่อสถานี ถนน พื้นที่ เวลา เหตุการณ์ หรือระดับความรุนแรงใหม่ และให้ใส่ factsUsed เฉพาะ fact ID ที่ใช้จริง',
+    'ใช้เฉพาะ facts JSON ที่ให้มา ห้ามสร้างตัวเลข ชื่อสถานี ถนน พื้นที่ เวลา เหตุการณ์ หรือระดับความรุนแรงใหม่ และให้ใส่ factsUsed เฉพาะ fact ID ที่ใช้จริงจาก availableFactIds เท่านั้น',
     'พยากรณ์ฝนไม่ใช่หลักฐานว่ายืนยันว่าเกิดน้ำท่วม ห้ามพูดว่า “ปลอดภัยแน่นอน” หรือ “น้ำท่วมแน่นอน”',
     'ห้ามพูดถึงราคาปาล์ม ราคายาง ข่าวทั่วไป URL, JSON, ชื่อ field หรือคำว่า Card',
     'ตอบ JSON ตาม schema เท่านั้น',
@@ -207,7 +215,7 @@ async function generateNarration(context, config, opts = {}) {
       stage: 'content.narration', retryable: false,
     });
   }
-  return { ...parseNarration(await response.json()), provider };
+  return { ...parseNarration(await response.json(), { allowedFactIds: input.availableFactIds }), provider };
 }
 
 module.exports = { generateNarration, buildQuotaSafeNarration, narrationSchema, normalizeSections };
