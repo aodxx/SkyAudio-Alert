@@ -49,6 +49,6 @@ Decision 020 บันทึก live Gemini Content → Gemini TTS และ MP3
 ## Readiness audit — 2026-10-09
 
 - Adaptive narration code is merged to `main`; Gemini can return 1–5 distinct sections from the allowlist and choose their order. Deterministic fact/safety validation, quota-safe fallback, TTS validation, public audio URL validation, and atomic Flex+Audio delivery gates remain in the pipeline.
-- Post-merge CI and Phase 3 test workflows passed at commit `b1a542812ce8aaf001227d8f13b7fcee686d3664`.
+- Latest main commit `d46dbc076197d9ad6b67ada7a3f5d2b457938a9d` passed Phase 3 run `37863951454`: 147 tests passed, 0 failed, including per-section numeric provenance and pipeline fallback. Node CI run `37863951401` remains in progress.
 - Scheduled Production run `37717506024` (before the adaptive narration merge) succeeded at the LINE API boundary, but there is still no live scheduled-run evidence for the merged adaptive narrator and no proof from logs that a member opened and played the audio.
 - Remaining release blockers for a full 100% sign-off: (1) official machine-readable flood provider endpoint and verified Phatthalung station mapping; (2) a human opens the real LINE delivery and verifies Flex rendering/audio playback; (3) observe repeated scheduled runs to establish TTS/source reliability and timing expectations. GitHub Actions remains best-effort, not an exact 06:00 guarantee.
