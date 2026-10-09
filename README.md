@@ -45,7 +45,7 @@ Dry run จะดึงอากาศจริง สร้าง Flex แล�
 
 **สถานะการตรวจรับ:** Node CI และ Phase 3 unit tests ผ่านหลัง commit `b1a542812ce8aaf001227d8f13b7fcee686d3664`. Scheduled run `37717506024` ผ่านถึง LINE API และ API รับ Flex+Audio แต่ยังต้องมีมนุษย์เปิด LINE บนมือถือและตรวจภาพ/กดเล่นเสียงจริง
 
-เมื่อเปิด Production ในอนาคต duplicate guard จะป้องกันการส่ง Flex ซ้ำในวันเดียวกัน แม้ Audio จะถูก withheld; หากล้มเหลวก่อนส่ง Flex จึงจะรันซ้ำได้
+Production schedule ปัจจุบันใช้ duplicate guard ป้องกันการส่ง Flex ซ้ำในวันเดียวกัน แม้ Audio จะถูก withheld; หากล้มเหลวก่อนส่ง Flex จึงจะรันซ้ำได้
 
 ไม่ต้องมี `GOOGLE_TTS_API_KEY` สำหรับค่าเริ่มต้น
 
