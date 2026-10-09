@@ -1,6 +1,6 @@
 # SkyAudio-Alert — Production Readiness Checklist
 
-**อัปเดต:** 2026-10-07
+**อัปเดต:** 2026-10-09
 
 **สถานะ:** **LIMITED-GO สำหรับ daily Production ภายใต้ Decision 028**; ยังไม่ถือว่า official flood API พร้อมใช้งาน
 
@@ -13,11 +13,14 @@
 - [x] Production ต้องมี narration, TTS, audio validation และ public audio URL พร้อมก่อนส่ง; ถ้า Audio ไม่ผ่านจะไม่ส่งทั้ง Flex และ Audio
 - [x] เมื่อพร้อม ส่ง Flex+Audio ใน LINE push request เดียว เพื่อลดการส่งแบบมีแต่ Flex
 - [x] One-time preview delivery: workflow run `37624288064` ตอบรับ LINE API `HTTP 200` สำหรับ 2 messages; ใช้ asset ที่ตรึง checksum ไว้
+- [x] Adaptive Gemini narration merged to `main` (`b1a542812ce8aaf001227d8f13b7fcee686d3664`); narrator accepts 1–5 distinct, allowlisted sections and keeps the safety/TTS/LINE gates.
+- [x] Post-merge `Node CI` run `37862280375` and `Phase 3 unit tests` run `37862280404` completed successfully.
+- [x] Scheduled Production run `37717506024` (2026-10-08) passed the runtime gates, validated a 110.568-second MP3, and LINE API accepted one atomic Flex+Audio request (`messageCount: 2`). This confirms API acceptance, not playback on members' devices.
 
 ## ยังเปิด / ข้อจำกัด
 
 - [ ] **B1 — official flood API:** ยังไม่มี official machine-readable API และ verified Phatthalung station mapping; HTML adapter เป็นข้อยกเว้นที่ผู้ใช้อนุญาตสำหรับ daily schedule เท่านั้น ไม่ได้ปิด B1
-- [ ] **ความเสถียร TTS:** scheduled run ล่าสุด `37559334882` ล้มเหลวเมื่อ Gemini ตอบ `503`/TTS fetch error; ตามนโยบายปัจจุบันจะ no-send แทนการส่งข้อความไม่ครบ
+- [ ] **ความเสถียร TTS:** historical run `37559334882` failed on Gemini `503`/TTS fetch error. The newer scheduled run `37717506024` succeeded, but a single success does not prove sustained reliability; retain no-send on any narration/TTS/audio failure.
 - [ ] **เวลา:** ตั้ง cron `23:00 UTC` (= `06:00 Asia/Bangkok`) แต่ GitHub Actions เป็น best-effort; run ล่าสุดเริ่มราว 08:53 ICT จึงรับประกัน 06:00 ตรงเวลาไม่ได้
 - [ ] **Human review:** ควรตรวจ Flex และเล่น Audio บน LINE client จริงหลังส่ง; การตอบรับ `HTTP 200` ยืนยันการรับคำขอจาก LINE API ไม่ใช่การยืนยันว่าอุปกรณ์ปลายทางเล่นเสียงแล้ว
 
