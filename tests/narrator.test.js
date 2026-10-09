@@ -95,6 +95,27 @@ test('narrator accepts an adaptive number of sections and rejects repeated or in
   }), /one to five adaptive sections/);
 });
 
+test('narrator preserves Gemini-selected section order and accepts the five-section maximum', async () => {
+  const chosen = sections().reverse();
+  chosen.push({ id: 'closing', title: 'ปิดท้าย', text: 'ขอบคุณที่รับฟัง แล้วพบกันใหม่ครับ', factsUsed: [] });
+  const result = await generateNarration(context(), config(), {
+    fetchImpl: async () => response({ sections: chosen }),
+  });
+  assert.deepEqual(result.sections.map((section) => section.id), ['next-steps', 'weather', 'water', 'opening', 'closing']);
+  assert.equal(result.sections.length, 5);
+  assert.equal(result.spokenText.split('\\n').length, 5);
+});
+
+test('narrator rejects more than five sections', async () => {
+  const tooMany = sections().concat([
+    { id: 'closing', title: 'ปิดท้าย', text: 'ขอบคุณที่รับฟัง แล้วพบกันใหม่ครับ', factsUsed: [] },
+    { id: 'weather', title: 'อากาศซ้ำ', text: 'มีเมฆและลมตามรายงาน', factsUsed: [] },
+  ]);
+  await assert.rejects(() => generateNarration(context(), config(), {
+    fetchImpl: async () => response({ sections: tooMany }),
+  }), /one to five adaptive sections/);
+});
+
 test('narrator prompt follows daily facts and lets Gemini choose the section order and length', async () => {
   let prompt = '';
   await generateNarration(context(), config(), {
