@@ -30,6 +30,37 @@ test('rejects severity drift', () => assert.ok(validateGeneratedFacts(plan('crit
 test('rejects generated numeric facts not in source', () => assert.ok(validateGeneratedFacts(plan('watch', 'ระดับน้ำ 999 เมตร'), facts()).some((error) => error.includes('numeric'))));
 test('normalizes numeric formatting and Thai digits', () => assert.deepEqual(extractNumbers('วันที่ ๔/๑๐/๒๕๖๙ ระดับน้ำ 1.20 เมตร'), ['4', '10', '2569', '1.2']));
 test('accepts date numbers supplied as verified context', () => assert.equal(validateGeneratedFacts(plan('watch', 'วันนี้ ๔ ตุลาคม ๒๕๖๙ ระดับน้ำ 1.20 เมตร'), facts()).length, 0));
+test('rejects a numeric claim that exists in the facts but is not supported by that section citation', () => {
+  const verified = facts();
+  verified.weatherAnalysis = { current: { temperature: 27 }, daily: { tempMax: 32 } };
+  const factsSnapshot = {
+    factIds: ['weather.current.temperature', 'weather.daily.tempMax'],
+    facts: {
+      'weather.current.temperature': { spokenForms: ['27', '๒๗', 'ยี่สิบเจ็ด'] },
+      'weather.daily.tempMax': { spokenForms: ['32', '๓๒', 'สามสิบสอง'] },
+    },
+  };
+  const candidate = plan('watch', 'อุณหภูมิตอนนี้ 32 องศาเซลเซียส');
+  candidate.sections = [{ text: candidate.spokenText, factsUsed: ['weather.current.temperature'] }];
+  const errors = validateGeneratedFacts(candidate, verified, { factsSnapshot });
+  assert.ok(errors.some((error) => error.includes('not supported by its cited facts')), errors.join('; '));
+});
+
+test('accepts a numeric claim when its section cites the matching verified fact', () => {
+  const verified = facts();
+  verified.weatherAnalysis = { current: { temperature: 27 }, daily: { tempMax: 32 } };
+  const factsSnapshot = {
+    factIds: ['weather.current.temperature', 'weather.daily.tempMax'],
+    facts: {
+      'weather.current.temperature': { spokenForms: ['27', '๒๗', 'ยี่สิบเจ็ด'] },
+      'weather.daily.tempMax': { spokenForms: ['32', '๓๒', 'สามสิบสอง'] },
+    },
+  };
+  const candidate = plan('watch', 'อุณหภูมิสูงสุดวันนี้ 32 องศาเซลเซียส');
+  candidate.sections = [{ text: candidate.spokenText, factsUsed: ['weather.daily.tempMax'] }];
+  assert.deepEqual(validateGeneratedFacts(candidate, verified, { factsSnapshot }), []);
+});
+
 test('rejects market/news leakage', () => assert.ok(validateGeneratedFacts(plan('watch', 'ราคาปาล์มวันนี้สูงขึ้น'), facts()).some((error) => error.includes('market/news'))));
 test('rejects forecast-only flood claim', () => {
   const input = facts('unknown');
