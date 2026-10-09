@@ -208,6 +208,30 @@ test('unsafe narration is replaced by a safe concise fallback before TTS', async
   assert.equal(result.narration.sections.length, 4);
 });
 
+test('pipeline falls back when a section cites the wrong fact for a numeric claim', async () => {
+  const state = {};
+  const deps = overrides(state);
+  let mismatchedText = '';
+  deps.generateNarration = async (context) => {
+    const temperature = context.factsSnapshot.facts['weather.current.temperature'];
+    const humidity = context.factsSnapshot.facts['weather.current.humidity'];
+    assert.ok(temperature && humidity);
+    assert.notEqual(temperature.value, humidity.value);
+    mismatchedText = 'อุณหภูมิตอนนี้ ' + humidity.value + ' องศาเซลเซียส';
+    const candidate = narration(context.factsSnapshot);
+    candidate.sections[0].text = mismatchedText;
+    candidate.sections[0].factsUsed = ['weather.current.temperature'];
+    candidate.spokenText = candidate.sections.map((section) => section.text).join('\n');
+    candidate.totalCharacters = candidate.spokenText.length;
+    return candidate;
+  };
+
+  const result = await runPipeline(testConfig(), deps);
+
+  assert.equal(result.stages['content.safety'], 'success');
+  assert.ok(!state.ttsScript.includes(mismatchedText));
+  assert.equal(result.narration.sections.length, 4);
+});
 test('dry run treats local audio without a public URL as validated, not withheld', async () => {
   const state = {};
   const deps = overrides(state);
