@@ -1,4 +1,4 @@
-# 🔒 FLOOD-FIRST DOCUMENT LOCK — 2026-10-04
+# 🔒 FLOOD-FIRST DOCUMENT LOCK — 2026-10-09
 
 สถานะปัจจุบันของระบบคือ **Flood-first + supporting weather + Gemini adaptive content + Gemini TTS** เท่านั้น ราคาปาล์ม ราคายาง ข่าวทั่วไป และ fixed 2–3 minute audio เป็น historical scope และห้ามนำกลับเข้า production runtime.
 
@@ -11,9 +11,9 @@
 2. ดึงพยากรณ์อากาศจาก Open-Meteo และวิเคราะห์ด้วยกฎแบบ deterministic
 3. สร้าง LINE Flex carousel 4 ใบ: สรุปอากาศแบบไม่มีภาพ → ภาพระดับน้ำ → แผนที่ → CCTV; ค่าพยากรณ์ดึงจาก FactsSnapshot และแยกจากบทพูดเสียง
 4. สร้าง narration เสียงจากข้อมูลน้ำ/อากาศโดยอิสระ ผ่าน safety check แล้วใช้ Gemini TTS สร้างเสียงภาษาไทย (เลือกโปรไฟล์หญิง/ชายและ model ผ่าน config)
-5. ส่ง Flex แล้วจึงส่ง LINE Audio Message ด้วยคำขอแยกเข้า LINE กลุ่มบ้านลำพาย เมื่อเสียงผ่าน gate
+5. เมื่อข้อมูล บทพูด และเสียงผ่านทุก gate จะส่ง Flex + LINE Audio ในคำขอ push เดียวกันเข้า LINE กลุ่มบ้านลำพาย เพื่อไม่ให้เกิดการส่ง Flex อย่างเดียวใน Production
 
-**สถานะปัจจุบัน:** scheduled workflow ใช้ `RUN_MODE=test` และส่งไปยัง LINE TEST เท่านั้น ยังไม่ได้เปิด production schedule หรือ PROD destination
+**สถานะปัจจุบัน (2026-10-09):** มี **LIMITED-GO เฉพาะ daily Production exception** ตาม Decision 028: `.github/workflows/weather-daily.yml` ส่งได้เฉพาะ scheduled event บน `main` โดยใช้ HTML source ที่อนุมัติและ `FLOOD_DEGRADED_MODE=no-send`. ไม่ใช่การยืนยันว่า official flood API พร้อมแล้ว; full Production ยังรอ official API/station mapping และการตรวจเสียงบน LINE มือถือ
 
 ปุ่มท้ายการ์ดใน Flex:
 - การ์ด 1 — [ศูนย์ช่วยเหลือพัทลุง](https://chachoengsao-flood.vercel.app/phatthalung)
@@ -39,9 +39,11 @@ Dry run จะดึงอากาศจริง สร้าง Flex แล�
 - `LINE_GROUP_ID_TEST`
 
 ### Scheduled TEST และ Production
-Workflow `Daily Flood-first announcement (TEST target)` รันที่ 23:00 UTC (06:00 Asia/Bangkok) และใช้ `RUN_MODE=test` พร้อม `LINE_CHANNEL_ACCESS_TOKEN_TEST` / `LINE_GROUP_ID_TEST` เท่านั้น
+`Daily Flood-first announcement (PROD target)` ทำงานตาม cron `23:00 UTC` (เป้าหมาย 06:00 Asia/Bangkok; GitHub Actions ไม่รับประกันเวลาตรงเป๊ะ) และใช้ PROD secrets ภายใต้ Decision 028 เท่านั้น. Config จะปฏิเสธ Production runs ที่ไม่ได้มาจาก scheduled workflow บน `main` หรือใช้ source URL/`no-send` policy ไม่ตรงกับข้อยกเว้นที่อนุมัติ
 
-**Production ยังไม่เปิดใช้งาน.** ห้ามเปลี่ยน workflow ไปใช้ PROD secrets หรือเปิด schedule สำหรับกลุ่มจริง จนกว่า B1–B4 และการตรวจรับ Flex/Audio โดยมนุษย์จะผ่านครบ. เมื่อได้รับอนุมัติในอนาคต Production จะใช้ `LINE_CHANNEL_ACCESS_TOKEN_PROD` และ `LINE_GROUP_ID_PROD` แยกจาก TEST.
+**ขอบเขตสำคัญ:** ข้อยกเว้นนี้ใช้ HTML adapter ชั่วคราว ไม่ได้ปิด blocker เรื่อง official machine-readable API และ verified Phatthalung station mapping. ถ้า flood data ไม่สด/ตรวจสอบไม่ได้ หรือ narration, TTS, MP3 validation, storage/public URL ไม่ผ่าน จะไม่ส่งทั้ง Flex และ Audio. เมื่อพร้อมจะส่งทั้งคู่ใน LINE request เดียว
+
+**สถานะการตรวจรับ:** Node CI และ Phase 3 unit tests ผ่านหลัง commit `b1a542812ce8aaf001227d8f13b7fcee686d3664`. Scheduled run `37717506024` ผ่านถึง LINE API และ API รับ Flex+Audio แต่ยังต้องมีมนุษย์เปิด LINE บนมือถือและตรวจภาพ/กดเล่นเสียงจริง
 
 เมื่อเปิด Production ในอนาคต duplicate guard จะป้องกันการส่ง Flex ซ้ำในวันเดียวกัน แม้ Audio จะถูก withheld; หากล้มเหลวก่อนส่ง Flex จึงจะรันซ้ำได้
 
@@ -49,7 +51,7 @@ Workflow `Daily Flood-first announcement (TEST target)` รันที่ 23:00
 
 ## TTS
 
-เสียงสร้างแยกจาก Flex โดยใช้บท 4 ช่วงจากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy ให้ความยาวเป็นไปตามข้อมูลจริง ไม่กำหนด target นาทีและไม่เติมคำซ้ำ บทควรฟังเหมือนคนเล่าให้เพื่อนบ้านฟัง เปิดด้วยคำทักทาย มีคำเชื่อมธรรมชาติ สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และกล่าวพบกันใหม่ได้ โดยคำพูดอบอุ่นเหล่านี้ห้ามเพิ่มข้อเท็จจริงของสถานการณ์ เสียงต้องชัดเจนและเหมาะกับผู้สูงอายุ
+เสียงสร้างแยกจาก Flex โดย Gemini เลือกจำนวนและลำดับบท 1–5 ช่วงตามข้อเท็จจริงของวันนั้น จากข้อมูลน้ำ/อากาศ ผ่าน safety firewall ก่อนเข้า **Gemini TTS** เพียงหนึ่งครั้ง ตาม `TTS_PROFILE` หญิง/ชายและ `GEMINI_TTS_MODEL` ที่ตั้งค่าไว้ เช่น Gemini Flash TTS หรือ Flash-Lite TTS โดยต้องตรวจสอบ model availability กับ API จริงก่อน deploy ให้ความยาวเป็นไปตามข้อมูลจริง ไม่กำหนด target นาทีและไม่เติมคำซ้ำ บทควรฟังเหมือนคนเล่าให้เพื่อนบ้านฟัง เปิดด้วยคำทักทาย มีคำเชื่อมธรรมชาติ สรุปสั้น ๆ ฝากความปรารถนาดี ขอบคุณ บอกลา และกล่าวพบกันใหม่ได้ โดยคำพูดอบอุ่นเหล่านี้ห้ามเพิ่มข้อเท็จจริงของสถานการณ์ เสียงต้องชัดเจนและเหมาะกับผู้สูงอายุ
 
 Production scope uses Gemini TTS. Other providers are historical/testing-only and must not become the production default without a new decision.
 
@@ -68,7 +70,7 @@ npm test
 - credential ที่เคยเผยแพร่ในแชทให้ถือว่า exposed และควร revoke/rotate ก่อนใช้งานจริง
 - ใช้ GitHub Actions Secrets สำหรับค่าลับ
 
-สถานะการรื้อ runtime อยู่ที่ [Phase 3 Status](docs/PHASE3_STATUS.md); ส่วน [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md) เป็นจุดอ้างอิงกลางของ In/Out/Deferred, blocker และ release gate
+สถานะความพร้อมล่าสุดอยู่ที่ [CHECKLIST](CHECKLIST.md) และ [Phase 3 Status](docs/PHASE3_STATUS.md). เอกสาร scope/refactor ที่ลงวันที่ก่อนหน้านี้เป็นประวัติการตัดสินใจและอาจมีสถานะเก่า; ให้ยึดเอกสาร readiness ที่อัปเดตล่าสุดเป็นหลัก
 
 รายละเอียดเพิ่มเติม: `PRD.md`, `ARCHITECTURE.md`, `API.md`, `DECISIONS.md` และ `CHANGELOG.md`
 
