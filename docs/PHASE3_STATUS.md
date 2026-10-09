@@ -20,7 +20,7 @@ Flood fetch/verification → no-send gate → weather → verified facts
 ## Acceptance evidence
 
 - Adaptive narration merged to `main` in commit `b1a542812ce8aaf001227d8f13b7fcee686d3664`; Gemini may choose 1–5 allowlisted sections and their order based on verified daily facts. Post-merge Node CI run `37862280375` and Phase 3 unit tests run `37862280404` both passed.
-- Scheduled Production run `37717506024` on 2026-10-08 completed its pipeline, validated a 110.568-second MP3, and LINE API accepted the Flex+Audio pair in one request. This is API acceptance evidence only; it does not confirm playback on a member's device.
+- Scheduled Production run `37717506024` on 2026-10-08 occurred **before** the adaptive narration/fact-ID changes were merged. That run completed the then-current pipeline, validated a 110.568-second MP3, and LINE API accepted the Flex+Audio pair in one request. This is API acceptance evidence only; it neither validates the newer adaptive narrator in a live scheduled run nor confirms playback on a member's device. The next scheduled run must verify the merged code.
 
 Decision 020 บันทึก live Gemini Content → Gemini TTS และ MP3 validation ว่าผ่านเมื่อ 2026-10-04. LINE TEST run `37612281724` วันที่ 2026-10-07 ส่ง Flex และ Audio สำเร็จ; narration ใช้ `quota-safe-fallback`, Gemini TTS สร้างเสียงจริงยาว 112.968 วินาที และ LINE รับ Audio. ยังต้องตรวจการแสดงผลและฟังเสียงบน LINE client จริง.
 
@@ -50,5 +50,5 @@ Decision 020 บันทึก live Gemini Content → Gemini TTS และ MP3
 
 - Adaptive narration code is merged to `main`; Gemini can return 1–5 distinct sections from the allowlist and choose their order. Deterministic fact/safety validation, quota-safe fallback, TTS validation, public audio URL validation, and atomic Flex+Audio delivery gates remain in the pipeline.
 - Post-merge CI and Phase 3 test workflows passed at commit `b1a542812ce8aaf001227d8f13b7fcee686d3664`.
-- Scheduled Production run `37717506024` succeeded at the LINE API boundary, but there is still no proof from logs that a member opened and played the audio.
+- Scheduled Production run `37717506024` (before the adaptive narration merge) succeeded at the LINE API boundary, but there is still no live scheduled-run evidence for the merged adaptive narrator and no proof from logs that a member opened and played the audio.
 - Remaining release blockers for a full 100% sign-off: (1) official machine-readable flood provider endpoint and verified Phatthalung station mapping; (2) a human opens the real LINE delivery and verifies Flex rendering/audio playback; (3) observe repeated scheduled runs to establish TTS/source reliability and timing expectations. GitHub Actions remains best-effort, not an exact 06:00 guarantee.
