@@ -105,14 +105,14 @@ npm test
 **ข้อควรระวัง:** ห้ามนำรูปบุคคลหรือข้อมูลส่วนบุคคลจากโฟลเดอร์ไปใช้ใน production โดยอัตโนมัติ ต้องตรวจสิทธิ์การใช้งานและความเหมาะสมก่อนเสมอ
 
 
-## 📌 Current Release Readiness — 2026-10-07
+## 📌 Historical Release Readiness Snapshot — 2026-10-07 (superseded)
 
-**Production: NO-GO.** LINE TEST run `37612281724` ส่ง Flex และ Audio สำเร็จ; narration ใน run นั้นใช้ `quota-safe-fallback`, ส่วน Gemini TTS สร้าง MP3 จริงยาว 112.968 วินาทีและ LINE รับ Audio สำเร็จ. Live Gemini Content → TTS acceptance ผ่านตาม Decision 020; แต่ production ต้องรอ official flood API และ human review. Config hard-lock การส่ง production แม้ตั้ง PROD secrets แล้ว.
+**สถานะใน snapshot นี้เป็นข้อมูลย้อนหลังและถูกแทนที่ด้วย readiness ล่าสุดด้านบน:** ณ วันที่ 2026-10-07 ระบบยังรอ official flood API และ human review; Decision 028 ภายหลังอนุญาตเฉพาะ daily schedule exception บน `main` โดยมี no-send gates. ข้อความนี้ไม่ใช่สถานะปัจจุบัน.
 
-- **B1 — OPEN:** รอ official API provider Base URL, access method และ station mapping สำหรับพัทลุง; HTML source ปัจจุบันใช้ได้เฉพาะ TEST.
+- **B1 — OPEN (historical status remains unresolved):** รอ official API provider Base URL, access method และ station mapping สำหรับพัทลุง; HTML adapter ใช้ได้เฉพาะ daily exception ตาม Decision 028 ไม่ใช่ official API.
 - **B2 — PASS:** ผู้ใช้เลือก `no-send`; flood fetch error, stale/unknown severity หรือไม่มี station readings ที่ยืนยันได้ จะหยุดก่อนส่ง LINE.
 - **B3 — PASS:** มี live Content → TTS acceptance; การ fallback ไม่เปลี่ยนข้อเท็จจริง และ run ล่าสุดยืนยัน Gemini TTS/LINE Audio.
-- **B4 — กำลังปิด:** ปรับ config, pipeline, workflows และเอกสารให้ตรงนโยบาย; ต้องผ่าน full tests และ PR CI.
+- **B4 — historical snapshot:** ณ วันที่ 2026-10-07 ยังปิดงานไม่ครบ; current adaptive narration tests and CI status are documented in CHECKLIST.md.
 - **Human review — PENDING:** ยังต้องตรวจ Flex บน LINE client จริงและกดเล่น Audio.
 
 ไฟล์สถานะหลัก: [CHECKLIST](CHECKLIST.md), [Phase 3 Status](docs/PHASE3_STATUS.md), [Scope Review Report](docs/SCOPE_REVIEW_REPORT.md).
@@ -131,4 +131,4 @@ npm test
 
 **หลักการ:** ทำทีละเฟสและหยุดตรวจผลทุกครั้ง เพื่อไม่ให้ UI, Gemini prompt, Audio และ pipeline ต้องรื้อซ้ำ
 
-**Production ยัง NO-GO** จนกว่า release gates และ human acceptance จะผ่านครบ
+**บันทึกในแผนย้อนหลัง:** สถานะ Production ที่เขียนไว้ในส่วนนี้เป็นสถานะตามเวลาที่แผนถูกสร้าง ให้ยึด CHECKLIST.md และ docs/PHASE3_STATUS.md สำหรับสถานะปัจจุบัน
