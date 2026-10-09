@@ -41,6 +41,7 @@ Decision 020 บันทึก live Gemini Content → Gemini TTS และ MP3
 
 - [ThaiWater Standard — API สำหรับอ่านข้อมูลน้ำท่า](https://standard.thaiwater.net/docs/) ระบุ resource `A002.1 /Runoff` และ HTTP `GET` แต่เอกสารกำหนดว่า provider เป็นผู้จัด Base URL; path `/Runoff` เพียงอย่างเดียวยังไม่ใช่ endpoint ที่เรียกใช้ได้.
 - [Open Government Data Thailand — ระดับน้ำ](https://data.go.th/th/dataset/water-level) ระบุข้อมูลระดับน้ำราย 10 นาทีและไฟล์ station metadata CSV; หน้ารายการชี้ไปยัง Data Source ของ HII แต่ยังไม่ได้ยืนยัน live endpoint และ station IDs สำหรับบ้านลำพาย/พัทลุง.
+- [HII water-level archive](https://tiservice.hii.or.th/opendata/data_catalog/water_level/) เปิดเผย CSV แยกเป็นรายปี/รายเดือนและไฟล์ station metadata; นี่เป็นหลักฐานว่ามีข้อมูล machine-readable แต่ยังไม่ใช่การยืนยัน API แบบ live ที่รับประกัน freshness ≤180 นาทีสำหรับการตัดสินใจส่งรายงาน.
 - ผู้ประสานงานที่เผยแพร่ใน catalog คือ `telem@hii.or.th`. ขั้นตอนถัดไปคือยืนยัน Base URL/version, access/authentication, terms/rate limits, schema ของ response และรายการรหัสสถานี/พิกัด/เกณฑ์ระดับน้ำที่เกี่ยวข้องกับพัทลุงก่อนสร้าง adapter ใหม่.
 
 ดังนั้นยังห้ามเดา Base URL หรือถือว่ารายการ CSV/หน้า HTML เป็น live API ที่ตรวจรับแล้ว.
