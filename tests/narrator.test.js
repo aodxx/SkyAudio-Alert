@@ -103,7 +103,7 @@ test('narrator preserves Gemini-selected section order and accepts the five-sect
   });
   assert.deepEqual(result.sections.map((section) => section.id), ['next-steps', 'weather', 'water', 'opening', 'closing']);
   assert.equal(result.sections.length, 5);
-  assert.equal(result.spokenText.split('\\n').length, 5);
+  assert.equal(result.spokenText.split('\n').length, 5);
 });
 
 test('narrator rejects more than five sections', async () => {
