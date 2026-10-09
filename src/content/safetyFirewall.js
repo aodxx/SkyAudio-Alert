@@ -27,8 +27,22 @@ const outputText=plan=>[plan?.spokenText,...(plan?.spokenSections||[]),...(plan?
 function collectStrings(v,out=[]){if(v==null)return out;if(typeof v==='string'){if(v.trim())out.push(v.trim());return out}if(typeof v==='number'){out.push(String(v));return out}if(Array.isArray(v)){v.forEach(x=>collectStrings(x,out));return out}if(typeof v==='object')Object.values(v).forEach(x=>collectStrings(x,out));return out}
 function extractNumbers(t){return[...new Set((normalize(t).match(/(?:\d+(?:\.\d+)?|[๐-๙]+(?:[.,][๐-๙]+)?)/g)||[]).map(normalizeNumberToken))]}
 function sourceNumbers(f){return new Set(extractNumbers(collectStrings(f).join(' ')))}
+function validateSectionFactTrace(plan, factsSnapshot) {
+ const errors = [];
+ if (!factsSnapshot || !factsSnapshot.facts || !Array.isArray(plan?.sections)) return errors;
+ const knownIds = new Set(Array.isArray(factsSnapshot.factIds) ? factsSnapshot.factIds : Object.keys(factsSnapshot.facts));
+ plan.sections.forEach((section, index) => {
+  const used = Array.isArray(section?.factsUsed) ? section.factsUsed.map(String) : [];
+  const unknownIds = used.filter((id) => !knownIds.has(id));
+  if (unknownIds.length) errors.push(`section ${index + 1} references unknown fact IDs: ${[...new Set(unknownIds)].join(', ')}`);
+  const citedNumbers = new Set(used.flatMap((id) => factsSnapshot.facts[id]?.spokenForms || []).flatMap(extractNumbers));
+  const unsupportedNumbers = extractNumbers(section?.text).filter((number) => !citedNumbers.has(number));
+  if (unsupportedNumbers.length) errors.push(`section ${index + 1} numeric claims are not supported by its cited facts: ${[...new Set(unsupportedNumbers)].join(', ')}`);
+ });
+ return errors;
+}
 function validateGeneratedFacts(plan,verifiedFacts,options={}){
- const e=[];if(!plan||typeof plan!=='object')return['presentation plan is required'];const t=outputText(plan);
+ const e=[];if(!plan||typeof plan!=='object')return['presentation plan is required'];const t=outputText(plan);if(options.factsSnapshot)e.push(...validateSectionFactTrace(plan,options.factsSnapshot));
  if(hasAssertedMatch(t,CERTAINTY_PATTERNS))e.push('unsupported certainty claim');
  if(FORBIDDEN_TOPIC_PATTERNS.some(p=>p.test(t)))e.push('forbidden market/news topic');
  const s=verifiedFacts?.floodSituation?.severity;if(s&&plan.severity!==s)e.push('presentation severity does not match verified flood severity');

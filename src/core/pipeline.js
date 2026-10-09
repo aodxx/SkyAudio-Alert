@@ -146,10 +146,12 @@ async function runPipeline(config, overrides = {}) {
         severity: floodSituation.severity,
         spokenText: candidate.spokenText,
         spokenSections: (candidate.sections || []).map((section) => section.text),
+        sections: candidate.sections || [],
         factsUsed: [...new Set((candidate.sections || []).flatMap((section) => section.factsUsed || []))],
       };
       return validateGeneratedFacts(safetyInput, { floodSituation, weatherAnalysis, date: dateInfo }, {
         forecastOnly: floodSituation.severity === 'unknown' && !(floodSituation.stations || []).length,
+        factsSnapshot,
       });
     };
     narration = await withRetry(() => generateNarrationImpl(narrationContext, config), {
