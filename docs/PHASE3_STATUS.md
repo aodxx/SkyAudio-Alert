@@ -28,7 +28,7 @@ Decision 020 บันทึก live Gemini Content → Gemini TTS และ MP3
 
 | Gate | สถานะปัจจุบัน |
 |---|---|
-| B1 — Official flood API | **OPEN.** ThaiWater Standard กำหนด `A002.1 /Runoff`; ยังไม่มี provider Base URL/access method และ station mapping ที่ยืนยันสำหรับพัทลุง. HTML adapter ใช้ได้เฉพาะ TEST |
+| B1 — Official flood API | **OPEN.** ThaiWater Standard กำหนด `A002.1 /Runoff`; ยังไม่มี provider Base URL/access method และ station mapping ที่ยืนยันสำหรับพัทลุง. HTML adapter ใช้ได้เฉพาะข้อยกเว้น daily schedule ตาม Decision 028 ไม่ใช่ full Production source. |
 | B2 — Source failure behavior | **PASS.** ผู้ใช้เลือก `no-send`; fetch error, stale/unknown severity หรือไม่มีสถานีที่ยืนยันได้จะหยุด pipeline ก่อน LINE |
 | B3 — Gemini contract | **PASS.** Live acceptance 2026-10-04; ล่าสุดยืนยัน Gemini TTS, LINE Audio และ safe fallback |
 | B4 — Docs/tests/workflows | **PASS for current adaptive narration change.** Post-merge Node CI and Phase 3 tests passed; keep this gate open again if future code/workflow changes fail tests |
@@ -37,7 +37,7 @@ Decision 020 บันทึก live Gemini Content → Gemini TTS และ MP3
 
 ## B1 — ข้อมูลที่รอจาก provider
 
-ThaiWater Standard มี contract สำหรับ runoff (`A002.1`, `GET /Runoff`) แต่ผู้ให้บริการแต่ละรายเลือก Base URL เอง. ต้องได้ endpoint/access method/terms และ station IDs/mapping สำหรับพัทลุง แล้ว implement/validate adapter ก่อน Production. หน้า HTML ปัจจุบันไม่ถูกยอมรับเป็น Production source; คงไว้เฉพาะ TEST.
+ThaiWater Standard มี contract สำหรับ runoff (`A002.1`, `GET /Runoff`) แต่ผู้ให้บริการแต่ละรายเลือก Base URL เอง. ต้องได้ endpoint/access method/terms และ station IDs/mapping สำหรับพัทลุง แล้ว implement/validate adapter ก่อน Production. หน้า HTML ปัจจุบันไม่ถูกยอมรับเป็น official API; ใช้ได้เฉพาะ daily Production exception ตาม Decision 028 จนกว่าจะมี official provider และ mapping ที่ยืนยัน.
 
 อ้างอิง: [ThaiWater Standard](https://standard.thaiwater.net/docs/), [HII National Hydroinformatics Data Center](https://www.hii.or.th/en/research-development/rd/2020/04/15/national-hydroinformatics-data-center-nhc/).
 
