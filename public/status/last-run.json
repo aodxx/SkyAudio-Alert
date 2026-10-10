@@ -1,5 +1,5 @@
 {
-  "runId": "2026-10-09-lampai-production",
+  "runId": "2026-10-10-lampai-production",
   "mode": "production",
   "dryRun": false,
   "stages": {
@@ -15,18 +15,21 @@
     "tts.synthesize": "success",
     "audio.validate": "success",
     "audio.store": "success",
-    "line.send": "success",
-    "line.audio.send": "success"
+    "line.send": "failure",
+    "line.audio.send": "failure"
   },
-  "lastError": null,
+  "lastError": {
+    "stage": "line.send",
+    "message": "LINE push failed: 429",
+    "detail": "{\"message\":\"You have reached your monthly limit.\"}"
+  },
   "audioWithheld": false,
   "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@3204ec94ed25433917fc7c951f8495f19ec0bdbe/public/audio/2026-10-09.mp3",
-    "durationMs": 107784,
-    "bytes": 1724973,
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@2d0fd1391ecfdcae8376e749fbef7f0664baf79c/public/audio/2026-10-10.mp3",
+    "durationMs": 141744,
+    "bytes": 2268333,
     "mimeType": "audio/mpeg",
-    "sections": 4,
-    "delivered": true
+    "sections": 5
   },
-  "generatedAt": "2026-10-09T02:41:27.041Z"
+  "generatedAt": "2026-10-10T02:02:29.522Z"
 }
