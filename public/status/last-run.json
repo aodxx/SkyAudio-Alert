@@ -1,5 +1,5 @@
 {
-  "runId": "2026-10-14-lampai-production",
+  "runId": "2026-10-15-lampai-production",
   "mode": "production",
   "dryRun": false,
   "stages": {
@@ -14,22 +14,19 @@
     "content.safety": "success",
     "tts.synthesize": "success",
     "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "failure",
-    "line.audio.send": "failure"
+    "audio.store": "start",
+    "audio.url": "failure",
+    "audio.withheld": "degraded",
+    "line.send": "skipped",
+    "line.audio.send": "skipped"
   },
   "lastError": {
-    "stage": "line.send",
-    "message": "LINE push failed: 429",
-    "detail": "{\"message\":\"You have reached your monthly limit.\"}"
+    "stage": "audio.url",
+    "message": "Public audio URL check failed",
+    "detail": "curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received\n",
+    "errors": []
   },
-  "audioWithheld": false,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@da7141251ae38a723ac9e5469d37aaec940f6e64/public/audio/2026-10-14.mp3",
-    "durationMs": 93408,
-    "bytes": 1494957,
-    "mimeType": "audio/mpeg",
-    "sections": 5
-  },
-  "generatedAt": "2026-10-14T01:29:56.150Z"
+  "audioWithheld": true,
+  "audio": null,
+  "generatedAt": "2026-10-15T01:07:32.258Z"
 }
