@@ -1,5 +1,5 @@
 {
-  "runId": "2026-10-16-lampai-production",
+  "runId": "2026-10-17-lampai-production",
   "mode": "production",
   "dryRun": false,
   "stages": {
@@ -25,11 +25,11 @@
   },
   "audioWithheld": false,
   "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@a2e106530aa3986e6dc4ecfd622b9179808cc749/public/audio/2026-10-16.mp3",
-    "durationMs": 106728,
-    "bytes": 1708077,
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@990848dfc481f2f2a7e6969a9fa7e0f5ab5038ef/public/audio/2026-10-17.mp3",
+    "durationMs": 109344,
+    "bytes": 1749933,
     "mimeType": "audio/mpeg",
     "sections": 5
   },
-  "generatedAt": "2026-10-16T00:55:10.975Z"
+  "generatedAt": "2026-10-17T00:55:12.536Z"
 }
