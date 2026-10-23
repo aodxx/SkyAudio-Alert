@@ -1,35 +1,16 @@
 {
-  "runId": "2026-10-22-lampai-production",
+  "runId": "2026-10-23-lampai-production",
   "mode": "production",
   "dryRun": false,
   "stages": {
     "flood.fetch": "success",
-    "flood.gate": "success",
-    "weather.fetch": "success",
-    "weather.normalize": "success",
-    "weather.analyze": "success",
-    "flex.render": "success",
-    "flex.lint": "success",
-    "content.narration": "success",
-    "content.safety": "success",
-    "tts.synthesize": "success",
-    "audio.validate": "success",
-    "audio.store": "success",
-    "line.send": "failure",
-    "line.audio.send": "failure"
+    "flood.gate": "failure"
   },
   "lastError": {
-    "stage": "line.send",
-    "message": "LINE push failed: 429",
-    "detail": "{\"message\":\"You have reached your monthly limit.\"}"
+    "stage": "flood.gate",
+    "message": "Flood status is not verifiable; no-send policy stopped the report: flood data freshness is stale"
   },
   "audioWithheld": false,
-  "audio": {
-    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@f66489a316f746e52d89d5abe684773e1fbb3345/public/audio/2026-10-22.mp3",
-    "durationMs": 121224,
-    "bytes": 1940013,
-    "mimeType": "audio/mpeg",
-    "sections": 5
-  },
-  "generatedAt": "2026-10-22T01:08:46.187Z"
+  "audio": null,
+  "generatedAt": "2026-10-23T01:06:04.172Z"
 }
