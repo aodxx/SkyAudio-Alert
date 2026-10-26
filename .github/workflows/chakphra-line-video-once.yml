@@ -1,0 +1,57 @@
+name: One-time Chak Phra MP4 send to LINE group
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_url_1:
+        description: 'Public HTTPS URL for Chak Phra MP4 #1'
+        required: true
+        type: string
+      preview_image_url_1:
+        description: 'Public HTTPS JPG/PNG thumbnail URL for MP4 #1'
+        required: true
+        type: string
+      video_url_2:
+        description: 'Optional public HTTPS URL for Chak Phra MP4 #2'
+        required: false
+        type: string
+      preview_image_url_2:
+        description: 'Required if MP4 #2 is supplied: public HTTPS JPG/PNG thumbnail URL'
+        required: false
+        type: string
+      confirm_send:
+        description: 'Explicitly confirm sending to the real LINE group'
+        required: true
+        type: choice
+        default: DO_NOT_SEND
+        options:
+          - DO_NOT_SEND
+          - SEND_TO_REAL_GROUP
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chakphra-line-one-time-send
+  cancel-in-progress: false
+
+jobs:
+  send-chakphra-videos:
+    if: ${{ inputs.confirm_send == 'SEND_TO_REAL_GROUP' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Validate URLs and send video message(s) to LINE PROD
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN_PROD: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN_PROD }}
+          LINE_GROUP_ID_PROD: ${{ secrets.LINE_GROUP_ID_PROD }}
+          VIDEO_URL_1: ${{ inputs.video_url_1 }}
+          PREVIEW_IMAGE_URL_1: ${{ inputs.preview_image_url_1 }}
+          VIDEO_URL_2: ${{ inputs.video_url_2 }}
+          PREVIEW_IMAGE_URL_2: ${{ inputs.preview_image_url_2 }}
+        run: node scripts/send-chakphra-videos-once.js
