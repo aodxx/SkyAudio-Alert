@@ -1,16 +1,32 @@
 {
-  "runId": "2026-11-01-lampai-production",
+  "runId": "2026-11-02-lampai-production",
   "mode": "production",
   "dryRun": false,
   "stages": {
     "flood.fetch": "success",
-    "flood.gate": "failure"
+    "flood.gate": "success",
+    "weather.fetch": "success",
+    "weather.normalize": "success",
+    "weather.analyze": "success",
+    "flex.render": "success",
+    "flex.lint": "success",
+    "content.narration": "success",
+    "content.safety": "success",
+    "tts.synthesize": "success",
+    "audio.validate": "success",
+    "audio.store": "success",
+    "line.send": "success",
+    "line.audio.send": "success"
   },
-  "lastError": {
-    "stage": "flood.gate",
-    "message": "Flood status is not verifiable; no-send policy stopped the report: flood data freshness is stale"
-  },
+  "lastError": null,
   "audioWithheld": false,
-  "audio": null,
-  "generatedAt": "2026-11-01T01:40:25.508Z"
+  "audio": {
+    "url": "https://cdn.jsdelivr.net/gh/aodxx/SkyAudio-Alert@d304d083497a11b5f49c8c250e3831805e40f27f/public/audio/2026-11-02.mp3",
+    "durationMs": 95064,
+    "bytes": 1521453,
+    "mimeType": "audio/mpeg",
+    "sections": 5,
+    "delivered": true
+  },
+  "generatedAt": "2026-11-02T02:00:22.340Z"
 }
